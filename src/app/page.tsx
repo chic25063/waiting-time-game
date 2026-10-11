@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import confetti from "canvas-confetti";
 import {
   Users,
@@ -11,8 +12,14 @@ import {
   Database,
   PartyPopper,
   Info,
+  Play,
+  ArrowRight,
+  ListFilter,
+  Search,
+  Tag,
 } from "lucide-react";
-import { supabase, isSupabaseConfigured, FALLBACK_GAMES } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, FALLBACK_GAMES, getAllGames } from "@/lib/supabase";
+import { ALL_GAMES } from "@/data/games";
 import { Game } from "@/types/game";
 
 const PLAYER_OPTIONS = [2, 3, 4, 5, 6] as const;
@@ -20,13 +27,23 @@ const PLAYER_OPTIONS = [2, 3, 4, 5, 6] as const;
 export default function Home() {
   const [selectedPlayers, setSelectedPlayers] = useState<number>(3);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
+  const [allGameList, setAllGameList] = useState<Game[]>(ALL_GAMES);
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState<boolean>(false);
   const [isConfigured, setIsConfigured] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [catalogPlayerFilter, setCatalogPlayerFilter] = useState<number | null>(null);
+  const [showCatalog, setShowCatalog] = useState<boolean>(false);
 
   useEffect(() => {
     setIsConfigured(isSupabaseConfigured());
+    // 全ゲームリストをロード（Supabase連携時は最新を取得）
+    async function initGames() {
+      const games = await getAllGames();
+      setAllGameList(games);
+    }
+    initGames();
   }, []);
 
   const triggerConfetti = () => {
@@ -57,19 +74,25 @@ export default function Home() {
           .lte("min_players", selectedPlayers)
           .gte("max_players", selectedPlayers);
 
-        if (error) {
-          console.warn("Supabase fetch error, using fallback:", error);
-          candidateGames = FALLBACK_GAMES.filter(
+        if (error || !data || data.length === 0) {
+          candidateGames = allGameList.filter(
             (g) =>
               g.min_players <= selectedPlayers &&
               g.max_players >= selectedPlayers
           );
-        } else if (data && data.length > 0) {
-          candidateGames = data as Game[];
+        } else {
+          // metadata をローカルデータ等で補完
+          candidateGames = data.map((item) => {
+            const local = allGameList.find((g) => g.id === item.id);
+            return {
+              ...item,
+              metadata: item.metadata || local?.metadata,
+            } as Game;
+          });
         }
       } else {
-        // Supabase未設定時はフォールバックデータを使用
-        candidateGames = FALLBACK_GAMES.filter(
+        // Supabase未設定時は最新の全ゲームデータを使用
+        candidateGames = allGameList.filter(
           (g) =>
             g.min_players <= selectedPlayers &&
             g.max_players >= selectedPlayers
@@ -100,6 +123,28 @@ export default function Home() {
     }
   };
 
+  // カタログ用フィルター
+  const filteredCatalog = useMemo(() => {
+    return allGameList.filter((game) => {
+      // 人数フィルター
+      if (
+        catalogPlayerFilter !== null &&
+        (game.min_players > catalogPlayerFilter || game.max_players < catalogPlayerFilter)
+      ) {
+        return false;
+      }
+      // 検索ワードフィルター
+      if (searchQuery.trim() !== "") {
+        const q = searchQuery.toLowerCase();
+        const titleMatch = game.title.toLowerCase().includes(q);
+        const descMatch = game.description.toLowerCase().includes(q);
+        const tagMatch = game.metadata?.tags?.some((t) => t.toLowerCase().includes(q));
+        if (!titleMatch && !descMatch && !tagMatch) return false;
+      }
+      return true;
+    });
+  }, [allGameList, catalogPlayerFilter, searchQuery]);
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-950 text-white flex flex-col justify-between p-4 sm:p-6 lg:p-8">
       {/* 背景装飾 */}
@@ -109,7 +154,7 @@ export default function Home() {
         <div className="absolute -bottom-32 left-1/3 w-96 h-96 bg-blue-500 rounded-full blur-3xl" />
       </div>
 
-      <div className="max-w-md w-full mx-auto flex-1 flex flex-col justify-center py-6">
+      <div className="max-w-md w-full mx-auto flex-1 flex flex-col justify-center py-4">
         {/* ヘッダーエリア */}
         <header className="text-center mb-6">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs sm:text-sm font-medium text-purple-200 mb-3 shadow-inner">
@@ -120,7 +165,7 @@ export default function Home() {
             マチジカン！
           </h1>
           <p className="text-slate-300 text-xs sm:text-sm mt-1.5">
-            道具ゼロ・その場ですぐ遊べる暇つぶしゲーム提案
+            遊べるゲームマスターツール＆道具ゼロの暇つぶし集（全19種）
           </p>
         </header>
 
@@ -200,28 +245,62 @@ export default function Home() {
               </span>
             </div>
 
-            <h2 className="text-xl sm:text-2xl font-black text-white mb-3 tracking-wide">
+            <h2 className="text-xl sm:text-2xl font-black text-white mb-2 tracking-wide">
               {selectedGame.title}
             </h2>
+
+            {selectedGame.metadata?.tags && (
+              <div className="flex flex-wrap gap-1 mb-3">
+                {selectedGame.metadata.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="text-[10px] px-2 py-0.5 rounded-md bg-white/10 text-purple-200"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div className="bg-slate-950/40 rounded-2xl p-4 border border-white/10 mb-4">
               <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 mb-1.5">
                 <HelpCircle className="w-3.5 h-3.5 text-pink-400" />
-                <span>ルール・あそび方</span>
+                <span>概要</span>
               </div>
               <p className="text-xs sm:text-sm text-slate-200 leading-relaxed whitespace-pre-wrap">
                 {selectedGame.description}
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={handleFindGame}
-              className="w-full py-2.5 px-4 rounded-xl bg-white/15 hover:bg-white/25 active:scale-95 transition-all text-xs sm:text-sm font-semibold text-purple-100 flex items-center justify-center gap-2 border border-white/20"
-            >
-              <Shuffle className="w-4 h-4" />
-              <span>気に入らない？ 別のを引く</span>
-            </button>
+            {/* ゲームマスター開始ボタン（超目立つCTA） */}
+            <div className="space-y-2 mb-3">
+              <Link
+                href={`/games/${selectedGame.id}/play?setup=1&count=${selectedPlayers}`}
+                className="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-pink-500 hover:from-amber-300 hover:via-orange-400 hover:to-pink-400 text-slate-950 font-black text-base flex items-center justify-center gap-2.5 shadow-lg shadow-orange-500/30 active:scale-95 transition-all"
+              >
+                <Play className="w-5 h-5 fill-current text-slate-950" />
+                <span>このゲームを開始する！</span>
+              </Link>
+
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  href={`/games/${selectedGame.id}`}
+                  className="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 text-xs font-semibold flex items-center justify-center gap-1.5 border border-white/15 transition-all text-center"
+                >
+                  <span>ルール詳細を見る</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={handleFindGame}
+                  className="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition-all text-xs font-semibold text-purple-100 flex items-center justify-center gap-1.5 border border-white/15"
+                >
+                  <Shuffle className="w-3.5 h-3.5" />
+                  <span>別のを引く</span>
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -233,10 +312,124 @@ export default function Home() {
               人数を選んで「ゲームを探す！」を押してね
             </p>
             <p className="text-xs text-slate-400 mt-1">
-              並び時間も退屈知らず！何回でも引き直せます
+              メトロノームやお題ガチャなど、実際に遊べるGMツール付き！
             </p>
           </div>
         )}
+
+        {/* 全19ゲーム カタログ切り替えトグル */}
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={() => setShowCatalog((prev) => !prev)}
+            className="w-full py-3 px-4 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 text-xs sm:text-sm font-bold text-purple-200 flex items-center justify-between transition-all"
+          >
+            <span className="flex items-center gap-2">
+              <ListFilter className="w-4 h-4 text-pink-400" />
+              <span>全19タイトルから選んで遊ぶ</span>
+            </span>
+            <span className="text-xs text-slate-400 font-normal">
+              {showCatalog ? "一覧を隠す ▲" : "一覧を表示 ▼"}
+            </span>
+          </button>
+
+          {/* カタログ展開エリア */}
+          {showCatalog && (
+            <div className="mt-3 p-4 rounded-3xl bg-slate-950/60 border border-white/15 backdrop-blur-xl animate-in fade-in space-y-4">
+              {/* 検索・絞り込みバー */}
+              <div className="space-y-2">
+                <div className="relative">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="ゲーム名、タグで検索..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-white/10 border border-white/10 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-purple-400"
+                  />
+                </div>
+
+                {/* 人数絞り込みチップ */}
+                <div className="flex items-center gap-1 text-[11px] overflow-x-auto pb-1">
+                  <span className="text-slate-400 shrink-0 pr-1">人数:</span>
+                  <button
+                    type="button"
+                    onClick={() => setCatalogPlayerFilter(null)}
+                    className={`px-2.5 py-1 rounded-lg font-bold shrink-0 transition-all ${
+                      catalogPlayerFilter === null
+                        ? "bg-purple-500 text-white"
+                        : "bg-white/10 text-slate-300"
+                    }`}
+                  >
+                    全員
+                  </button>
+                  {PLAYER_OPTIONS.map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setCatalogPlayerFilter(catalogPlayerFilter === p ? null : p)}
+                      className={`px-2.5 py-1 rounded-lg font-bold shrink-0 transition-all ${
+                        catalogPlayerFilter === p
+                          ? "bg-purple-500 text-white"
+                          : "bg-white/10 text-slate-300"
+                      }`}
+                    >
+                      {p}人
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* ゲームカードグリッド */}
+              <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                {filteredCatalog.map((g) => (
+                  <div
+                    key={g.id}
+                    className="p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all flex items-center justify-between gap-2"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-bold text-white truncate">{g.title}</h3>
+                        <span className="text-[10px] text-purple-300 px-1.5 py-0.5 rounded bg-white/10 shrink-0">
+                          {g.min_players}〜{g.max_players}人
+                        </span>
+                      </div>
+                      <div className="flex gap-1 mt-1 overflow-hidden">
+                        {g.metadata?.tags?.slice(0, 3).map((tag) => (
+                          <span key={tag} className="text-[9px] text-slate-400">
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Link
+                        href={`/games/${g.id}`}
+                        className="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 text-xs font-semibold"
+                      >
+                        詳細
+                      </Link>
+                      <Link
+                        href={`/games/${g.id}/play?setup=1&count=${catalogPlayerFilter || selectedPlayers || g.min_players}`}
+                        className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 text-xs font-black flex items-center gap-1 shadow-sm active:scale-95"
+                      >
+                        <Play className="w-3 h-3 fill-current" />
+                        <span>遊ぶ</span>
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+
+                {filteredCatalog.length === 0 && (
+                  <div className="p-6 text-center text-xs text-slate-400">
+                    条件に一致するゲームが見つかりませんでした。
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Supabase 接続状況フッター */}
         <div className="mt-8 flex items-center justify-center gap-2 text-[11px] text-slate-400">
@@ -248,14 +441,14 @@ export default function Home() {
           ) : (
             <span className="text-slate-400 flex items-center gap-1">
               <Info className="w-3 h-3 text-amber-400" />
-              シードデータ動作中（.env.local で Supabase 接続可能）
+              シードデータ（全19タイトル・お題完備）動作中
             </span>
           )}
         </div>
       </div>
 
       <footer className="text-center text-[10px] text-slate-500 py-2">
-        マチジカン！ - MVP v0.1.0
+        マチジカン！ - ゲームマスターツール v0.2.0
       </footer>
     </main>
   );
