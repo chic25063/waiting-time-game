@@ -309,7 +309,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* 全19ゲーム カタログ切り替えトグル */}
+        {/* 全ゲーム カタログ切り替えトグル */}
         <div className="mt-6">
           <button
             type="button"
@@ -318,7 +318,7 @@ export default function Home() {
           >
             <span className="flex items-center gap-2">
               <ListFilter className="w-4 h-4 text-pink-400" />
-              <span>全19タイトルから選んで遊ぶ</span>
+              <span>全{allGameList.length}タイトルから選んで遊ぶ</span>
             </span>
             <span className="text-xs text-slate-400 font-normal">
               {showCatalog ? "一覧を隠す ▲" : "一覧を表示 ▼"}
@@ -433,7 +433,7 @@ export default function Home() {
           ) : (
             <span className="text-slate-400 flex items-center gap-1">
               <Info className="w-3 h-3 text-amber-400" />
-              シードデータ（全19タイトル・お題完備）動作中
+              シードデータ（全{allGameList.length}タイトル・お題完備）動作中
             </span>
           )}
         </div>
