@@ -5,7 +5,6 @@ import Link from "next/link";
 import confetti from "canvas-confetti";
 import {
   Users,
-  Sparkles,
   Shuffle,
   Clock,
   HelpCircle,
@@ -157,10 +156,6 @@ export default function Home() {
       <div className="max-w-md w-full mx-auto flex-1 flex flex-col justify-center py-4">
         {/* ヘッダーエリア */}
         <header className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs sm:text-sm font-medium text-purple-200 mb-3 shadow-inner">
-            <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
-            <span>待ち時間を最高のアトラクションに！</span>
-          </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-200 via-pink-300 to-indigo-200">
             マチジカン！
           </h1>
