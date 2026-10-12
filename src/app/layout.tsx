@@ -12,18 +12,22 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+import { GameSessionProvider } from "@/context/GameSessionContext";
+
 export const metadata: Metadata = {
-  title: "マチジカン！- 待ち時間ゲームファインダー",
-  description: "テーマパークやスポッチャの待ち時間に、道具なしですぐ遊べるゲームを提案するWebアプリ",
+  title: "マチジカン！- 待ち時間ゲームマスター",
+  description: "テーマパークや待ち時間に、1台のスマホを囲んで道具なしで対戦できるゲームマスターWebアプリ",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
+      lang="ja"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <GameSessionProvider>{children}</GameSessionProvider>
+      </body>
     </html>
   );
 }

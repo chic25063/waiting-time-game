@@ -20,10 +20,13 @@ import {
 import { supabase, isSupabaseConfigured, FALLBACK_GAMES, getAllGames } from "@/lib/supabase";
 import { ALL_GAMES } from "@/data/games";
 import { Game } from "@/types/game";
+import SessionScoreHeader from "@/components/session/SessionScoreHeader";
+import { useGameSession } from "@/hooks/useGameSession";
 
 const PLAYER_OPTIONS = [2, 3, 4, 5, 6] as const;
 
 export default function Home() {
+  const { setPlayerCount } = useGameSession();
   const [selectedPlayers, setSelectedPlayers] = useState<number>(3);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [allGameList, setAllGameList] = useState<Game[]>(ALL_GAMES);
@@ -154,6 +157,9 @@ export default function Home() {
       </div>
 
       <div className="max-w-md w-full mx-auto flex-1 flex flex-col justify-center py-4">
+        {/* 通算スコアバー */}
+        <SessionScoreHeader />
+
         {/* ヘッダーエリア */}
         <header className="text-center mb-6">
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-200 via-pink-300 to-indigo-200">
@@ -176,7 +182,10 @@ export default function Home() {
                   <button
                     key={count}
                     type="button"
-                    onClick={() => setSelectedPlayers(count)}
+                    onClick={() => {
+                      setSelectedPlayers(count);
+                      setPlayerCount(count);
+                    }}
                     className={`py-2.5 rounded-2xl text-sm font-bold transition-all duration-200 flex flex-col items-center justify-center gap-0.5 shadow-sm active:scale-95 ${
                       isSelected
                         ? "bg-gradient-to-b from-amber-400 to-orange-500 text-slate-950 shadow-orange-500/30 shadow-lg scale-105 border border-amber-300 ring-2 ring-amber-300/40"

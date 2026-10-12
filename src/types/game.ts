@@ -1,3 +1,5 @@
+import { MatchEngineType } from "./session";
+
 export type ToolType = "prompt" | "bpm" | "timer" | "score" | "elimination" | "elimination_tracker";
 
 export interface Player {
@@ -17,6 +19,7 @@ export type PromptItem = string | RiddlePrompt;
 
 export interface GameMetadata {
   tools: ToolType[];
+  matchEngineType?: MatchEngineType;
   defaultBpm?: number;
   timerDuration?: number; // 秒数
   blindTimer?: boolean; // ブラインドタイマーモードがデフォルトかどうか
@@ -38,6 +41,7 @@ export interface Game {
   prompt_list?: PromptItem[];
   tools?: ToolType[];
   default_bpm?: number;
+  matchEngineType?: MatchEngineType;
   // エイリアス用フィールド
   short_description?: string;
   rules?: string[];

@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { getGameById } from "@/lib/supabase";
 import { Game, Player } from "@/types/game";
 import { ALL_GAMES } from "@/data/games";
+import SessionScoreHeader from "@/components/session/SessionScoreHeader";
 import PlayerRegistrationModal from "@/components/players/PlayerRegistrationModal";
 import {
   loadStoredPlayers,
@@ -119,13 +120,17 @@ export default function GameDetailPage() {
   const tools = meta?.tools || [];
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-950 text-white p-4 sm:p-6 lg:p-8 flex flex-col justify-between">
-      {/* 背景装飾 */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 opacity-30">
-        <div className="absolute -top-32 -left-32 w-96 h-96 bg-purple-500 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 -right-32 w-96 h-96 bg-pink-500 rounded-full blur-3xl" />
-        <div className="absolute -bottom-32 left-1/3 w-96 h-96 bg-blue-500 rounded-full blur-3xl" />
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-950 text-white flex flex-col justify-between">
+      {/* 🏆 通算成績スコアバー */}
+      <SessionScoreHeader />
+
+      <main className="p-4 sm:p-6 lg:p-8 flex-1 flex flex-col justify-between">
+        {/* 背景装飾 */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 opacity-30">
+          <div className="absolute -top-32 -left-32 w-96 h-96 bg-purple-500 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 -right-32 w-96 h-96 bg-pink-500 rounded-full blur-3xl" />
+          <div className="absolute -bottom-32 left-1/3 w-96 h-96 bg-blue-500 rounded-full blur-3xl" />
+        </div>
 
       <div className="max-w-xl w-full mx-auto flex-1 flex flex-col py-4">
         {/* ナビゲーションバー */}
@@ -319,5 +324,6 @@ export default function GameDetailPage() {
         マチジカン！ - ゲームマスター
       </footer>
     </main>
-  );
+  </div>
+);
 }

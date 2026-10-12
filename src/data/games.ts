@@ -1,135 +1,6 @@
-import { Game, RiddlePrompt } from "@/types/game";
+import { Game } from "@/types/game";
 
-// ウミガメのスープ用お題リスト（25問）
-export const SEA_TURTLE_QUESTIONS: RiddlePrompt[] = [
-  {
-    question: "ある男がレストランで「ウミガメのスープ」を注文し、一口飲んだあと店員に「これは本当にウミガメのスープか？」と尋ねた。店員が「はい、間違いなく本物のウミガメのスープです」と答えると、男は勘定を済ませて店を出て、その夜自殺した。なぜだろう？",
-    answer: "男はかつて何人かの仲間と船で遭難した。食料が尽きかけた時、仲間の一人が「ウミガメのスープを作った」と言って差し出し、男はそれを飲んで生き延びた。しかし高級レストランで本物のウミガメのスープを飲んだ時、あの時のスープと味が全く違うことに気づいた。自分が遭難中に口にしたのは、衰弱死した仲間の人肉だったと悟り、絶望して命を絶った。",
-    hint: "男は過去に遭難した経験があります。スープの「味」が鍵です。"
-  },
-  {
-    question: "ある男がバーに入ってきて、バーテンダーに「水を一杯くれ」と頼んだ。バーテンダーは突然銃を取り出し、男に突きつけた。男は「ありがとう」と言って店を出て行った。なぜ？",
-    answer: "男は激しいシャックリに苦しんでおり、水を飲んで止めようとしていた。バーテンダーは男の様子を見て瞬時に事情を察し、銃で脅かすことで驚かせてシャックリを止めてあげた。シャックリが止まった男は礼を言って帰った。",
-    hint: "男は喉が渇いていたわけではありません。体に何かが起きていました。"
-  },
-  {
-    question: "ある男がホテルの部屋で夜中に電話をかけた。相手が出ると、何も話さずに電話を切り、ぐっすり眠りについた。一体どういうことだろう？",
-    answer: "隣の部屋の宿泊客のいびきがうるさくて眠れなかったため、フロントに頼むか内線で隣の部屋に電話をかけた。電話のベルで隣の人が目を覚まし、いびきが止まったのを確認して電話を切り、安心して眠った。",
-    hint: "男は誰と会話したかったわけではありません。相手を起こすのが目的でした。"
-  },
-  {
-    question: "壁一面に本がぎっしり並んだ書斎で、男が首を吊って死んでいた。部屋は密室で、足元には踏み台になるような家具は一切なく、床は濡れていた。男はどうやって首を吊ったのか？",
-    answer: "男は大きな氷のブロックを踏み台にして首を吊った。時間が経って氷が完全に溶けて蒸発・水たまりとなったため、足元には何も残らず床だけが濡れていた。",
-    hint: "床が濡れていた理由は何でしょう？ 姿を消した踏み台の正体は？"
-  },
-  {
-    question: "ある大雨の夜、車に乗っていた男が外にいた女性に傘を渡した。しかし女性は傘を開かず、ずぶ濡れのまま歩き続けた。女性は男のことが嫌いなわけではない。なぜ？",
-    answer: "女性は車椅子に乗っていた（または赤ちゃんを両手で抱いていた/両手に松葉杖をついていた）。両手がふさがっていたため、傘をもらっても自分で差すことができなかった。",
-    hint: "女性の手の状態に注目してください。"
-  },
-  {
-    question: "ある夫婦がドライブ中、ガソリンが切れて夜道で止まってしまった。夫は「車から絶対に出るな」と妻に言い残し、ガソリンを買いに歩いて行った。数時間後、夫が戻ると車内で妻が血を流して死んでおり、車の横には見知らぬ男が立っていた。しかし車は密室で窓も割られていない。何があった？",
-    answer: "妻は臨月で車内で急に出産し、出血過多で命を落としていた（あるいは隣にいた見知らぬ男とは、生まれたばかりの赤ん坊だった）。",
-    hint: "見知らぬ「男」の年齢はいくつでしょう？"
-  },
-  {
-    question: "ある朝、男が新聞の一面を見て叫び声を上げ、警察に自首した。新聞には男の犯罪や手配写真は一切載っていなかった。なぜ男は自首したのか？",
-    answer: "男は前夜、暗闇で誰かを車で轢いてしまい、人か動物か分からず逃げてしまった（ひき逃げ）。新聞の一面に「昨夜、○○町で男性がひき逃げされ死亡」という記事を見て、自分が人を殺してしまったことを知ったため自首した。",
-    hint: "男は昨晩、何かをしてしまいましたが、結果を新聞で初めて知りました。"
-  },
-  {
-    question: "ある男が毎朝エレベーターで1階まで降りて出勤する。しかし雨の日以外、帰りはエレベーターで7階までしか上がらず、そこから10階の自宅まで階段を歩いて上がる。なぜ？",
-    answer: "男は背の低い子供（または低身長の人物）だった。1階のボタンには手が届くが、高い位置にある10階のボタンには手が届かず、7階のボタンまでしか押せない。雨の日は持っている傘の先で10階のボタンを押せるので最上階まで行ける。",
-    hint: "雨の日にだけ持っている「ある道具」がポイントです。"
-  },
-  {
-    question: "男がトンネルを抜けた瞬間、乗っていた列車から飛び降りて自殺した。男は失恋や借金で悩んでいたわけではない。なぜ？",
-    answer: "男は目が見えない盲目だったが、手術を受けて視力を取り戻し、退院の帰りの列車に乗っていた。トンネルに入って急に視界が真っ暗になった時、手術が失敗して再び盲目に戻ってしまったと絶望し、衝動的に飛び降りてしまった。（直後にトンネルを抜けたがすでに遅かった）",
-    hint: "男の身体の状態と、トンネル特有の現象が結びついています。"
-  },
-  {
-    question: "部屋の中で2本のロウソクが燃えていた。窓から風が吹き込んで1本が消えた。男が窓を閉めたあと、部屋には最終的に何本のロウソクが残っただろう？",
-    answer: "1本。風で消えたロウソクは燃え尽きずにそのまま残るが、消えなかったもう1本のロウソクは燃え尽きて無くなってしまうから。",
-    hint: "「残った」とはどういう状態を指しているでしょう？"
-  },
-  {
-    question: "あるテストで、100点を取った生徒が先生に激怒され、0点を取った生徒が褒められた。カンニングや不正は一切ない。どんなテストだった？",
-    answer: "「誤字脱字・間違い探しテスト」または「視力検査・健康診断の減点テスト」、あるいは「健康診断で虫歯の数を数える検査」だった。見つかった数が多いほど悪かった。",
-    hint: "テストの点数が高いほど良くないものとは何でしょう？"
-  },
-  {
-    question: "ある富豪が残した遺言書には『全財産を最も愛する者に譲る』とだけ書かれていた。親族たちが奪い合いを始めたが、最終的に財産を受け取ったのは人間ではなかった。なぜ？",
-    answer: "富豪が飼っていたペットの犬（または猫）だった。富豪は生前、親族に不信感を抱き、ペットに信託財産として相続させる法的手続きを整えていた。",
-    hint: "富豪が最も愛していた存在は人間だったでしょうか？"
-  },
-  {
-    question: "ある砂漠の真ん中で、全裸の男が1本の折れたマッチを握りしめて死んでいた。周りには足跡も荷物もない。男はどうして死んだのか？",
-    answer: "男は気球に乗っていたが、気球の高度が下がり墜落の危機に瀕した。荷物を捨て、服を脱いで捨てても重さに耐えられず、最後に乗員同士でマッチのくじ引きをして、折れたマッチ（短いマッチ）を引いた者が飛び降りるルールにしたため。",
-    hint: "男は上空から落ちてきました。なぜ全裸で、折れたマッチを持っていたのでしょう？"
-  },
-  {
-    question: "ある男性が美容院に入り、「短く切ってください」と頼んだ。美容師はハサミを一切使わずに男性の髪を完璧に短くした。どうやった？",
-    answer: "男性はカツラ（ウィッグ）をつけていたので、美容師はカツラを頭から外しただけだった。",
-    hint: "男性の髪の毛そのものに仕掛けがあります。"
-  },
-  {
-    question: "深夜、誰もいない美術館の展示室で、高価な名画が突然床に落ちて割れた。泥棒も地震も風もない。なぜ落ちた？",
-    answer: "展示室を飛んでいた虫（ハエや蛾など）が名画の額縁に止まり、微妙な重さのバランスや劣化したワイヤーの限界を超えて切れてしまった。",
-    hint: "人間以外の小さな生き物が関わっています。"
-  },
-  {
-    question: "あるプロのパイロットが、快晴の昼間に視界良好な平野の上空を飛んでいた。突如計器がすべて正常にもかかわらず、機体を地面に急降下させて激突させた。パイロットは正気でテロでもない。なぜ？",
-    answer: "彼は農薬散布用の飛行機を操縦しており、地面すれすれまで急降下して農薬を散布するいつもの業務中だった（墜落ではなく、低空飛行訓練や散布飛行）。",
-    hint: "「激突させた」のではなく、地面にギリギリまで近づく仕事でした。"
-  },
-  {
-    question: "ある母親が自分の子供に毎日毒入りの料理を食べさせていた。しかし子供は病気にもならず健康に育った。なぜ？",
-    answer: "毒とは蜂の毒（または微量の抗原）などアレルギー治療や免疫をつけるための微量療法だった。あるいは毒とは「虫歯予防のフッ素」や「毒気味の苦い薬」の比喩だった。",
-    hint: "毒の量や目的に秘密があります。"
-  },
-  {
-    question: "男は毎日鏡を見るたびに涙を流していた。しかし男は悲しんでいるわけでも目を痛めているわけでもない。なぜ？",
-    answer: "男は役者（俳優）で、鏡の前で泣く演技の特訓・練習を毎日繰り返していたから。",
-    hint: "男の職業は何でしょう？"
-  },
-  {
-    question: "あるレストランでは、注文した料理を一切食べずに帰る客にだけ割引クーポンを配っている。どんなレストラン？",
-    answer: "超激辛チャレンジの店（完食できたら無料、食べきれなかったら通常料金だが再挑戦クーポンを配る）、または食品サンプルや撮影スタジオ用のレストラン。",
-    hint: "完食できなかったことに対するサービスです。"
-  },
-  {
-    question: "ある男がビルの屋上からロープ一本でぶら下がっていた。通りかかった警官が見ていたが、助けようとも逮捕しようともしなかった。なぜ？",
-    answer: "男はビルの窓清掃員で、安全ベルトとロープをつけて通常業務をしていたから。",
-    hint: "警官にとって全く事件性がありませんでした。"
-  },
-  {
-    question: "ある本を読んだ人々が、全員同じページで本を逆さまにした。誤植や印刷ミスではない。なぜ？",
-    answer: "そのページに上下逆さまの地図や、逆さ絵（騙し絵・アンビグラム）が掲載されていたから。",
-    hint: "そのページに描かれていた図や絵の特徴は何でしょう？"
-  },
-  {
-    question: "男は時計を持っていなかったが、部屋にいながら正確な時間を秒単位で知ることができた。スマホもテレビもラジオもない。どうやって？",
-    answer: "部屋の窓の外に、時報を知らせる教会の鐘や大きなからくり時計、または電車の発車ベルが秒単位で聞こえていたから。",
-    hint: "外から聞こえてくる「音」が正確でした。"
-  },
-  {
-    question: "あるタクシー運転手が一方通行の道路を逆走し、信号無視をしたが、パトカーに見つかっても捕まらなかった。なぜ？",
-    answer: "タクシー運転手は車を運転しておらず、歩いて移動していたから。",
-    hint: "運転手は車に乗っていたでしょうか？"
-  },
-  {
-    question: "二人乗りのボートに3人の大人が乗ったが、沈むことも違反で捕まることもなかった。なぜ？",
-    answer: "そのうちの2人が夫婦で、もう1人が生まれたばかりの赤ちゃん（乳児）だった、または乗ったのは順番に（1人降りて交代で）乗ったから。",
-    hint: "3人は同時に乗ったでしょうか？あるいは乗客の組み合わせは？"
-  },
-  {
-    question: "男は部屋の電気を消して寝た。翌朝起きて窓の外を見ると、大惨事が起きており、男は頭を抱えて絶望した。なぜ？",
-    answer: "男は灯台の管理人だった。誤って灯台の明かりを消してしまったため、夜間に船が座礁・難破してしまったから。",
-    hint: "男の部屋にあった電灯は、普通の一軒家の電灯ではありませんでした。"
-  }
-];
-
-// 全18タイトルのゲームデータ
+// 全17タイトルの対戦型ゲームデータ
 export const ALL_GAMES: Game[] = [
   {
     id: "chin-chin-samurai",
@@ -139,6 +10,7 @@ export const ALL_GAMES: Game[] = [
     description: "指をさされた言葉に合わせて瞬時にアクション！言われた言葉と違うポーズをしたり、反応が遅れたら脱落のアクションゲーム！",
     short_description: "指をさされた言葉に合わせて瞬時にアクション！言われた言葉と違うポーズをしたり、反応が遅れたら脱落のアクションゲーム！",
     created_at: new Date().toISOString(),
+    matchEngineType: "quick_elimination",
     master_tools: ["elimination_tracker"],
     rules: [
       "親が誰か一人を指さしながら『ちんちん』『おちんちん』『さむらい』『ちんちん侍』のいずれかの言葉を言います。",
@@ -153,6 +25,7 @@ export const ALL_GAMES: Game[] = [
       "【ちんちん侍】➔ 全員で『ちんちん侍！』と叫ぶ"
     ],
     metadata: {
+      matchEngineType: "quick_elimination",
       tools: ["elimination"],
       callExample: "【ちんちん】➔ アクション『なし』（そのまま速やかに次の人を指さす）\n【おちんちん】➔ アクション『びろ〜ん』（ポーズをしてから次の人を指さす）\n【さむらい】➔ アクション『シャキーン』（ポーズをしてから次の人を指さす）\n【ちんちん侍】➔ 全員で『ちんちん侍！』と叫ぶ",
       ruleSummary: [
@@ -171,7 +44,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 8,
     description: "テレビでおなじみの列車リズムゲーム！\n「めちゃギントン！めちゃギントン！」のリズムに乗せて、前の人が指定したお題（乗り物や動物）の「音・鳴き声」を即座に擬音で再現します！",
     created_at: new Date().toISOString(),
+    matchEngineType: "tool_assisted",
     metadata: {
+      matchEngineType: "tool_assisted",
       tools: ["bpm", "prompt", "score"],
       defaultBpm: 115,
       callExample: "全員「めちゃギントン！めちゃギントン！」\nA君「電車！」（B君を指名）\nB君「ガタンゴトン！」「パトカー！」（C君を指名）\nC君「ウーウー！」「猫！」（D君を指名）",
@@ -199,7 +74,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 8,
     description: "伝説のリズムゲーム「スモーキーズ数取団」！\n「1つの〇〇」「2つの〇〇」と数字を増やしながら、指定されたモノの正しい「数え方の単位（助数詞）」をリズムに合わせて言っていきます。",
     created_at: new Date().toISOString(),
+    matchEngineType: "tool_assisted",
     metadata: {
+      matchEngineType: "tool_assisted",
       tools: ["bpm", "prompt", "score"],
       defaultBpm: 105,
       callExample: "全員「ブンブンブブブン！ブンブンブブブン！」\nA君「1つの〜、鉛筆！」\nB君「2本！ 3つの〜、ウサギ！」\nC君「3羽！ 4つの〜、車！」",
@@ -226,7 +103,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 8,
     description: "中毒性抜群のパッパッ手渡しゲーム！\n「ほうれん草が1本」「ほうれん草が2本」と言いながら、手元のほうれん草を誰かにパス。2本同時に渡されたら両手を駆使して大混乱！",
     created_at: new Date().toISOString(),
+    matchEngineType: "quick_elimination",
     metadata: {
+      matchEngineType: "quick_elimination",
       tools: ["bpm", "score"],
       defaultBpm: 120,
       callExample: "A君「ほうれん草が1本（B君へ両手を伸ばす）」\nB君「ほうれん草が2本（C君とD君へ片手ずつ伸ばす）」\nC君＆D君（同時に次の人へほうれん草をパス！）",
@@ -246,7 +125,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 8,
     description: "手拍子のリズムに合わせて、指定された文字やお題に合う単語をパンパンと答えていくゲーム！\nお題ガチャを使えば「あから始まる言葉」「赤いもの」などが次々飛び出します。",
     created_at: new Date().toISOString(),
+    matchEngineType: "tool_assisted",
     metadata: {
+      matchEngineType: "tool_assisted",
       tools: ["prompt", "bpm", "score"],
       defaultBpm: 110,
       callExample: "手拍子「パン、パン！」\nA君「『あ』から始まるリズムに合わせて！」\n全員「パン、パン！」\nB君「アイス！」\n全員「パン、パン！」\nC君「飴玉！」",
@@ -275,7 +156,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 8,
     description: "「〇〇といえば？」というお題に対して、全員で「せーの！」で一斉に回答！\n全員の心が通じ合って答えがピッタリ一致するまで絶対に終われない協力型パーティーゲームです！",
     created_at: new Date().toISOString(),
+    matchEngineType: "tool_assisted",
     metadata: {
+      matchEngineType: "tool_assisted",
       tools: ["prompt", "score"],
       callExample: "ツールお題「おにぎりの具といえば？」\n全員「せーの……」\nA君「シャケ！」\nB君「シャケ！」\nC君「ツナマヨ！」\n全員「あ〜〜〜惜しい！！もう1回！！」",
       ruleSummary: [
@@ -311,7 +194,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 8,
     description: "シュールで笑いが止まらない！互いの目を見つめ合い、ポーカーフェイスで「キムチ…」と言い合います。\n絶対に笑ってはいけない真剣勝負！タイマーを使って耐えきれるかを競おう。",
     created_at: new Date().toISOString(),
+    matchEngineType: "quick_elimination",
     metadata: {
+      matchEngineType: "quick_elimination",
       tools: ["timer", "score"],
       timerDuration: 30,
       blindTimer: false,
@@ -333,7 +218,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 4,
     description: "リズミカルなじゃんけん進化系！\n「グリン（グー）」「チョリン（チョキ）」「パリン（パー）」とコールしながらポーズを繰り出し、相手と同じ手になった瞬間に「ドン！」と叫んだ方が勝ち！",
     created_at: new Date().toISOString(),
+    matchEngineType: "quick_elimination",
     metadata: {
+      matchEngineType: "quick_elimination",
       tools: ["bpm", "score"],
       defaultBpm: 120,
       callExample: "全員「グリンピース！」（じゃんけん）\n勝者A「グリン！グリン！チョリン！」\n敗者B「チョリン！チョリン！パリン！」\nA「パリン！ドン！」（同じ手になってドンを先に叫び勝利！）",
@@ -353,7 +240,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 6,
     description: "全身または手振りで楽しむじゃんけんポーズバトル！\n「からい（グー）」「中辛（チョキ）」「あまい（パー）」のポーズで相手の心を読め！親と被ったら負けの「あっち向いてホイ」スタイル！",
     created_at: new Date().toISOString(),
+    matchEngineType: "quick_elimination",
     metadata: {
+      matchEngineType: "quick_elimination",
       tools: ["bpm", "score"],
       defaultBpm: 110,
       callExample: "「カレーライス、カレーライス、辛いぞ！」（グーのポーズ）\n親と同じポーズを出してしまった人はアウト！",
@@ -374,7 +263,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 6,
     description: "手拍子でゲージを溜めて必殺技を放つ伝説のコマンドバトル！\n「溜める」「攻撃」「防御」「メガ攻撃」の読み合い。待ち時間の手持ち無沙汰を一撃で熱狂に変える名作！",
     created_at: new Date().toISOString(),
+    matchEngineType: "quick_elimination",
     metadata: {
+      matchEngineType: "quick_elimination",
       tools: ["bpm", "score"],
       defaultBpm: 100,
       callExample: "手拍子「タン、タン！」\n「CCレモン！」（両手胸の前でグー＝チャージ+1）\n「CCアタック！」（相手を指差し＝消費1攻撃）\n「CCバリア！」（腕クロス＝防御）\n「メガアタック！」（両手ビーム＝消費3貫通攻撃）",
@@ -395,7 +286,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 4,
     description: "指を使った超頭脳派陣取りバトル！\n両手の人差し指（1と1）からスタートし、相手の手をタップして自分の数字を合算。ちょうど「5」を作って相手の手を落とせ！",
     created_at: new Date().toISOString(),
+    matchEngineType: "quick_elimination",
     metadata: {
+      matchEngineType: "quick_elimination",
       tools: ["score"],
       callExample: "自分の右手(2)で相手の左手(1)をタッチ → 相手の左手が(3)になる！\nちょうど5になると消滅！両手を消されたら負け！",
       ruleSummary: [
@@ -415,7 +308,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 8,
     description: "言えそうで言えない魔の言葉「あぶりカルビ」！\n「あぶりカルビ」「あぶりカルビ、あぶりカルビ」と回数を増やしながら順番にコール。噛んだ瞬間即アウトの爆笑早口言葉ゲーム！",
     created_at: new Date().toISOString(),
+    matchEngineType: "quick_elimination",
     metadata: {
+      matchEngineType: "quick_elimination",
       tools: ["prompt", "bpm", "score"],
       defaultBpm: 110,
       callExample: "1人目「あぶりカルビ！」\n2人目「あぶりカルビ、あぶりカルビ！」\n3人目「あぶりカルビ、あぶりカルビ、あぶりカルビ！」\n4人目「あぶりカルビ、あぶりばる…ああっ！」（脱落）",
@@ -445,7 +340,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 8,
     description: "予測不能のハイテンポ指名ゲーム！\n「アルゼンチン！」「タンゴ！」と軽快なコールでターゲットを翻弄。フェイントを見破りリズムをキープできるか？！",
     created_at: new Date().toISOString(),
+    matchEngineType: "quick_elimination",
     metadata: {
+      matchEngineType: "quick_elimination",
       tools: ["bpm", "score"],
       defaultBpm: 120,
       callExample: "A君「アルゼンチン！」（B君を指名）\nB君「タンゴ！」（C君を指名）\nC君「タンゴ！」（D君を指名）\nD君「アルゼンチン！」（A君を指名）",
@@ -465,7 +362,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 6,
     description: "脳トレ度MAX！指示に合わせてわざと勝ったり負けたりする反射神経バトル！\n「勝って！」「負けて！」「あいこ！」の瞬時の指示に脳がバグる！",
     created_at: new Date().toISOString(),
+    matchEngineType: "tool_assisted",
     metadata: {
+      matchEngineType: "tool_assisted",
       tools: ["prompt", "timer", "score"],
       callExample: "マスター「じゃんけんポン！（グーを出す）…負けて！」\nプレイヤー「（ワンテンポ遅れて）チョキ！」（大正解！）\nマスター「じゃんけんポン！（チョキを出す）…負けて！」\nプレイヤー「グー！あ、勝っちゃった！！」（アウト！）",
       ruleSummary: [
@@ -494,7 +393,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 8,
     description: "親が心に決めた1〜100のシークレット数字を推理！\nコールされた数字に対して「Up」「Down」のヒントだけを頼りに最短手数で的中させろ！",
     created_at: new Date().toISOString(),
+    matchEngineType: "quick_elimination",
     metadata: {
+      matchEngineType: "quick_elimination",
       tools: ["timer", "score"],
       callExample: "マスター（心の中で『73』に決定）\nA君「50！」→ マスター「Up！」（51〜100に絞られる）\nB君「80！」→ マスター「Down！」（51〜79に絞られる）\nC君「73！」→ マスター「Hit！！お見事！！」",
       ruleSummary: [
@@ -513,7 +414,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 8,
     description: "指定された「最初の文字」と「最後の文字」で言葉を作れ！\n「『あ』で始まって『す』で終わる言葉」→「アイス！」\n文字数制限やタイマーをつけると緊迫感MAXの語彙力バトル！",
     created_at: new Date().toISOString(),
+    matchEngineType: "tool_assisted",
     metadata: {
+      matchEngineType: "tool_assisted",
       tools: ["prompt", "timer", "score"],
       timerDuration: 15,
       blindTimer: false,
@@ -571,7 +474,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 8,
     description: "体内時計の正確さを競い合う人気対戦ゲーム！\n画面の数字を隠した状態で「10秒」ピッタリを狙ってストップ！コンマ何秒の誤差で勝敗が決まるハラハラドキドキの戦い！",
     created_at: new Date().toISOString(),
+    matchEngineType: "tool_assisted",
     metadata: {
+      matchEngineType: "tool_assisted",
       tools: ["timer", "score"],
       timerDuration: 10,
       blindTimer: true,
@@ -584,30 +489,5 @@ export const ALL_GAMES: Game[] = [
       ],
       tags: ["体内時計", "ブラインドタイマー", "反射神経", "1台で遊べる"]
     }
-  },
-  {
-    id: "sea-turtle-soup",
-    title: "ウミガメのスープ",
-    min_players: 2,
-    max_players: 8,
-    description: "水平思考（ラテラルシンキング）の王道推理ゲーム！\n出題者に「はい」「いいえ」で答えられる質問を繰り返し、不可解な状況の隠された真相を暴き出せ！良問25選を完全収録！",
-    created_at: new Date().toISOString(),
-    metadata: {
-      tools: ["prompt", "timer", "score"],
-      callExample: "出題者「男がレストランでウミガメのスープを飲んで自殺した。なぜ？」\n質問者「男は一人で来店しましたか？」→ 出題者「はい」\n質問者「スープに毒は入っていましたか？」→ 出題者「いいえ、関係ありません」\n質問者「男は過去に遭難したことがありますか？」→ 出題者「はい！重要な質問です！」",
-      ruleSummary: [
-        "1人が出題者（GM）となり、問題とお題の真相をスマホで確認します",
-        "他のプレイヤーは出題者に自由に質問ができます",
-        "ただし出題者は「はい」「いいえ」「関係ありません」の3種類でしか答えられません",
-        "質問を重ねて事実のピースを集め、事件の真実をすべて言い当てたら正解・勝利！"
-      ],
-      tags: ["推理", "水平思考", "クイズ", "じっくり"]
-    }
   }
 ];
-
-// 初期化時にウミガメのスープにお題リストを設定
-const seaTurtle = ALL_GAMES.find((g) => g.id === "sea-turtle-soup");
-if (seaTurtle && seaTurtle.metadata) {
-  seaTurtle.metadata.promptList = SEA_TURTLE_QUESTIONS;
-}

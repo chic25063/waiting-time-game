@@ -19,7 +19,7 @@ export const supabase = createClient(
   supabaseAnonKey || "placeholder-anon-key"
 );
 
-// 全18タイトルをフォールバック兼シードデータとして使用
+// 全17タイトルの対戦ゲームをフォールバック兼シードデータとして使用
 export const FALLBACK_GAMES: Game[] = ALL_GAMES;
 
 /**
