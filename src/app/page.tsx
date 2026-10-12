@@ -159,9 +159,6 @@ export default function Home() {
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-200 via-pink-300 to-indigo-200">
             マチジカン！
           </h1>
-          <p className="text-slate-300 text-xs sm:text-sm mt-1.5">
-            遊べるゲームマスターツール＆道具ゼロの暇つぶし集（全19種）
-          </p>
         </header>
 
         {/* コントロールカード */}
