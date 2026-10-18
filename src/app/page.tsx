@@ -110,9 +110,6 @@ export default function Home() {
           <h1 className="text-4xl sm:text-5xl font-black tracking-tight bg-gradient-to-r from-rose-400 via-amber-300 to-indigo-400 bg-clip-text text-transparent">
             マチジカン！
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 font-medium">
-            1台のスマホで楽しむ、待ち時間専用パーティー対戦エンジン
-          </p>
         </div>
 
         {/* 2大対戦モードカード */}
