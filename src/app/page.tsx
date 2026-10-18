@@ -2,45 +2,41 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import confetti from "canvas-confetti";
 import {
+  Swords,
   Users,
-  Shuffle,
-  Clock,
-  HelpCircle,
-  Database,
-  PartyPopper,
-  Info,
   Play,
-  ArrowRight,
   ListFilter,
   Search,
-  Tag,
+  Database,
+  Info,
+  Sparkles,
+  Flame,
+  Trophy,
+  Skull,
+  Zap,
 } from "lucide-react";
-import { supabase, isSupabaseConfigured, FALLBACK_GAMES, getAllGames } from "@/lib/supabase";
+import { isSupabaseConfigured, getAllGames } from "@/lib/supabase";
 import { ALL_GAMES } from "@/data/games";
 import { Game } from "@/types/game";
-import SessionScoreHeader from "@/components/session/SessionScoreHeader";
-import { useGameSession } from "@/hooks/useGameSession";
+import DuelSetupModal from "@/components/home/DuelSetupModal";
+import PartySetupModal from "@/components/home/PartySetupModal";
 
-const PLAYER_OPTIONS = [2, 3, 4, 5, 6] as const;
+const PLAYER_OPTIONS = [2, 3, 4, 5, 6, 7, 8] as const;
 
 export default function Home() {
-  const { setPlayerCount } = useGameSession();
-  const [selectedPlayers, setSelectedPlayers] = useState<number>(3);
-  const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [allGameList, setAllGameList] = useState<Game[]>(ALL_GAMES);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [hasSearched, setHasSearched] = useState<boolean>(false);
   const [isConfigured, setIsConfigured] = useState<boolean>(false);
+  const [isDuelModalOpen, setIsDuelModalOpen] = useState<boolean>(false);
+  const [isPartyModalOpen, setIsPartyModalOpen] = useState<boolean>(false);
+
+  // カタログ用ステート
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [catalogPlayerFilter, setCatalogPlayerFilter] = useState<number | null>(null);
   const [showCatalog, setShowCatalog] = useState<boolean>(false);
 
   useEffect(() => {
     setIsConfigured(isSupabaseConfigured());
-    // 全ゲームリストをロード（Supabase連携時は最新を取得）
     async function initGames() {
       const games = await getAllGames();
       setAllGameList(games);
@@ -48,295 +44,147 @@ export default function Home() {
     initGames();
   }, []);
 
-  const triggerConfetti = () => {
-    try {
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.75 },
-        colors: ["#38bdf8", "#818cf8", "#f472b6", "#fbbf24"],
-      });
-    } catch {
-      // Confetti fallback
-    }
-  };
-
-  const handleFindGame = async () => {
-    setLoading(true);
-    setErrorMsg(null);
-
-    try {
-      let candidateGames: Game[] = [];
-
-      if (isConfigured) {
-        // Supabase DB から該当人数にマッチするゲームを取得
-        const { data, error } = await supabase
-          .from("games")
-          .select("*")
-          .lte("min_players", selectedPlayers)
-          .gte("max_players", selectedPlayers);
-
-        if (error || !data || data.length === 0) {
-          candidateGames = allGameList.filter(
-            (g) =>
-              g.min_players <= selectedPlayers &&
-              g.max_players >= selectedPlayers
-          );
-        } else {
-          // metadata をローカルデータ等で補完
-          candidateGames = data.map((item) => {
-            const local = allGameList.find((g) => g.id === item.id);
-            return {
-              ...item,
-              metadata: item.metadata || local?.metadata,
-            } as Game;
-          });
-        }
-      } else {
-        // Supabase未設定時は最新の全ゲームデータを使用
-        candidateGames = allGameList.filter(
-          (g) =>
-            g.min_players <= selectedPlayers &&
-            g.max_players >= selectedPlayers
-        );
-      }
-
-      if (candidateGames.length === 0) {
-        setErrorMsg(`${selectedPlayers}人で遊べるゲームが見つかりませんでした。`);
-        setSelectedGame(null);
-      } else {
-        // 現在選択中のゲームとできるだけ被らないようにランダム抽出
-        const filtered =
-          candidateGames.length > 1 && selectedGame
-            ? candidateGames.filter((g) => g.id !== selectedGame.id)
-            : candidateGames;
-
-        const randomIndex = Math.floor(Math.random() * filtered.length);
-        const chosen = filtered[randomIndex];
-        setSelectedGame(chosen);
-        triggerConfetti();
-      }
-    } catch (err) {
-      console.error(err);
-      setErrorMsg("ゲームの取得中にエラーが発生しました。");
-    } finally {
-      setLoading(false);
-      setHasSearched(true);
-    }
-  };
-
-  // カタログ用フィルター
+  // カタログの絞り込み
   const filteredCatalog = useMemo(() => {
-    return allGameList.filter((game) => {
-      // 人数フィルター
-      if (
-        catalogPlayerFilter !== null &&
-        (game.min_players > catalogPlayerFilter || game.max_players < catalogPlayerFilter)
-      ) {
-        return false;
-      }
-      // 検索ワードフィルター
-      if (searchQuery.trim() !== "") {
+    return allGameList.filter((g) => {
+      if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const titleMatch = game.title.toLowerCase().includes(q);
-        const descMatch = game.description.toLowerCase().includes(q);
-        const tagMatch = game.metadata?.tags?.some((t) => t.toLowerCase().includes(q));
-        if (!titleMatch && !descMatch && !tagMatch) return false;
+        const matchTitle = g.title.toLowerCase().includes(q);
+        const matchTags = g.metadata?.tags?.some((t) => t.toLowerCase().includes(q));
+        if (!matchTitle && !matchTags) return false;
+      }
+      if (catalogPlayerFilter !== null) {
+        if (g.min_players > catalogPlayerFilter || g.max_players < catalogPlayerFilter) {
+          return false;
+        }
       }
       return true;
     });
-  }, [allGameList, catalogPlayerFilter, searchQuery]);
+  }, [allGameList, searchQuery, catalogPlayerFilter]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-950 text-white flex flex-col justify-between p-4 sm:p-6 lg:p-8">
-      {/* 背景装飾 */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 opacity-30">
-        <div className="absolute -top-32 -left-32 w-96 h-96 bg-purple-500 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 -right-32 w-96 h-96 bg-pink-500 rounded-full blur-3xl" />
-        <div className="absolute -bottom-32 left-1/3 w-96 h-96 bg-blue-500 rounded-full blur-3xl" />
-      </div>
-
-      <div className="max-w-md w-full mx-auto flex-1 flex flex-col justify-center py-4">
-        {/* 通算スコアバー */}
-        <SessionScoreHeader />
-
-        {/* ヘッダーエリア */}
-        <header className="text-center mb-6">
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-200 via-pink-300 to-indigo-200">
+    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-white flex flex-col justify-between p-4 sm:p-6 font-sans">
+      <div className="w-full max-w-xl mx-auto space-y-6 pt-4">
+        {/* ロゴ＆タグライン */}
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-bold tracking-wide animate-pulse">
+            <Zap className="w-3.5 h-3.5 text-rose-400" />
+            <span>対戦型ゲームマスター 2.0</span>
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-black tracking-tight bg-gradient-to-r from-rose-400 via-amber-300 to-indigo-400 bg-clip-text text-transparent">
             マチジカン！
           </h1>
-        </header>
+          <p className="text-xs sm:text-sm text-slate-400 font-medium">
+            1台のスマホで楽しむ、待ち時間専用パーティー対戦エンジン
+          </p>
+        </div>
 
-        {/* コントロールカード */}
-        <div className="bg-white/10 backdrop-blur-xl border border-white/15 rounded-3xl p-5 sm:p-6 shadow-2xl transition-all">
-          {/* 人数選択 */}
-          <div className="mb-6">
-            <label className="flex items-center gap-2 text-sm font-semibold text-purple-200 mb-3">
-              <Users className="w-4 h-4 text-purple-300" />
-              <span>いま何人いる？</span>
-            </label>
-            <div className="grid grid-cols-5 gap-2">
-              {PLAYER_OPTIONS.map((count) => {
-                const isSelected = selectedPlayers === count;
-                return (
-                  <button
-                    key={count}
-                    type="button"
-                    onClick={() => {
-                      setSelectedPlayers(count);
-                      setPlayerCount(count);
-                    }}
-                    className={`py-2.5 rounded-2xl text-sm font-bold transition-all duration-200 flex flex-col items-center justify-center gap-0.5 shadow-sm active:scale-95 ${
-                      isSelected
-                        ? "bg-gradient-to-b from-amber-400 to-orange-500 text-slate-950 shadow-orange-500/30 shadow-lg scale-105 border border-amber-300 ring-2 ring-amber-300/40"
-                        : "bg-white/10 hover:bg-white/20 text-slate-200 border border-white/10"
-                    }`}
-                  >
-                    <span>{count}</span>
-                    <span className="text-[10px] font-normal opacity-80">人</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 検索ボタン */}
+        {/* 2大対戦モードカード */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* 1対1 対戦モード */}
           <button
             type="button"
-            disabled={loading}
-            onClick={handleFindGame}
-            className={`w-full py-4 px-6 rounded-2xl font-black text-base sm:text-lg flex items-center justify-center gap-2.5 transition-all duration-200 shadow-xl active:scale-[0.98] ${
-              loading
-                ? "bg-purple-700/60 cursor-not-allowed opacity-80"
-                : "bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 hover:from-pink-400 hover:via-rose-400 hover:to-amber-400 text-white shadow-pink-500/25 hover:shadow-pink-500/40"
-            }`}
+            onClick={() => setIsDuelModalOpen(true)}
+            className="group relative overflow-hidden p-6 rounded-3xl bg-gradient-to-br from-rose-950/80 via-gray-900 to-slate-950 border-2 border-rose-500/40 hover:border-rose-400 text-left transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-rose-500/20 hover:-translate-y-1 active:scale-[0.98] cursor-pointer"
           >
-            {loading ? (
-              <>
-                <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin" />
-                <span>ゲームを選び中...</span>
-              </>
-            ) : (
-              <>
-                <Shuffle className="w-5 h-5 transition-transform group-hover:rotate-180" />
-                <span>{hasSearched ? "別のゲームを探す" : "ゲームを探す！"}</span>
-              </>
-            )}
+            <div className="absolute -right-4 -bottom-4 w-32 h-32 bg-rose-500/10 rounded-full blur-2xl group-hover:bg-rose-500/20 transition-all" />
+            
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform">
+                <Swords className="w-6 h-6" />
+              </div>
+              <span className="text-[11px] font-black px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                2人対戦
+              </span>
+            </div>
+
+            <h2 className="text-xl font-black text-white group-hover:text-rose-200 transition-colors flex items-center gap-1.5">
+              <span>1対1 対戦</span>
+              <span className="text-xs text-rose-400 font-bold">DUEL</span>
+            </h2>
+            <p className="text-xs text-slate-300 font-medium mt-1.5 leading-relaxed">
+              3本先取 or 5本先取！ 1戦ごとに異なるゲームがランダム抽選！
+            </p>
+
+            <div className="mt-4 pt-3 border-t border-rose-500/20 flex items-center justify-between text-xs font-bold text-rose-400">
+              <span className="flex items-center gap-1">
+                <Flame className="w-3.5 h-3.5" />
+                <span>真剣勝負を始める</span>
+              </span>
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </div>
+          </button>
+
+          {/* 多人数 対戦モード */}
+          <button
+            type="button"
+            onClick={() => setIsPartyModalOpen(true)}
+            className="group relative overflow-hidden p-6 rounded-3xl bg-gradient-to-br from-indigo-950/80 via-gray-900 to-slate-950 border-2 border-indigo-500/40 hover:border-indigo-400 text-left transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-indigo-500/20 hover:-translate-y-1 active:scale-[0.98] cursor-pointer"
+          >
+            <div className="absolute -right-4 -bottom-4 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-all" />
+
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
+                <Users className="w-6 h-6" />
+              </div>
+              <span className="text-[11px] font-black px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                3〜8人対応
+              </span>
+            </div>
+
+            <h2 className="text-xl font-black text-white group-hover:text-indigo-200 transition-colors flex items-center gap-1.5">
+              <span>多人数 対戦</span>
+              <span className="text-xs text-indigo-400 font-bold">PARTY</span>
+            </h2>
+            <p className="text-xs text-slate-300 font-medium mt-1.5 leading-relaxed">
+              点数制・勝ち残り・負け残り最弱王決定戦！ 罰ゲーム付きで大熱狂！
+            </p>
+
+            <div className="mt-4 pt-3 border-t border-indigo-500/20 flex items-center justify-between text-xs font-bold text-indigo-400">
+              <span className="flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>グループで盛り上がる</span>
+              </span>
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </div>
           </button>
         </div>
 
-        {/* エラーメッセージ */}
-        {errorMsg && (
-          <div className="mt-4 p-4 rounded-2xl bg-rose-500/20 border border-rose-500/30 text-rose-200 text-xs sm:text-sm text-center">
-            {errorMsg}
+        {/* 特徴ハイライトチップ */}
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="p-2.5 rounded-2xl bg-white/[0.04] border border-white/10">
+            <div className="text-amber-400 text-base font-black">🎲 スロット</div>
+            <div className="text-[10px] text-slate-400 mt-0.5">1戦ごとに競技抽選</div>
           </div>
-        )}
-
-        {/* 提案結果カード */}
-        {selectedGame && !loading && (
-          <div className="mt-6 bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl border border-white/20 rounded-3xl p-5 sm:p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-xs font-semibold">
-                <PartyPopper className="w-3.5 h-3.5" />
-                おすすめゲーム
-              </span>
-              <span className="inline-flex items-center gap-1 text-xs text-purple-200 font-medium bg-white/10 px-2.5 py-1 rounded-full">
-                <Users className="w-3.5 h-3.5" />
-                {selectedGame.min_players}〜{selectedGame.max_players}人対応
-              </span>
-            </div>
-
-            <h2 className="text-xl sm:text-2xl font-black text-white mb-2 tracking-wide">
-              {selectedGame.title}
-            </h2>
-
-            {selectedGame.metadata?.tags && (
-              <div className="flex flex-wrap gap-1 mb-3">
-                {selectedGame.metadata.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="text-[10px] px-2 py-0.5 rounded-md bg-white/10 text-purple-200"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            <div className="bg-slate-950/40 rounded-2xl p-4 border border-white/10 mb-4">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 mb-1.5">
-                <HelpCircle className="w-3.5 h-3.5 text-pink-400" />
-                <span>概要</span>
-              </div>
-              <p className="text-xs sm:text-sm text-slate-200 leading-relaxed whitespace-pre-wrap">
-                {selectedGame.description}
-              </p>
-            </div>
-
-            {/* ゲームマスター開始ボタン（超目立つCTA） */}
-            <div className="space-y-2 mb-3">
-              <Link
-                href={`/games/${selectedGame.id}/play?setup=1&count=${selectedPlayers}`}
-                className="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-pink-500 hover:from-amber-300 hover:via-orange-400 hover:to-pink-400 text-slate-950 font-black text-base flex items-center justify-center gap-2.5 shadow-lg shadow-orange-500/30 active:scale-95 transition-all"
-              >
-                <Play className="w-5 h-5 fill-current text-slate-950" />
-                <span>このゲームを開始する！</span>
-              </Link>
-
-              <div className="grid grid-cols-2 gap-2">
-                <Link
-                  href={`/games/${selectedGame.id}`}
-                  className="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 text-xs font-semibold flex items-center justify-center gap-1.5 border border-white/15 transition-all text-center"
-                >
-                  <span>ルール詳細を見る</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-
-                <button
-                  type="button"
-                  onClick={handleFindGame}
-                  className="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition-all text-xs font-semibold text-purple-100 flex items-center justify-center gap-1.5 border border-white/15"
-                >
-                  <Shuffle className="w-3.5 h-3.5" />
-                  <span>別のを引く</span>
-                </button>
-              </div>
-            </div>
+          <div className="p-2.5 rounded-2xl bg-white/[0.04] border border-white/10">
+            <div className="text-rose-400 text-base font-black">💀 罰ゲーム</div>
+            <div className="text-[10px] text-slate-400 mt-0.5">最弱王を決定</div>
           </div>
-        )}
-
-        {/* 初期未検索時ガイド */}
-        {!hasSearched && !loading && (
-          <div className="mt-6 text-center p-6 rounded-3xl border border-dashed border-white/15 bg-white/[0.02]">
-            <Clock className="w-8 h-8 text-purple-300/60 mx-auto mb-2" />
-            <p className="text-sm font-medium text-slate-300">
-              人数を選んで「ゲームを探す！」を押してね
-            </p>
-            <p className="text-xs text-slate-400 mt-1">
-              メトロノームやお題ガチャなど、実際に遊べるGMツール付き！
-            </p>
+          <div className="p-2.5 rounded-2xl bg-white/[0.04] border border-white/10">
+            <div className="text-indigo-400 text-base font-black">⚙️ BAN機能</div>
+            <div className="text-[10px] text-slate-400 mt-0.5">苦手ゲームを除外</div>
           </div>
-        )}
+        </div>
 
-        {/* 全ゲーム カタログ切り替えトグル */}
-        <div className="mt-6">
+        {/* 全ゲーム カタログ展開トグル */}
+        <div className="pt-2">
           <button
             type="button"
             onClick={() => setShowCatalog((prev) => !prev)}
-            className="w-full py-3 px-4 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 text-xs sm:text-sm font-bold text-purple-200 flex items-center justify-between transition-all"
+            className="w-full py-3.5 px-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs sm:text-sm font-bold text-slate-300 hover:text-white flex items-center justify-between transition-all cursor-pointer"
           >
             <span className="flex items-center gap-2">
-              <ListFilter className="w-4 h-4 text-pink-400" />
-              <span>全{allGameList.length}タイトルから選んで遊ぶ</span>
+              <ListFilter className="w-4 h-4 text-amber-400" />
+              <span>全{allGameList.length}タイトル一覧（ルール確認・個別プレイ）</span>
             </span>
             <span className="text-xs text-slate-400 font-normal">
-              {showCatalog ? "一覧を隠す ▲" : "一覧を表示 ▼"}
+              {showCatalog ? "一覧を閉じる ▲" : "一覧を見る ▼"}
             </span>
           </button>
 
           {/* カタログ展開エリア */}
           {showCatalog && (
-            <div className="mt-3 p-4 rounded-3xl bg-slate-950/60 border border-white/15 backdrop-blur-xl animate-in fade-in space-y-4">
+            <div className="mt-3 p-4 rounded-3xl bg-slate-950/80 border border-white/10 backdrop-blur-xl animate-in fade-in space-y-4">
               {/* 検索・絞り込みバー */}
               <div className="space-y-2">
                 <div className="relative">
@@ -346,7 +194,7 @@ export default function Home() {
                     placeholder="ゲーム名、タグで検索..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-white/10 border border-white/10 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-purple-400"
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-400"
                   />
                 </div>
 
@@ -356,10 +204,10 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={() => setCatalogPlayerFilter(null)}
-                    className={`px-2.5 py-1 rounded-lg font-bold shrink-0 transition-all ${
+                    className={`px-2.5 py-1 rounded-lg font-bold shrink-0 transition-all cursor-pointer ${
                       catalogPlayerFilter === null
-                        ? "bg-purple-500 text-white"
-                        : "bg-white/10 text-slate-300"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-white/10 text-slate-300 hover:text-white"
                     }`}
                   >
                     全員
@@ -368,11 +216,13 @@ export default function Home() {
                     <button
                       key={p}
                       type="button"
-                      onClick={() => setCatalogPlayerFilter(catalogPlayerFilter === p ? null : p)}
-                      className={`px-2.5 py-1 rounded-lg font-bold shrink-0 transition-all ${
+                      onClick={() =>
+                        setCatalogPlayerFilter(catalogPlayerFilter === p ? null : p)
+                      }
+                      className={`px-2.5 py-1 rounded-lg font-bold shrink-0 transition-all cursor-pointer ${
                         catalogPlayerFilter === p
-                          ? "bg-purple-500 text-white"
-                          : "bg-white/10 text-slate-300"
+                          ? "bg-indigo-600 text-white"
+                          : "bg-white/10 text-slate-300 hover:text-white"
                       }`}
                     >
                       {p}人
@@ -381,17 +231,17 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* ゲームカードグリッド */}
+              {/* ゲームカードリスト */}
               <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
                 {filteredCatalog.map((g) => (
                   <div
                     key={g.id}
-                    className="p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all flex items-center justify-between gap-2"
+                    className="p-3 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 transition-all flex items-center justify-between gap-2"
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <h3 className="text-sm font-bold text-white truncate">{g.title}</h3>
-                        <span className="text-[10px] text-purple-300 px-1.5 py-0.5 rounded bg-white/10 shrink-0">
+                        <span className="text-[10px] text-slate-300 px-1.5 py-0.5 rounded bg-white/10 shrink-0">
                           {g.min_players}〜{g.max_players}人
                         </span>
                       </div>
@@ -412,7 +262,9 @@ export default function Home() {
                         詳細
                       </Link>
                       <Link
-                        href={`/games/${g.id}/play?setup=1&count=${catalogPlayerFilter || selectedPlayers || g.min_players}`}
+                        href={`/games/${g.id}/play?setup=1&count=${
+                          catalogPlayerFilter || g.min_players
+                        }`}
                         className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 text-xs font-black flex items-center gap-1 shadow-sm active:scale-95"
                       >
                         <Play className="w-3 h-3 fill-current" />
@@ -433,7 +285,7 @@ export default function Home() {
         </div>
 
         {/* Supabase 接続状況フッター */}
-        <div className="mt-8 flex items-center justify-center gap-2 text-[11px] text-slate-400">
+        <div className="pt-4 flex items-center justify-center gap-2 text-[11px] text-slate-400">
           <Database className="w-3.5 h-3.5 text-emerald-400" />
           {isConfigured ? (
             <span className="text-emerald-300 font-medium">
@@ -448,9 +300,20 @@ export default function Home() {
         </div>
       </div>
 
-      <footer className="text-center text-[10px] text-slate-500 py-2">
-        マチジカン！ - ゲームマスターツール v0.2.0
+      {/* フッター */}
+      <footer className="text-center text-[10px] text-slate-500 py-3">
+        マチジカン！ - 対戦特化ゲームマスター v2.0
       </footer>
+
+      {/* 設定モーダル群 */}
+      <DuelSetupModal
+        isOpen={isDuelModalOpen}
+        onClose={() => setIsDuelModalOpen(false)}
+      />
+      <PartySetupModal
+        isOpen={isPartyModalOpen}
+        onClose={() => setIsPartyModalOpen(false)}
+      />
     </main>
   );
 }

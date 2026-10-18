@@ -13,9 +13,10 @@ const geistMono = Geist_Mono({
 });
 
 import { GameSessionProvider } from "@/context/GameSessionContext";
+import { ActiveMatchProvider } from "@/context/ActiveMatchContext";
 
 export const metadata: Metadata = {
-  title: "マチジカン！- 待ち時間ゲームマスター",
+  title: "マチジカン！- 待ち時間対戦ゲームマスター",
   description: "テーマパークや待ち時間に、1台のスマホを囲んで道具なしで対戦できるゲームマスターWebアプリ",
 };
 
@@ -26,7 +27,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <GameSessionProvider>{children}</GameSessionProvider>
+        <GameSessionProvider>
+          <ActiveMatchProvider>{children}</ActiveMatchProvider>
+        </GameSessionProvider>
       </body>
     </html>
   );
