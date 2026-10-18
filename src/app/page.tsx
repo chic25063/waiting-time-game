@@ -183,22 +183,6 @@ export default function Home() {
           </button>
         </div>
 
-        {/* 特徴ハイライトチップ */}
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="p-2.5 rounded-2xl bg-white/[0.04] border border-white/10">
-            <div className="text-amber-400 text-base font-black">🎲 スロット</div>
-            <div className="text-[10px] text-slate-400 mt-0.5">1戦ごとに競技抽選</div>
-          </div>
-          <div className="p-2.5 rounded-2xl bg-white/[0.04] border border-white/10">
-            <div className="text-rose-400 text-base font-black">💀 罰ゲーム</div>
-            <div className="text-[10px] text-slate-400 mt-0.5">最弱王を決定</div>
-          </div>
-          <div className="p-2.5 rounded-2xl bg-white/[0.04] border border-white/10">
-            <div className="text-indigo-400 text-base font-black">⚙️ BAN機能</div>
-            <div className="text-[10px] text-slate-400 mt-0.5">苦手ゲームを除外</div>
-          </div>
-        </div>
-
         {/* 全ゲーム カタログ展開トグル & オリジナルゲーム作成ボタン */}
         <div className="pt-2 space-y-3">
           <div className="flex gap-2">
