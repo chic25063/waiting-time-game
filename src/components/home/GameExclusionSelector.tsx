@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { ALL_GAMES } from "@/data/games";
-import { CheckSquare, Square, Filter } from "lucide-react";
+import { getAllGamesWithCustom } from "@/lib/customGames";
+import { CheckSquare, Square, Filter, Star } from "lucide-react";
 
 interface GameExclusionSelectorProps {
   playerCount: number;
@@ -15,12 +16,22 @@ export default function GameExclusionSelector({
   excludedGameIds,
   onChangeExcludedIds,
 }: GameExclusionSelectorProps) {
-  // この人数で遊べるゲーム一覧
+  const [allGames, setAllGames] = useState(() => getAllGamesWithCustom());
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setAllGames(getAllGamesWithCustom());
+    };
+    window.addEventListener("customGamesUpdated", handleUpdate);
+    return () => window.removeEventListener("customGamesUpdated", handleUpdate);
+  }, []);
+
+  // この人数で遊べるゲーム一覧（自作ゲームを含む）
   const eligibleGames = useMemo(() => {
-    return ALL_GAMES.filter(
+    return allGames.filter(
       (g) => g.min_players <= playerCount && g.max_players >= playerCount
     );
-  }, [playerCount]);
+  }, [allGames, playerCount]);
 
   const EXCLUSION_STORAGE_KEY = "machajikan_excluded_games_v1";
 
@@ -124,7 +135,12 @@ export default function GameExclusionSelector({
               ) : (
                 <Square className="w-3.5 h-3.5 text-gray-600 shrink-0" />
               )}
-              <span className="truncate font-medium">{g.title}</span>
+              <span className="truncate font-medium flex-1">{g.title}</span>
+              {g.isCustom && (
+                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold shrink-0">
+                  自作
+                </span>
+              )}
             </button>
           );
         })}

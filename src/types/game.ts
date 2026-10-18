@@ -47,6 +47,7 @@ export interface Game {
   rules?: string[];
   call_examples?: string[];
   master_tools?: (ToolType | string)[];
+  isCustom?: boolean; // ユーザー自作ゲームフラグ
 }
 
 export type PlayerCountOption = 2 | 3 | 4 | 5 | 6;

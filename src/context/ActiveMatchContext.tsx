@@ -8,6 +8,7 @@ import {
   MatchPlayer,
 } from "@/types/matchMode";
 import { ALL_GAMES } from "@/data/games";
+import { getAllGamesWithCustom } from "@/lib/customGames";
 
 const ACTIVE_MATCH_STORAGE_KEY = "machajikan_active_match_v1";
 
@@ -33,16 +34,18 @@ function pickRandomGame(
   excludedIds: string[],
   previousGameId?: string
 ): string {
+  const allAvailableGames = getAllGamesWithCustom();
+
   // 人数に適合し、除外リストに入っていないゲームを抽出
-  const pool = ALL_GAMES.filter((g) => {
+  const pool = allAvailableGames.filter((g) => {
     if (excludedIds.includes(g.id)) return false;
     return g.min_players <= playerCount && g.max_players >= playerCount;
   });
 
   if (pool.length === 0) {
     // もし全部除外されていた場合の安全フォールバック（人数に合う最初のゲーム）
-    const fallback = ALL_GAMES.find((g) => g.min_players <= playerCount && g.max_players >= playerCount);
-    return fallback ? fallback.id : ALL_GAMES[0].id;
+    const fallback = allAvailableGames.find((g) => g.min_players <= playerCount && g.max_players >= playerCount);
+    return fallback ? fallback.id : allAvailableGames[0]?.id || ALL_GAMES[0].id;
   }
 
   // 直前のゲームとできるだけ被らないように抽選

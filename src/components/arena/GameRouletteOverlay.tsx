@@ -3,8 +3,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Game } from "@/types/game";
 import { ALL_GAMES } from "@/data/games";
+import { getAllGamesWithCustom } from "@/lib/customGames";
 import { sound } from "@/lib/sound";
-import { Sparkles, Dices, Flame, FastForward } from "lucide-react";
+import { Sparkles, Dices, Flame, FastForward, Star } from "lucide-react";
 
 interface GameRouletteOverlayProps {
   isOpen: boolean;
@@ -34,11 +35,12 @@ export default function GameRouletteOverlay({
     let speed = 60; // 初速 (ms)
     let count = 0;
     const maxCount = 28; // 約2.5秒で停止
+    const pool = getAllGamesWithCustom();
 
     const spin = () => {
       intervalRef.current = setTimeout(() => {
-        const randomIndex = Math.floor(Math.random() * ALL_GAMES.length);
-        setDisplayGame(ALL_GAMES[randomIndex]);
+        const randomIndex = Math.floor(Math.random() * pool.length);
+        setDisplayGame(pool[randomIndex] || ALL_GAMES[0]);
         sound.playTick();
         count++;
 
@@ -121,6 +123,13 @@ export default function GameRouletteOverlay({
           >
             {displayGame.title}
           </h2>
+
+          {displayGame.isCustom && (
+            <div className="inline-flex items-center gap-1 mt-2 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/50 text-amber-300 text-xs font-black animate-pulse">
+              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              <span>オリジナル自作ゲーム</span>
+            </div>
+          )}
 
           <p className="text-xs sm:text-sm text-slate-300 mt-3 line-clamp-2 leading-relaxed">
             {displayGame.short_description || displayGame.description}

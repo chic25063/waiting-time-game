@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import {
   Swords,
@@ -12,37 +12,71 @@ import {
   Info,
   Sparkles,
   Flame,
-  Trophy,
-  Skull,
+  Plus,
+  Edit2,
+  Trash2,
+  Star,
   Zap,
 } from "lucide-react";
 import { isSupabaseConfigured, getAllGames } from "@/lib/supabase";
 import { ALL_GAMES } from "@/data/games";
 import { Game } from "@/types/game";
+import {
+  getAllGamesWithCustom,
+  deleteCustomGame,
+} from "@/lib/customGames";
 import DuelSetupModal from "@/components/home/DuelSetupModal";
 import PartySetupModal from "@/components/home/PartySetupModal";
+import CustomGameModal from "@/components/home/CustomGameModal";
 
 const PLAYER_OPTIONS = [2, 3, 4, 5, 6, 7, 8] as const;
 
 export default function Home() {
-  const [allGameList, setAllGameList] = useState<Game[]>(ALL_GAMES);
+  const [allGameList, setAllGameList] = useState<Game[]>([]);
   const [isConfigured, setIsConfigured] = useState<boolean>(false);
   const [isDuelModalOpen, setIsDuelModalOpen] = useState<boolean>(false);
   const [isPartyModalOpen, setIsPartyModalOpen] = useState<boolean>(false);
+  const [isCustomModalOpen, setIsCustomModalOpen] = useState<boolean>(false);
+  const [gameToEdit, setGameToEdit] = useState<Game | null>(null);
 
   // カタログ用ステート
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [catalogPlayerFilter, setCatalogPlayerFilter] = useState<number | null>(null);
   const [showCatalog, setShowCatalog] = useState<boolean>(false);
 
+  // ゲームリストの読み込み（自作ゲームを含む）
+  const refreshGames = useCallback(async () => {
+    const defaultGames = await getAllGames();
+    const custom = getAllGamesWithCustom().filter((g) => g.isCustom);
+    setAllGameList([...custom, ...defaultGames]);
+  }, []);
+
   useEffect(() => {
     setIsConfigured(isSupabaseConfigured());
-    async function initGames() {
-      const games = await getAllGames();
-      setAllGameList(games);
+    refreshGames();
+
+    const handleCustomUpdate = () => {
+      refreshGames();
+    };
+    window.addEventListener("customGamesUpdated", handleCustomUpdate);
+    return () => window.removeEventListener("customGamesUpdated", handleCustomUpdate);
+  }, [refreshGames]);
+
+  // 自作ゲームの削除
+  const handleDeleteCustomGame = (e: React.MouseEvent, game: Game) => {
+    e.stopPropagation();
+    if (confirm(`「${game.title}」を削除してもよろしいですか？`)) {
+      deleteCustomGame(game.id);
+      refreshGames();
     }
-    initGames();
-  }, []);
+  };
+
+  // 自作ゲームの編集
+  const handleEditCustomGame = (e: React.MouseEvent, game: Game) => {
+    e.stopPropagation();
+    setGameToEdit(game);
+    setIsCustomModalOpen(true);
+  };
 
   // カタログの絞り込み
   const filteredCatalog = useMemo(() => {
@@ -61,6 +95,8 @@ export default function Home() {
       return true;
     });
   }, [allGameList, searchQuery, catalogPlayerFilter]);
+
+  const customGameCount = allGameList.filter((g) => g.isCustom).length;
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-white flex flex-col justify-between p-4 sm:p-6 font-sans">
@@ -166,25 +202,46 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 全ゲーム カタログ展開トグル */}
-        <div className="pt-2">
-          <button
-            type="button"
-            onClick={() => setShowCatalog((prev) => !prev)}
-            className="w-full py-3.5 px-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs sm:text-sm font-bold text-slate-300 hover:text-white flex items-center justify-between transition-all cursor-pointer"
-          >
-            <span className="flex items-center gap-2">
-              <ListFilter className="w-4 h-4 text-amber-400" />
-              <span>全{allGameList.length}タイトル一覧（ルール確認・個別プレイ）</span>
-            </span>
-            <span className="text-xs text-slate-400 font-normal">
-              {showCatalog ? "一覧を閉じる ▲" : "一覧を見る ▼"}
-            </span>
-          </button>
+        {/* 全ゲーム カタログ展開トグル & オリジナルゲーム作成ボタン */}
+        <div className="pt-2 space-y-3">
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setShowCatalog((prev) => !prev)}
+              className="flex-1 py-3.5 px-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs sm:text-sm font-bold text-slate-300 hover:text-white flex items-center justify-between transition-all cursor-pointer"
+            >
+              <span className="flex items-center gap-2">
+                <ListFilter className="w-4 h-4 text-amber-400" />
+                <span>全{allGameList.length}タイトル一覧</span>
+                {customGameCount > 0 && (
+                  <span className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[10px] font-bold">
+                    自作 {customGameCount}件
+                  </span>
+                )}
+              </span>
+              <span className="text-xs text-slate-400 font-normal">
+                {showCatalog ? "一覧を閉じる ▲" : "一覧を見る ▼"}
+              </span>
+            </button>
+
+            {/* ＋ 自作ゲーム追加ボタン */}
+            <button
+              type="button"
+              onClick={() => {
+                setGameToEdit(null);
+                setIsCustomModalOpen(true);
+              }}
+              className="py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-95 transition-all cursor-pointer shrink-0"
+              title="新しいゲームを自作して対戦に混ぜる！"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>ゲーム自作</span>
+            </button>
+          </div>
 
           {/* カタログ展開エリア */}
           {showCatalog && (
-            <div className="mt-3 p-4 rounded-3xl bg-slate-950/80 border border-white/10 backdrop-blur-xl animate-in fade-in space-y-4">
+            <div className="p-4 rounded-3xl bg-slate-950/80 border border-white/10 backdrop-blur-xl animate-in fade-in space-y-4">
               {/* 検索・絞り込みバー */}
               <div className="space-y-2">
                 <div className="relative">
@@ -236,10 +293,20 @@ export default function Home() {
                 {filteredCatalog.map((g) => (
                   <div
                     key={g.id}
-                    className="p-3 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 transition-all flex items-center justify-between gap-2"
+                    className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-2 ${
+                      g.isCustom
+                        ? "bg-gradient-to-r from-amber-950/30 to-gray-900 border-amber-500/40 hover:border-amber-400"
+                        : "bg-white/[0.03] hover:bg-white/[0.06] border-white/5"
+                    }`}
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
+                        {g.isCustom && (
+                          <span className="px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[10px] font-black shrink-0 flex items-center gap-0.5">
+                            <Star className="w-2.5 h-2.5 fill-amber-300" />
+                            <span>自作</span>
+                          </span>
+                        )}
                         <h3 className="text-sm font-bold text-white truncate">{g.title}</h3>
                         <span className="text-[10px] text-slate-300 px-1.5 py-0.5 rounded bg-white/10 shrink-0">
                           {g.min_players}〜{g.max_players}人
@@ -255,12 +322,37 @@ export default function Home() {
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <Link
-                        href={`/games/${g.id}`}
-                        className="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 text-xs font-semibold"
-                      >
-                        詳細
-                      </Link>
+                      {/* 自作ゲームの場合の編集・削除ボタン */}
+                      {g.isCustom && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={(e) => handleEditCustomGame(e, g)}
+                            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 hover:text-amber-300 text-xs transition-all cursor-pointer"
+                            title="編集する"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => handleDeleteCustomGame(e, g)}
+                            className="p-1.5 rounded-lg bg-white/10 hover:bg-rose-950/60 text-slate-400 hover:text-rose-400 text-xs transition-all cursor-pointer"
+                            title="削除する"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </>
+                      )}
+
+                      {!g.isCustom && (
+                        <Link
+                          href={`/games/${g.id}`}
+                          className="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 text-xs font-semibold"
+                        >
+                          詳細
+                        </Link>
+                      )}
+
                       <Link
                         href={`/games/${g.id}/play?setup=1&count=${
                           catalogPlayerFilter || g.min_players
@@ -294,7 +386,7 @@ export default function Home() {
           ) : (
             <span className="text-slate-400 flex items-center gap-1">
               <Info className="w-3 h-3 text-amber-400" />
-              シードデータ（全{allGameList.length}タイトル・お題完備）動作中
+              シードデータ（全{ALL_GAMES.length}タイトル・お題完備）動作中
             </span>
           )}
         </div>
@@ -313,6 +405,14 @@ export default function Home() {
       <PartySetupModal
         isOpen={isPartyModalOpen}
         onClose={() => setIsPartyModalOpen(false)}
+      />
+
+      {/* 自作ゲーム作成・編集モーダル */}
+      <CustomGameModal
+        isOpen={isCustomModalOpen}
+        gameToEdit={gameToEdit}
+        onClose={() => setIsCustomModalOpen(false)}
+        onSaved={() => refreshGames()}
       />
     </main>
   );

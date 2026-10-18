@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useActiveMatch } from "@/context/ActiveMatchContext";
 import { ALL_GAMES } from "@/data/games";
+import { getAllGamesWithCustom } from "@/lib/customGames";
 import ArenaHeader from "@/components/arena/ArenaHeader";
 import ArenaGameHost from "@/components/arena/ArenaGameHost";
 import ArenaJudgeBar from "@/components/arena/ArenaJudgeBar";
@@ -41,9 +42,10 @@ export default function ArenaPage() {
     );
   }
 
-  // 現在の抽選ゲーム
+  // 現在の抽選ゲーム（自作ゲームを含む全プールから取得）
+  const allAvailable = getAllGamesWithCustom();
   const currentGame =
-    ALL_GAMES.find((g) => g.id === state.currentGameId) || ALL_GAMES[0];
+    allAvailable.find((g) => g.id === state.currentGameId) || allAvailable[0] || ALL_GAMES[0];
 
   const handleQuitToHome = () => {
     clearMatch();
