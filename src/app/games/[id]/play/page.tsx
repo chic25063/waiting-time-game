@@ -11,6 +11,10 @@ import { useGameSession } from "@/hooks/useGameSession";
 import SessionScoreHeader from "@/components/session/SessionScoreHeader";
 import QuickEliminationView from "@/components/match/QuickEliminationView";
 import ToolAssistedMatchView from "@/components/match/ToolAssistedMatchView";
+import PrecisionRankMatchView from "@/components/match/PrecisionRankMatchView";
+import TournamentDuelView from "@/components/match/TournamentDuelView";
+import TurnRelayBlitzView from "@/components/match/TurnRelayBlitzView";
+import ConsensusMatchView from "@/components/match/ConsensusMatchView";
 import MatchWinnerModal from "@/components/match/MatchWinnerModal";
 import PlayerRegistrationModal from "@/components/players/PlayerRegistrationModal";
 import {
@@ -253,7 +257,36 @@ function GamePlayContent() {
           </div>
 
           {/* 対戦エンジンに応じた最適化ビュー */}
-          {engineType === "quick_elimination" ? (
+          {engineType === "precision_time_attack" ? (
+            <PrecisionRankMatchView
+              game={game}
+              players={players}
+              onSelectWinner={handleSelectWinner}
+              onOpenRules={() => setShowRuleModal(true)}
+            />
+          ) : engineType === "tournament_duel" ? (
+            <TournamentDuelView
+              game={game}
+              players={players}
+              onSelectWinner={handleSelectWinner}
+              onOpenRules={() => setShowRuleModal(true)}
+            />
+          ) : engineType === "turn_relay_blitz" ? (
+            <TurnRelayBlitzView
+              game={game}
+              players={players}
+              onToggleEliminate={handleToggleEliminate}
+              onSelectWinner={handleSelectWinner}
+              onOpenRules={() => setShowRuleModal(true)}
+            />
+          ) : engineType === "consensus_coop" ? (
+            <ConsensusMatchView
+              game={game}
+              players={players}
+              onSelectWinner={handleSelectWinner}
+              onOpenRules={() => setShowRuleModal(true)}
+            />
+          ) : engineType === "quick_elimination" || engineType === "survival_elimination" ? (
             <QuickEliminationView
               game={game}
               players={players}

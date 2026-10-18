@@ -125,9 +125,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 8,
     description: "手拍子のリズムに合わせて、指定された文字やお題に合う単語をパンパンと答えていくゲーム！\nお題ガチャを使えば「あから始まる言葉」「赤いもの」などが次々飛び出します。",
     created_at: new Date().toISOString(),
-    matchEngineType: "tool_assisted",
+    matchEngineType: "turn_relay_blitz",
     metadata: {
-      matchEngineType: "tool_assisted",
+      matchEngineType: "turn_relay_blitz",
       tools: ["prompt", "bpm", "score"],
       defaultBpm: 110,
       callExample: "手拍子「パン、パン！」\nA君「『あ』から始まるリズムに合わせて！」\n全員「パン、パン！」\nB君「アイス！」\n全員「パン、パン！」\nC君「飴玉！」",
@@ -156,9 +156,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 8,
     description: "「〇〇といえば？」というお題に対して、全員で「せーの！」で一斉に回答！\n全員の心が通じ合って答えがピッタリ一致するまで絶対に終われない協力型パーティーゲームです！",
     created_at: new Date().toISOString(),
-    matchEngineType: "tool_assisted",
+    matchEngineType: "consensus_coop",
     metadata: {
-      matchEngineType: "tool_assisted",
+      matchEngineType: "consensus_coop",
       tools: ["prompt", "score"],
       callExample: "ツールお題「おにぎりの具といえば？」\n全員「せーの……」\nA君「シャケ！」\nB君「シャケ！」\nC君「ツナマヨ！」\n全員「あ〜〜〜惜しい！！もう1回！！」",
       ruleSummary: [
@@ -218,9 +218,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 4,
     description: "リズミカルなじゃんけん進化系！\n「グリン（グー）」「チョリン（チョキ）」「パリン（パー）」とコールしながらポーズを繰り出し、相手と同じ手になった瞬間に「ドン！」と叫んだ方が勝ち！",
     created_at: new Date().toISOString(),
-    matchEngineType: "quick_elimination",
+    matchEngineType: "tournament_duel",
     metadata: {
-      matchEngineType: "quick_elimination",
+      matchEngineType: "tournament_duel",
       tools: ["bpm", "score"],
       defaultBpm: 120,
       callExample: "全員「グリンピース！」（じゃんけん）\n勝者A「グリン！グリン！チョリン！」\n敗者B「チョリン！チョリン！パリン！」\nA「パリン！ドン！」（同じ手になってドンを先に叫び勝利！）",
@@ -240,9 +240,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 6,
     description: "全身または手振りで楽しむじゃんけんポーズバトル！\n「からい（グー）」「中辛（チョキ）」「あまい（パー）」のポーズで相手の心を読め！親と被ったら負けの「あっち向いてホイ」スタイル！",
     created_at: new Date().toISOString(),
-    matchEngineType: "quick_elimination",
+    matchEngineType: "tournament_duel",
     metadata: {
-      matchEngineType: "quick_elimination",
+      matchEngineType: "tournament_duel",
       tools: ["bpm", "score"],
       defaultBpm: 110,
       callExample: "「カレーライス、カレーライス、辛いぞ！」（グーのポーズ）\n親と同じポーズを出してしまった人はアウト！",
@@ -263,9 +263,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 6,
     description: "手拍子でゲージを溜めて必殺技を放つ伝説のコマンドバトル！\n「溜める」「攻撃」「防御」「メガ攻撃」の読み合い。待ち時間の手持ち無沙汰を一撃で熱狂に変える名作！",
     created_at: new Date().toISOString(),
-    matchEngineType: "quick_elimination",
+    matchEngineType: "tournament_duel",
     metadata: {
-      matchEngineType: "quick_elimination",
+      matchEngineType: "tournament_duel",
       tools: ["bpm", "score"],
       defaultBpm: 100,
       callExample: "手拍子「タン、タン！」\n「CCレモン！」（両手胸の前でグー＝チャージ+1）\n「CCアタック！」（相手を指差し＝消費1攻撃）\n「CCバリア！」（腕クロス＝防御）\n「メガアタック！」（両手ビーム＝消費3貫通攻撃）",
@@ -286,9 +286,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 4,
     description: "指を使った超頭脳派陣取りバトル！\n両手の人差し指（1と1）からスタートし、相手の手をタップして自分の数字を合算。ちょうど「5」を作って相手の手を落とせ！",
     created_at: new Date().toISOString(),
-    matchEngineType: "quick_elimination",
+    matchEngineType: "tournament_duel",
     metadata: {
-      matchEngineType: "quick_elimination",
+      matchEngineType: "tournament_duel",
       tools: ["score"],
       callExample: "自分の右手(2)で相手の左手(1)をタッチ → 相手の左手が(3)になる！\nちょうど5になると消滅！両手を消されたら負け！",
       ruleSummary: [
@@ -362,14 +362,14 @@ export const ALL_GAMES: Game[] = [
     max_players: 6,
     description: "脳トレ度MAX！指示に合わせてわざと勝ったり負けたりする反射神経バトル！\n「勝って！」「負けて！」「あいこ！」の瞬時の指示に脳がバグる！",
     created_at: new Date().toISOString(),
-    matchEngineType: "tool_assisted",
+    matchEngineType: "turn_relay_blitz",
     metadata: {
-      matchEngineType: "tool_assisted",
+      matchEngineType: "turn_relay_blitz",
       tools: ["prompt", "timer", "score"],
       callExample: "マスター「じゃんけんポン！（グーを出す）…負けて！」\nプレイヤー「（ワンテンポ遅れて）チョキ！」（大正解！）\nマスター「じゃんけんポン！（チョキを出す）…負けて！」\nプレイヤー「グー！あ、勝っちゃった！！」（アウト！）",
       ruleSummary: [
         "出題者がじゃんけんの手を出します",
-        "同時にツールのお題（「勝って！」「負けて！」「あいこ！」など）が指示されます",
+        "同時にツールのお題（「勝って！」「負けて！」など）が指示されます",
         "回答者は1テンポ遅れて、指示通りの手を即座に出さなければなりません",
         "「負けて！」と言われたのに本能で勝つ手を出してしまうとアウト！",
         "制限時間を短くするほど脳がパニックになって大盛り上がり！"
@@ -393,9 +393,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 8,
     description: "親が心に決めた1〜100のシークレット数字を推理！\nコールされた数字に対して「Up」「Down」のヒントだけを頼りに最短手数で的中させろ！",
     created_at: new Date().toISOString(),
-    matchEngineType: "quick_elimination",
+    matchEngineType: "tournament_duel",
     metadata: {
-      matchEngineType: "quick_elimination",
+      matchEngineType: "tournament_duel",
       tools: ["timer", "score"],
       callExample: "マスター（心の中で『73』に決定）\nA君「50！」→ マスター「Up！」（51〜100に絞られる）\nB君「80！」→ マスター「Down！」（51〜79に絞られる）\nC君「73！」→ マスター「Hit！！お見事！！」",
       ruleSummary: [
@@ -414,9 +414,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 8,
     description: "指定された「最初の文字」と「最後の文字」で言葉を作れ！\n「『あ』で始まって『す』で終わる言葉」→「アイス！」\n文字数制限やタイマーをつけると緊迫感MAXの語彙力バトル！",
     created_at: new Date().toISOString(),
-    matchEngineType: "tool_assisted",
+    matchEngineType: "turn_relay_blitz",
     metadata: {
-      matchEngineType: "tool_assisted",
+      matchEngineType: "turn_relay_blitz",
       tools: ["prompt", "timer", "score"],
       timerDuration: 15,
       blindTimer: false,
@@ -474,9 +474,9 @@ export const ALL_GAMES: Game[] = [
     max_players: 8,
     description: "体内時計の正確さを競い合う人気対戦ゲーム！\n画面の数字を隠した状態で「10秒」ピッタリを狙ってストップ！コンマ何秒の誤差で勝敗が決まるハラハラドキドキの戦い！",
     created_at: new Date().toISOString(),
-    matchEngineType: "tool_assisted",
+    matchEngineType: "precision_time_attack",
     metadata: {
-      matchEngineType: "tool_assisted",
+      matchEngineType: "precision_time_attack",
       tools: ["timer", "score"],
       timerDuration: 10,
       blindTimer: true,

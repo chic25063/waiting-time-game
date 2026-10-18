@@ -48,6 +48,11 @@ export default function SessionScoreHeader() {
                   </span>
                 )}
                 <span className="truncate max-w-[70px] sm:max-w-[90px]">{player.name}</span>
+                {Boolean(player.consecutiveWins && player.consecutiveWins >= 2) && (
+                  <span className="text-[10px] text-orange-400 font-extrabold animate-pulse" title={`${player.consecutiveWins}連勝中！`}>
+                    🔥{player.consecutiveWins}
+                  </span>
+                )}
                 <span className="inline-flex items-center gap-0.5 ml-0.5 text-[11px] text-amber-300 font-black shrink-0">
                   <Star className="w-2.5 h-2.5 fill-current" />
                   {player.totalWins}

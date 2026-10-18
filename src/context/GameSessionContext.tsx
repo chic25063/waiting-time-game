@@ -6,9 +6,17 @@ import { PlayerStats, SessionData } from "@/types/session";
 const SESSION_STORAGE_KEY = "machajikan_session_v2";
 const LEGACY_STORAGE_KEY = "waiting_game_players";
 
+interface WinResult {
+  winnerId: string;
+  isUnderdog: boolean;
+  bonusStars: number;
+  streak: number;
+}
+
 interface GameSessionContextType {
   players: PlayerStats[];
-  recordWin: (winnerId: string) => void;
+  recordWin: (winnerId: string) => WinResult;
+  recordTeamWin: () => void;
   updatePlayerNames: (updated: { id: string; name: string }[]) => void;
   setPlayerCount: (count: number) => void;
   resetSessionWins: () => void;
@@ -24,6 +32,8 @@ function createDefaultPlayers(count: number = 3): PlayerStats[] {
     name: `プレイヤー ${i + 1}`,
     totalWins: 0,
     matchCount: 0,
+    consecutiveWins: 0,
+    underdogWins: 0,
   }));
 }
 
@@ -40,7 +50,11 @@ export function GameSessionProvider({ children }: { children: React.ReactNode })
       if (saved) {
         const parsed = JSON.parse(saved) as SessionData;
         if (parsed.players && Array.isArray(parsed.players) && parsed.players.length >= 2) {
-          setPlayers(parsed.players);
+          setPlayers(parsed.players.map((p, i) => ({
+            ...p,
+            consecutiveWins: p.consecutiveWins || 0,
+            underdogWins: p.underdogWins || 0,
+          })));
           setIsInitialized(true);
           return;
         }
@@ -56,6 +70,8 @@ export function GameSessionProvider({ children }: { children: React.ReactNode })
             name: typeof p.name === "string" && p.name.trim() !== "" ? p.name.trim() : `プレイヤー ${idx + 1}`,
             totalWins: 0,
             matchCount: 0,
+            consecutiveWins: 0,
+            underdogWins: 0,
           }));
           setPlayers(migrated);
           setIsInitialized(true);
@@ -85,17 +101,46 @@ export function GameSessionProvider({ children }: { children: React.ReactNode })
     }
   }, [players, isInitialized]);
 
-  // 勝者を記録 (★+1, マッチ数+1)
-  const recordWin = useCallback((winnerId: string) => {
-    setPlayers((prev) =>
-      prev.map((p) => {
+  // 勝者を記録 (★+1、下克上時は★+2、連勝カウント)
+  const recordWin = useCallback((winnerId: string): WinResult => {
+    let result: WinResult = { winnerId, isUnderdog: false, bonusStars: 1, streak: 1 };
+
+    setPlayers((prev) => {
+      const winnerPlayer = prev.find((p) => p.id === winnerId);
+      const isUnderdog = winnerPlayer ? winnerPlayer.totalWins === 0 : false;
+      const starsToAdd = isUnderdog ? 2 : 1;
+      const newStreak = (winnerPlayer?.consecutiveWins || 0) + 1;
+
+      result = {
+        winnerId,
+        isUnderdog,
+        bonusStars: starsToAdd,
+        streak: newStreak,
+      };
+
+      return prev.map((p) => {
         const isWinner = p.id === winnerId;
         return {
           ...p,
-          totalWins: isWinner ? p.totalWins + 1 : p.totalWins,
+          totalWins: isWinner ? p.totalWins + starsToAdd : p.totalWins,
           matchCount: p.matchCount + 1,
+          consecutiveWins: isWinner ? (p.consecutiveWins || 0) + 1 : 0,
+          underdogWins: isWinner && isUnderdog ? (p.underdogWins || 0) + 1 : (p.underdogWins || 0),
         };
-      })
+      });
+    });
+
+    return result;
+  }, []);
+
+  // チーム全員勝利 (解答一致など協力ゲーム用: 全員★+1)
+  const recordTeamWin = useCallback(() => {
+    setPlayers((prev) =>
+      prev.map((p) => ({
+        ...p,
+        totalWins: p.totalWins + 1,
+        matchCount: p.matchCount + 1,
+      }))
     );
   }, []);
 
@@ -124,6 +169,8 @@ export function GameSessionProvider({ children }: { children: React.ReactNode })
           name: `プレイヤー ${i + 1}`,
           totalWins: 0,
           matchCount: 0,
+          consecutiveWins: 0,
+          underdogWins: 0,
         });
       }
       return next;
@@ -137,6 +184,8 @@ export function GameSessionProvider({ children }: { children: React.ReactNode })
         ...p,
         totalWins: 0,
         matchCount: 0,
+        consecutiveWins: 0,
+        underdogWins: 0,
       }))
     );
   }, []);
@@ -146,6 +195,7 @@ export function GameSessionProvider({ children }: { children: React.ReactNode })
       value={{
         players,
         recordWin,
+        recordTeamWin,
         updatePlayerNames,
         setPlayerCount,
         resetSessionWins,
