@@ -10,8 +10,12 @@ import CustomGameModal from "@/components/home/CustomGameModal";
 import GameCatalogModal from "@/components/home/GameCatalogModal";
 import {
   ChalkOuterFrame,
-  ChalkButtonBorder,
+  ChalkBorder1on1,
+  ChalkBorderParty,
+  ChalkBorderCustom,
+  ChalkBorderCatalog,
   ChalkStars,
+  ChalkSingleStar,
   ChalkSparks,
   ChalkCurvedArrow,
   ChalkEraser,
@@ -82,8 +86,8 @@ export default function Home() {
                   className="chalk-button w-full h-28 sm:h-32 rounded-lg flex items-center justify-center p-2 text-center group cursor-pointer"
                   title="2人対戦 (1on1)"
                 >
-                  <ChalkButtonBorder />
-                  <span className="text-3xl sm:text-4xl font-chalk chalk-text font-black tracking-wider group-hover:scale-105 transition-transform">
+                  <ChalkBorder1on1 />
+                  <span className="text-3xl sm:text-4xl font-chalk chalk-text font-black tracking-wider">
                     1on1
                   </span>
                 </button>
@@ -110,8 +114,8 @@ export default function Home() {
                   className="chalk-button w-full h-28 sm:h-32 rounded-lg flex items-center justify-center p-2 text-center group cursor-pointer"
                   title="多人数対戦 (3〜8人)"
                 >
-                  <ChalkButtonBorder />
-                  <span className="text-2xl sm:text-3xl font-chalk chalk-text font-bold tracking-tight group-hover:scale-105 transition-transform">
+                  <ChalkBorderParty />
+                  <span className="text-2xl sm:text-3xl font-chalk chalk-text font-bold tracking-tight">
                     みんなで遊ぶ
                   </span>
                 </button>
@@ -135,8 +139,8 @@ export default function Home() {
                   className="chalk-button w-full h-28 sm:h-32 rounded-lg flex items-center justify-center p-2 text-center group cursor-pointer"
                   title="自作ゲームを作成"
                 >
-                  <ChalkButtonBorder />
-                  <span className="text-xl sm:text-2xl font-chalk chalk-text font-bold tracking-tight group-hover:scale-105 transition-transform">
+                  <ChalkBorderCustom />
+                  <span className="text-xl sm:text-2xl font-chalk chalk-text font-bold tracking-tight">
                     ゲームを作る
                   </span>
                 </button>
@@ -146,9 +150,7 @@ export default function Home() {
               <div className="relative">
                 {/* スケッチ通りの星（左下） */}
                 <div className="absolute -bottom-3 -left-3 pointer-events-none">
-                  <svg className="w-5 h-5 stroke-white/80 fill-none" viewBox="0 0 24 24" strokeWidth="1.6">
-                    <path d="M 12 2 L 14.5 8.5 L 21.5 9 L 16 13.5 L 18 20 L 12 16 L 6 20 L 8 13.5 L 2.5 9 L 9.5 8.5 Z" />
-                  </svg>
+                  <ChalkSingleStar />
                 </div>
 
                 {/* スケッチ通りの効果線（右下） */}
@@ -162,8 +164,8 @@ export default function Home() {
                   className="chalk-button w-full h-28 sm:h-32 rounded-lg flex items-center justify-center p-2 text-center group cursor-pointer"
                   title="収録タイトル一覧"
                 >
-                  <ChalkButtonBorder />
-                  <span className="text-xl sm:text-2xl font-chalk chalk-text font-bold tracking-tight group-hover:scale-105 transition-transform">
+                  <ChalkBorderCatalog />
+                  <span className="text-xl sm:text-2xl font-chalk chalk-text font-bold tracking-tight">
                     ゲーム一覧
                   </span>
                 </button>
