@@ -87,7 +87,7 @@ export default function Home() {
                   title="2人対戦 (1on1)"
                 >
                   <ChalkBorder1on1 />
-                  <span className="text-3xl sm:text-4xl font-chalk chalk-text font-black tracking-wider">
+                  <span className="text-4xl sm:text-5xl font-chalk chalk-text tracking-wider">
                     1on1
                   </span>
                 </button>
@@ -115,7 +115,7 @@ export default function Home() {
                   title="多人数対戦 (3〜8人)"
                 >
                   <ChalkBorderParty />
-                  <span className="text-2xl sm:text-3xl font-chalk chalk-text font-bold tracking-tight">
+                  <span className="text-2xl sm:text-3xl font-chalk chalk-text tracking-tight">
                     みんなで遊ぶ
                   </span>
                 </button>
@@ -140,7 +140,7 @@ export default function Home() {
                   title="自作ゲームを作成"
                 >
                   <ChalkBorderCustom />
-                  <span className="text-xl sm:text-2xl font-chalk chalk-text font-bold tracking-tight">
+                  <span className="text-2xl sm:text-3xl font-chalk chalk-text tracking-tight">
                     ゲームを作る
                   </span>
                 </button>
@@ -165,7 +165,7 @@ export default function Home() {
                   title="収録タイトル一覧"
                 >
                   <ChalkBorderCatalog />
-                  <span className="text-xl sm:text-2xl font-chalk chalk-text font-bold tracking-tight">
+                  <span className="text-2xl sm:text-3xl font-chalk chalk-text tracking-tight">
                     ゲーム一覧
                   </span>
                 </button>

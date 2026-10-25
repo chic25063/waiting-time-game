@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Zen_Kurenaido } from "next/font/google";
+import { Geist, Geist_Mono, Potta_One } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const zenKurenaido = Zen_Kurenaido({
+const pottaOne = Potta_One({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-chalk",
@@ -30,7 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ja"
-      className={`${geistSans.variable} ${geistMono.variable} ${zenKurenaido.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${pottaOne.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <GameSessionProvider>
