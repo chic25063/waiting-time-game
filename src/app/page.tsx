@@ -64,11 +64,6 @@ export default function Home() {
               <h1 className="text-5xl sm:text-6xl font-chalk chalk-text tracking-wider transform -rotate-1 drop-shadow-[0_2px_8px_rgba(255,255,255,0.4)]">
                 マチジカン！
               </h1>
-              <div className="mt-1 flex items-center justify-center gap-1 opacity-70">
-                <span className="h-[1px] w-8 bg-white/40" />
-                <span className="text-[10px] tracking-widest font-chalk">WAITING GAME</span>
-                <span className="h-[1px] w-8 bg-white/40" />
-              </div>
             </div>
 
             {/* 中央 2×2 チョークボタン グリッド */}
@@ -84,15 +79,12 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setIsDuelModalOpen(true)}
-                  className="chalk-button w-full h-28 sm:h-32 rounded-lg flex flex-col items-center justify-center p-2 text-center group cursor-pointer"
+                  className="chalk-button w-full h-28 sm:h-32 rounded-lg flex items-center justify-center p-2 text-center group cursor-pointer"
                   title="2人対戦 (1on1)"
                 >
                   <ChalkButtonBorder />
                   <span className="text-3xl sm:text-4xl font-chalk chalk-text font-black tracking-wider group-hover:scale-105 transition-transform">
                     1on1
-                  </span>
-                  <span className="text-[10px] sm:text-xs text-white/70 font-chalk mt-1">
-                    2人真剣勝負
                   </span>
                 </button>
               </div>
@@ -115,15 +107,12 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setIsPartyModalOpen(true)}
-                  className="chalk-button w-full h-28 sm:h-32 rounded-lg flex flex-col items-center justify-center p-2 text-center group cursor-pointer"
+                  className="chalk-button w-full h-28 sm:h-32 rounded-lg flex items-center justify-center p-2 text-center group cursor-pointer"
                   title="多人数対戦 (3〜8人)"
                 >
                   <ChalkButtonBorder />
                   <span className="text-2xl sm:text-3xl font-chalk chalk-text font-bold tracking-tight group-hover:scale-105 transition-transform">
                     みんなで遊ぶ
-                  </span>
-                  <span className="text-[10px] sm:text-xs text-white/70 font-chalk mt-1">
-                    3〜8人・最弱王決定戦
                   </span>
                 </button>
               </div>
@@ -143,15 +132,12 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={handleOpenCustomCreate}
-                  className="chalk-button w-full h-28 sm:h-32 rounded-lg flex flex-col items-center justify-center p-2 text-center group cursor-pointer"
+                  className="chalk-button w-full h-28 sm:h-32 rounded-lg flex items-center justify-center p-2 text-center group cursor-pointer"
                   title="自作ゲームを作成"
                 >
                   <ChalkButtonBorder />
                   <span className="text-xl sm:text-2xl font-chalk chalk-text font-bold tracking-tight group-hover:scale-105 transition-transform">
                     ゲームを作る
-                  </span>
-                  <span className="text-[10px] sm:text-xs text-amber-200/90 font-chalk mt-1">
-                    ＋ オリジナル自作
                   </span>
                 </button>
               </div>
@@ -173,15 +159,12 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setIsCatalogModalOpen(true)}
-                  className="chalk-button w-full h-28 sm:h-32 rounded-lg flex flex-col items-center justify-center p-2 text-center group cursor-pointer"
+                  className="chalk-button w-full h-28 sm:h-32 rounded-lg flex items-center justify-center p-2 text-center group cursor-pointer"
                   title="収録タイトル一覧"
                 >
                   <ChalkButtonBorder />
                   <span className="text-xl sm:text-2xl font-chalk chalk-text font-bold tracking-tight group-hover:scale-105 transition-transform">
                     ゲーム一覧
-                  </span>
-                  <span className="text-[10px] sm:text-xs text-white/70 font-chalk mt-1">
-                    全{allGameList.length}タイトル
                   </span>
                 </button>
               </div>
@@ -189,10 +172,7 @@ export default function Home() {
             </div>
 
             {/* 下部トレイ & 黒板消し・チョーク（スケッチ写真の右下に忠実） */}
-            <div className="pt-2 flex items-end justify-between px-1">
-              <div className="text-[10px] text-white/50 font-chalk">
-                待ち時間専用パーティー対戦
-              </div>
+            <div className="pt-2 flex items-end justify-end px-1">
               {/* 写真右下の木製黒板消し */}
               <ChalkEraser />
             </div>
