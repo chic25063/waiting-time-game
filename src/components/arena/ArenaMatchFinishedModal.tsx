@@ -62,7 +62,10 @@ export default function ArenaMatchFinishedModal({
   const handleCopyResult = () => {
     let text = "";
     if (isLoserKingMode) {
-      text = `【マチジカン！最弱王決定戦】\n💀 本日の最弱王: ${loser?.name || "???"}\n⚠️ 罰ゲーム: ${config.loserPenaltyText || "なし"}\n#マチジカン`;
+      const penaltyLine = config.loserPenaltyText
+        ? `\n⚠️ 罰ゲーム: ${config.loserPenaltyText}`
+        : "";
+      text = `【マチジカン！最弱王決定戦】\n💀 本日の最弱王: ${loser?.name || "???"}${penaltyLine}\n#マチジカン`;
     } else {
       text = `【マチジカン！対戦結果】\n👑 優勝: ${winner?.name || "???"} !!\n総ラウンド数: ${state.currentRound}回戦\n#マチジカン`;
     }
@@ -105,16 +108,18 @@ export default function ArenaMatchFinishedModal({
               </div>
             </div>
 
-            {/* 執行される罰ゲーム */}
-            <div className="p-4 rounded-2xl bg-rose-950/60 border-2 border-rose-500/60 space-y-1.5">
-              <div className="text-[11px] font-black text-rose-300 flex items-center justify-center gap-1">
-                <Flame className="w-3.5 h-3.5 text-rose-400" />
-                <span>執行される罰ゲーム:</span>
+            {/* 執行される罰ゲーム（設定されている場合のみ表示） */}
+            {Boolean(config.loserPenaltyText) && (
+              <div className="p-4 rounded-2xl bg-rose-950/60 border-2 border-rose-500/60 space-y-1.5 animate-in fade-in">
+                <div className="text-[11px] font-black text-rose-300 flex items-center justify-center gap-1">
+                  <Flame className="w-3.5 h-3.5 text-rose-400" />
+                  <span>執行される罰ゲーム:</span>
+                </div>
+                <div className="text-lg sm:text-xl font-black text-white">
+                  {config.loserPenaltyText}
+                </div>
               </div>
-              <div className="text-lg sm:text-xl font-black text-white">
-                {config.loserPenaltyText || "ジュース奢り"}
-              </div>
-            </div>
+            )}
           </div>
         ) : (
           <div className="space-y-3">

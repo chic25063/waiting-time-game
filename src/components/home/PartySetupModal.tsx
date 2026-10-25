@@ -33,6 +33,7 @@ export default function PartySetupModal({ isOpen, onClose }: PartySetupModalProp
   ]);
   const [multiRuleType, setMultiRuleType] = useState<MultiRuleType>("survival_knockout");
   const [pointRaceGoal, setPointRaceGoal] = useState<PointRaceGoal>("rounds_5");
+  const [hasPenalty, setHasPenalty] = useState<boolean>(false); // 罰ゲームのON/OFF（初期値: OFF）
   const [loserPenaltyText, setLoserPenaltyText] = useState<string>("🍹 ジュース奢り");
   const [excludedIds, setExcludedIds] = useState<string[]>([]);
 
@@ -101,7 +102,10 @@ export default function PartySetupModal({ isOpen, onClose }: PartySetupModalProp
       players: finalPlayers,
       multiRuleType,
       pointRaceGoal: multiRuleType === "point_race" ? pointRaceGoal : undefined,
-      loserPenaltyText: multiRuleType === "loser_king" ? loserPenaltyText : undefined,
+      loserPenaltyText:
+        multiRuleType === "loser_king" && hasPenalty
+          ? loserPenaltyText.trim() || "罰ゲーム"
+          : undefined,
       excludedGameIds: excludedIds,
     };
 
@@ -216,7 +220,7 @@ export default function PartySetupModal({ isOpen, onClose }: PartySetupModalProp
             >
               <Skull className="w-4 h-4 mx-auto mb-1 text-rose-400" />
               <div className="text-xs font-bold">最弱王決定戦</div>
-              <div className="text-[9px] text-rose-400/80 mt-0.5">罰ゲームつき</div>
+              <div className="text-[9px] text-rose-400/80 mt-0.5">負け残り脱落</div>
             </button>
           </div>
         </div>
@@ -268,37 +272,74 @@ export default function PartySetupModal({ isOpen, onClose }: PartySetupModalProp
 
         {/* 最弱王の罰ゲーム設定 ＆ プリセット */}
         {multiRuleType === "loser_king" && (
-          <div className="p-3 bg-rose-950/30 border border-rose-900/50 rounded-2xl space-y-2.5">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-rose-300">
-              <Skull className="w-3.5 h-3.5" />
-              <span>執行される罰ゲーム内容:</span>
-            </div>
-            <input
-              type="text"
-              value={loserPenaltyText}
-              onChange={(e) => setLoserPenaltyText(e.target.value)}
-              className="w-full bg-gray-950/90 border border-rose-900/70 p-2.5 rounded-xl text-sm font-bold text-rose-200 focus:outline-none focus:border-rose-500"
-              placeholder="例: ジュース奢り、変顔写真など"
-            />
-            {/* ワンタップ候補プリセット */}
-            <div className="space-y-1">
-              <div className="text-[10px] text-gray-400 font-bold flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-amber-400" />
-                <span>おすすめ候補（タップで即セット）:</span>
+          <div className="p-3 bg-rose-950/30 border border-rose-900/50 rounded-2xl space-y-3">
+            {/* ON/OFF 切り替えトグル */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-rose-300">
+                <Skull className="w-3.5 h-3.5 text-rose-400" />
+                <span>最弱王の罰ゲーム:</span>
               </div>
-              <div className="flex flex-wrap gap-1.5">
-                {PENALTY_PRESETS.map((preset) => (
-                  <button
-                    type="button"
-                    key={preset}
-                    onClick={() => setLoserPenaltyText(preset)}
-                    className="text-[11px] px-2.5 py-1 bg-gray-900/80 hover:bg-rose-950/60 border border-rose-900/40 rounded-lg text-rose-200/90 hover:text-white transition-all cursor-pointer"
-                  >
-                    {preset}
-                  </button>
-                ))}
+              <div className="flex items-center gap-1 bg-gray-950/80 p-0.5 rounded-xl border border-rose-900/40">
+                <button
+                  type="button"
+                  onClick={() => setHasPenalty(false)}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    !hasPenalty
+                      ? "bg-gray-800 text-white shadow-sm"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  なし (OFF)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHasPenalty(true)}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    hasPenalty
+                      ? "bg-rose-600 text-white shadow-sm"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  あり (ON)
+                </button>
               </div>
             </div>
+
+            {/* 罰ゲーム ON 時の入力フォーム */}
+            {hasPenalty ? (
+              <div className="space-y-2.5 pt-2 border-t border-rose-900/30 animate-in fade-in">
+                <input
+                  type="text"
+                  value={loserPenaltyText}
+                  onChange={(e) => setLoserPenaltyText(e.target.value)}
+                  className="w-full bg-gray-950/90 border border-rose-900/70 p-2.5 rounded-xl text-sm font-bold text-rose-200 focus:outline-none focus:border-rose-500"
+                  placeholder="例: ジュース奢り、変顔写真など"
+                />
+                {/* ワンタップ候補プリセット */}
+                <div className="space-y-1">
+                  <div className="text-[10px] text-gray-400 font-bold flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-amber-400" />
+                    <span>おすすめ候補（タップで即セット）:</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {PENALTY_PRESETS.map((preset) => (
+                      <button
+                        type="button"
+                        key={preset}
+                        onClick={() => setLoserPenaltyText(preset)}
+                        className="text-[11px] px-2.5 py-1 bg-gray-900/80 hover:bg-rose-950/60 border border-rose-900/40 rounded-lg text-rose-200/90 hover:text-white transition-all cursor-pointer"
+                      >
+                        {preset}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-[11px] text-gray-400 pt-0.5">
+                ※ 罰ゲームなしで「本日の最弱王」の称号決定のみを競います。
+              </div>
+            )}
           </div>
         )}
 
