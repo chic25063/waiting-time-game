@@ -248,6 +248,10 @@ export default function StepByStepGameFlow({
   };
 
   // ゲームの特徴判定
+  const hasPrompt = Boolean(
+    game.metadata?.tools?.includes("prompt") ||
+      (game.metadata?.promptList && game.metadata.promptList.length > 0)
+  );
   const hasTimer = Boolean(
     game.metadata?.tools?.includes("timer") ||
       game.matchEngineType === "precision_time_attack" ||
@@ -393,7 +397,9 @@ export default function StepByStepGameFlow({
   // 各プレイヤーの役割ラベル（Step 2 & Step 3用）
   const getRoleLabel = (idx: number, total: number): string => {
     if (idx === 0) {
-      return promptMode === "free" ? "最初の人（お題を出題）" : "最初の人（親・スタート）";
+      return hasPrompt && promptMode === "free"
+        ? "最初の人（お題を出題）"
+        : "最初の人（親・スタート）";
     }
     if (idx === total - 1 && total >= 3) {
       return "最後の人（アンカー）";
@@ -663,47 +669,49 @@ export default function StepByStepGameFlow({
           {/* メイン白カード（お題設定 ＋ 順番リスト） */}
           <div className="bg-white border-[2.5px] border-[#2B2D42] rounded-3xl p-5 shadow-[4px_5px_0_#2B2D42] space-y-5 flex-1 flex flex-col justify-between">
             <div className="space-y-4">
-              {/* お題モード切替（アプリ / 自由） */}
-              <div>
-                <h2 className="text-sm font-black text-[#2B2D42] mb-2">お題</h2>
-                <div className="grid grid-cols-2 p-1 rounded-full bg-[#FAF6EB] border-2 border-[#2B2D42]">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      sound.playTick();
-                      setPromptMode("app");
-                    }}
-                    className={`py-2 rounded-full text-xs sm:text-sm font-black transition-all cursor-pointer ${
-                      promptMode === "app"
-                        ? "bg-[#2B2D42] text-white shadow-xs"
-                        : "text-[#2B2D42] hover:bg-white/60"
-                    }`}
-                  >
-                    アプリ
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      sound.playTick();
-                      setPromptMode("free");
-                    }}
-                    className={`py-2 rounded-full text-xs sm:text-sm font-black transition-all cursor-pointer ${
-                      promptMode === "free"
-                        ? "bg-[#2B2D42] text-white shadow-xs"
-                        : "text-[#2B2D42] hover:bg-white/60"
-                    }`}
-                  >
-                    自由
-                  </button>
+              {/* お題モード切替（お題対応ゲームのみ表示） */}
+              {hasPrompt && (
+                <div>
+                  <h2 className="text-sm font-black text-[#2B2D42] mb-2">お題</h2>
+                  <div className="grid grid-cols-2 p-1 rounded-full bg-[#FAF6EB] border-2 border-[#2B2D42]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sound.playTick();
+                        setPromptMode("app");
+                      }}
+                      className={`py-2 rounded-full text-xs sm:text-sm font-black transition-all cursor-pointer ${
+                        promptMode === "app"
+                          ? "bg-[#2B2D42] text-white shadow-xs"
+                          : "text-[#2B2D42] hover:bg-white/60"
+                      }`}
+                    >
+                      アプリ
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sound.playTick();
+                        setPromptMode("free");
+                      }}
+                      className={`py-2 rounded-full text-xs sm:text-sm font-black transition-all cursor-pointer ${
+                        promptMode === "free"
+                          ? "bg-[#2B2D42] text-white shadow-xs"
+                          : "text-[#2B2D42] hover:bg-white/60"
+                      }`}
+                    >
+                      自由
+                    </button>
+                  </div>
+                  <p className="text-[11px] font-bold text-[#2B2D42]/75 mt-2 leading-relaxed">
+                    アプリが用意したお題にするか、最初の人が自由に決めるかを選びます
+                  </p>
                 </div>
-                <p className="text-[11px] font-bold text-[#2B2D42]/75 mt-2 leading-relaxed">
-                  アプリが用意したお題にするか、最初の人が自由に決めるかを選びます
-                </p>
-              </div>
+              )}
 
               {/* タイマー秒数設定（タイマー対応ゲームのみ） */}
               {hasTimer && (
-                <div className="pt-2 border-t-2 border-dashed border-[#2B2D42]/15">
+                <div className={hasPrompt ? "pt-2 border-t-2 border-dashed border-[#2B2D42]/15" : ""}>
                   <h2 className="text-sm font-black text-[#2B2D42] mb-2">
                     {isPrecisionTimer ? "目標秒数" : "制限時間"}
                   </h2>
@@ -731,7 +739,7 @@ export default function StepByStepGameFlow({
 
               {/* BPM設定（リズム系ゲームのみ） */}
               {hasBpm && (
-                <div className="pt-2 border-t-2 border-dashed border-[#2B2D42]/15">
+                <div className={hasPrompt || hasTimer ? "pt-2 border-t-2 border-dashed border-[#2B2D42]/15" : ""}>
                   <h2 className="text-sm font-black text-[#2B2D42] mb-2">
                     リズムの速さ (BPM)
                   </h2>
@@ -761,7 +769,9 @@ export default function StepByStepGameFlow({
                 </div>
               )}
 
-              <hr className="border-t-2 border-[#2B2D42]/15" />
+              {(hasPrompt || hasTimer || hasBpm) && (
+                <hr className="border-t-2 border-[#2B2D42]/15" />
+              )}
 
               {/* プレイの順番セクション */}
               <div>
@@ -1059,39 +1069,54 @@ export default function StepByStepGameFlow({
               </button>
             </div>
 
-            {/* お題セクション（お題を使う設定のとき） */}
-            <div className="p-4 rounded-2xl bg-[#FAF6EB] border-2 border-[#2B2D42] text-center space-y-2">
-              <div className="flex items-center justify-between text-xs font-black text-[#2B2D42]">
-                <span className="px-2 py-0.5 rounded bg-[#F9B8E0] border border-[#2B2D42]">
-                  {promptMode === "app" ? "お題（アプリ）" : "お題（自由）"}
-                </span>
-                {promptMode === "app" && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      sound.playGacha();
-                      setPromptIndex((prev) => prev + 1);
-                    }}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white hover:bg-[#FFE066] border border-[#2B2D42] text-[11px] font-black cursor-pointer"
-                  >
-                    <Shuffle className="w-3 h-3" />
-                    <span>別のお題</span>
-                  </button>
-                )}
-              </div>
+            {/* お題セクション（お題を使うゲームのみ表示）または かけ声・アクション早見表 */}
+            {hasPrompt ? (
+              <div className="p-4 rounded-2xl bg-[#FAF6EB] border-2 border-[#2B2D42] text-center space-y-2">
+                <div className="flex items-center justify-between text-xs font-black text-[#2B2D42]">
+                  <span className="px-2 py-0.5 rounded bg-[#F9B8E0] border border-[#2B2D42]">
+                    {promptMode === "app" ? "お題（アプリ）" : "お題（自由）"}
+                  </span>
+                  {promptMode === "app" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sound.playGacha();
+                        setPromptIndex((prev) => prev + 1);
+                      }}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white hover:bg-[#FFE066] border border-[#2B2D42] text-[11px] font-black cursor-pointer"
+                    >
+                      <Shuffle className="w-3 h-3" />
+                      <span>別のお題</span>
+                    </button>
+                  )}
+                </div>
 
-              <div className="py-2">
-                {promptMode === "app" ? (
-                  <p className="text-xl sm:text-2xl font-black text-[#2B2D42] leading-snug">
-                    「{currentPromptText}」
-                  </p>
-                ) : (
-                  <p className="text-sm sm:text-base font-black text-[#2B2D42]">
-                    最初の人が自由にお題を決めてスタート！
-                  </p>
-                )}
+                <div className="py-2">
+                  {promptMode === "app" ? (
+                    <p className="text-xl sm:text-2xl font-black text-[#2B2D42] leading-snug">
+                      「{currentPromptText}」
+                    </p>
+                  ) : (
+                    <p className="text-sm sm:text-base font-black text-[#2B2D42]">
+                      最初の人が自由にお題を決めてスタート！
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
+            ) : (
+              (game.call_examples?.length || game.metadata?.callExample) && (
+                <div className="p-3.5 rounded-2xl bg-[#FFF275]/45 border-2 border-[#2B2D42] space-y-1.5 text-left">
+                  <div className="text-xs font-black text-[#2B2D42]">
+                    かけ声・アクション早見表
+                  </div>
+                  <div className="text-xs font-bold text-[#2B2D42] whitespace-pre-wrap leading-relaxed">
+                    {game.call_examples
+                      ? game.call_examples.join("\n")
+                      : game.metadata?.callExample}
+                  </div>
+                </div>
+              )
+            )}
 
             {/* タイマーセクション（タイマー対応ゲームのみ） */}
             {hasTimer && (
@@ -1416,3 +1441,4 @@ export default function StepByStepGameFlow({
     </div>
   );
 }
+
