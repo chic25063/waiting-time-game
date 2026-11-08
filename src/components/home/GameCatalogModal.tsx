@@ -1,17 +1,12 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   X,
   Search,
   Edit2,
   Trash2,
-  Play,
-  Users,
-  BookOpen,
-  MessageSquare,
-  HelpCircle,
 } from "lucide-react";
 import { Game } from "@/types/game";
 import { deleteCustomGame } from "@/lib/customGames";
@@ -26,7 +21,7 @@ interface GameCatalogModalProps {
 
 const PLAYER_OPTIONS = [2, 3, 4, 5, 6, 7, 8] as const;
 
-type DoodleType =
+export type DoodleType =
   | "katana"
   | "train"
   | "numbers"
@@ -40,14 +35,14 @@ type DoodleType =
   | "hand"
   | "crown";
 
-interface CardVisualTheme {
+export interface CardVisualTheme {
   markerColor: string;
   inkAccent: string;
   defaultDoodle: DoodleType;
 }
 
 // ノートの上で映える蛍光マーカー風パレット
-const CARD_THEMES: CardVisualTheme[] = [
+export const CARD_THEMES: CardVisualTheme[] = [
   { markerColor: "#7CE8DC", inkAccent: "#1D4E56", defaultDoodle: "katana" },
   { markerColor: "#E8F655", inkAccent: "#425214", defaultDoodle: "train" },
   { markerColor: "#CBC8FA", inkAccent: "#3B356E", defaultDoodle: "numbers" },
@@ -63,7 +58,7 @@ const CARD_THEMES: CardVisualTheme[] = [
 ];
 
 // ゲームのIDや特徴から最適な「ノートの落書き（Doodle）モチーフ」を選択
-function resolveDoodleType(game: Game, fallback: DoodleType): DoodleType {
+export function resolveDoodleType(game: Game, fallback: DoodleType): DoodleType {
   if (game.isCustom) return "crown";
   const id = game.id.toLowerCase();
   const title = game.title;
@@ -95,7 +90,7 @@ function resolveDoodleType(game: Game, fallback: DoodleType): DoodleType {
 }
 
 // ノートにボールペンで描いたような完全オリジナルの落書きスタンプSVG
-function NotebookDoodle({
+export function NotebookDoodle({
   type,
   inkColor = "#2B2D42",
 }: {
@@ -299,10 +294,10 @@ export default function GameCatalogModal({
   onRefresh,
   onEditCustomGame,
 }: GameCatalogModalProps) {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [playerFilter, setPlayerFilter] = useState<number | null>(null);
   const [showFilterBar, setShowFilterBar] = useState<boolean>(false);
-  const [selectedGame, setSelectedGame] = useState<Game | null>(null);
 
   const filteredGames = useMemo(() => {
     return allGameList.filter((g) => {
@@ -327,9 +322,13 @@ export default function GameCatalogModal({
     e.stopPropagation();
     if (confirm(`「${game.title}」を削除してもよろしいですか？`)) {
       deleteCustomGame(game.id);
-      setSelectedGame(null);
       onRefresh();
     }
+  };
+
+  const handleSelectGameCard = (game: Game) => {
+    const query = playerFilter ? `?count=${playerFilter}` : "";
+    router.push(`/games/${game.id}/play${query}`);
   };
 
   if (!isOpen) return null;
@@ -491,10 +490,17 @@ export default function GameCatalogModal({
               const doodleType = resolveDoodleType(game, theme.defaultDoodle);
 
               return (
-                <button
+                <div
                   key={game.id}
-                  type="button"
-                  onClick={() => setSelectedGame(game)}
+                  onClick={() => handleSelectGameCard(game)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleSelectGameCard(game);
+                    }
+                  }}
                   className="group relative h-[80px] sm:h-[86px] w-full rounded-2xl bg-white border-2 border-[#2B2D42] overflow-hidden text-left flex items-center pl-3.5 pr-12 shadow-[3px_4px_0_#2B2D42] hover:-translate-y-0.5 hover:shadow-[4px_5px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[1px_2px_0_#2B2D42] transition-all cursor-pointer"
                 >
                   {/* 右側の斜め蛍光マーカーカラー */}
@@ -508,17 +514,40 @@ export default function GameCatalogModal({
                     }}
                   />
 
-                  {/* 自作ゲームの★ワンポイントタグ */}
+                  {/* 自作ゲームの★ワンポイントタグ＆編集・削除ボタン */}
                   {game.isCustom && (
-                    <span className="absolute top-1.5 left-3 inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-[#FFE066] border border-[#2B2D42] text-[9px] font-black text-[#2B2D42] z-10">
-                      ★自作
-                    </span>
+                    <div className="absolute top-1.5 left-3 right-2 flex items-center justify-between z-20">
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-[#FFE066] border border-[#2B2D42] text-[9px] font-black text-[#2B2D42]">
+                        ★自作
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEditCustomGame(game);
+                          }}
+                          className="p-1 rounded bg-white/90 hover:bg-[#FFE066] border border-[#2B2D42] text-[#2B2D42] cursor-pointer"
+                          title="編集"
+                        >
+                          <Edit2 className="w-2.5 h-2.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => handleDelete(e, game)}
+                          className="p-1 rounded bg-white/90 hover:bg-[#FFADAD] border border-[#2B2D42] text-[#2B2D42] cursor-pointer"
+                          title="削除"
+                        >
+                          <Trash2 className="w-2.5 h-2.5" />
+                        </button>
+                      </div>
+                    </div>
                   )}
 
                   {/* 左側：ゲームタイトル（濃紺インク太字） */}
                   <span
                     className={`relative z-10 font-black text-[#2B2D42] text-[13.5px] sm:text-[15px] leading-snug tracking-tight line-clamp-2 ${
-                      game.isCustom ? "mt-2.5" : ""
+                      game.isCustom ? "mt-3" : ""
                     }`}
                   >
                     {game.title}
@@ -531,7 +560,7 @@ export default function GameCatalogModal({
                       inkColor={game.isCustom ? "#2B2D42" : theme.inkAccent}
                     />
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>
@@ -553,153 +582,6 @@ export default function GameCatalogModal({
           )}
         </div>
       </div>
-
-      {/* カードタップ時の詳細ポップアップ（ノートの切り抜きカード風） */}
-      {selectedGame && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="selected-game-modal-title"
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
-          onClick={() => setSelectedGame(null)}
-        >
-          <div
-            className="relative w-full max-w-sm max-h-[85vh] bg-[#FAF6EB] border-2 border-[#2B2D42] rounded-3xl p-5 sm:p-6 shadow-[6px_7px_0_#2B2D42] text-[#2B2D42] flex flex-col overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* モーダル上部ヘッダー */}
-            <div className="flex items-start justify-between gap-3 pb-3 border-b-2 border-dashed border-[#2B2D42]/25 shrink-0">
-              <div>
-                <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#2B2D42] text-white text-[11px] font-extrabold">
-                    <Users className="w-3 h-3" />
-                    <span>
-                      {selectedGame.min_players}〜{selectedGame.max_players}人
-                    </span>
-                  </span>
-                  {selectedGame.isCustom && (
-                    <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-[#FFE066] border border-[#2B2D42] text-[#2B2D42] text-[11px] font-black">
-                      ★ 自作ゲーム
-                    </span>
-                  )}
-                  {selectedGame.metadata?.tags?.slice(0, 3).map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2 py-0.5 rounded-full bg-white border border-[#2B2D42]/30 text-[#2B2D42] text-[10px] font-bold"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-                <h3
-                  id="selected-game-modal-title"
-                  className="text-xl sm:text-2xl font-black text-[#2B2D42] leading-tight"
-                >
-                  {selectedGame.title}
-                </h3>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setSelectedGame(null)}
-                className="p-1.5 rounded-xl bg-white border-2 border-[#2B2D42] hover:bg-amber-100 text-[#2B2D42] transition-colors shrink-0 cursor-pointer"
-                aria-label="閉じる"
-              >
-                <X className="w-5 h-5 stroke-[2.5]" />
-              </button>
-            </div>
-
-            {/* ルール・説明本文 */}
-            <div className="overflow-y-auto flex-1 py-3 space-y-3 pr-1">
-              <p className="text-xs sm:text-sm font-bold text-[#2B2D42]/90 leading-relaxed whitespace-pre-wrap">
-                {selectedGame.description}
-              </p>
-
-              {selectedGame.metadata?.callExample && (
-                <div className="p-3 rounded-2xl bg-[#FFF275]/45 border-2 border-[#2B2D42]/20">
-                  <div className="flex items-center gap-1 text-xs font-black text-[#2B2D42] mb-1">
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    <span>かけ声・コールの例</span>
-                  </div>
-                  <pre className="text-xs font-bold text-[#2B2D42]/90 font-sans whitespace-pre-wrap leading-relaxed">
-                    {selectedGame.metadata.callExample}
-                  </pre>
-                </div>
-              )}
-
-              {selectedGame.metadata?.ruleSummary &&
-                selectedGame.metadata.ruleSummary.length > 0 && (
-                  <div className="p-3 rounded-2xl bg-white border-2 border-[#2B2D42]/20">
-                    <div className="flex items-center gap-1 text-xs font-black text-[#2B2D42] mb-2">
-                      <HelpCircle className="w-3.5 h-3.5" />
-                      <span>あそび方の流れ</span>
-                    </div>
-                    <ul className="space-y-1.5 text-xs font-bold text-[#2B2D42]/90">
-                      {selectedGame.metadata.ruleSummary.map((rule, idx) => (
-                        <li key={idx} className="flex items-start gap-2">
-                          <span className="w-4 h-4 rounded-full bg-[#2B2D42] text-white font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
-                            {idx + 1}
-                          </span>
-                          <span className="leading-snug">{rule}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-            </div>
-
-            {/* アクションボタン群 */}
-            <div className="pt-3 border-t-2 border-dashed border-[#2B2D42]/25 space-y-2 shrink-0">
-              <Link
-                href={`/games/${selectedGame.id}/play?setup=1&count=${
-                  playerFilter || selectedGame.min_players
-                }`}
-                className="w-full py-3.5 px-4 rounded-2xl bg-[#FFE066] hover:bg-[#ffd633] text-[#2B2D42] border-2 border-[#2B2D42] font-black text-base flex items-center justify-center gap-2 shadow-[3px_4px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[1px_2px_0_#2B2D42] transition-all"
-              >
-                <Play className="w-5 h-5 fill-current" />
-                <span>すぐ遊ぶ！</span>
-              </Link>
-
-              <div className="flex items-center gap-2">
-                <Link
-                  href={`/games/${selectedGame.id}`}
-                  className="flex-1 py-2.5 px-3 rounded-xl bg-white hover:bg-slate-100 border-2 border-[#2B2D42] text-[#2B2D42] text-xs font-extrabold flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  <BookOpen className="w-3.5 h-3.5" />
-                  <span>詳細ページを見る</span>
-                </Link>
-
-                {selectedGame.isCustom && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const target = selectedGame;
-                        setSelectedGame(null);
-                        onEditCustomGame(target);
-                      }}
-                      className="py-2.5 px-3 rounded-xl bg-amber-200 hover:bg-amber-300 border-2 border-[#2B2D42] text-[#2B2D42] text-xs font-extrabold flex items-center gap-1 transition-colors cursor-pointer"
-                      title="編集する"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                      <span>編集</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => handleDelete(e, selectedGame)}
-                      className="py-2.5 px-3 rounded-xl bg-rose-200 hover:bg-rose-300 border-2 border-[#2B2D42] text-rose-900 text-xs font-extrabold flex items-center gap-1 transition-colors cursor-pointer"
-                      title="削除する"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>削除</span>
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

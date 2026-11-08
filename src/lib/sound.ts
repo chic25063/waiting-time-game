@@ -1,8 +1,19 @@
 // Web Audio API を用いた効果音・メトロノームサウンド生成ユーティリティ
 class SoundController {
   private ctx: AudioContext | null = null;
+  private muted: boolean = false;
 
-  private getContext(): AudioContext {
+  isMuted(): boolean {
+    return this.muted;
+  }
+
+  toggleMute(): boolean {
+    this.muted = !this.muted;
+    return this.muted;
+  }
+
+  private getContext(): AudioContext | null {
+    if (this.muted) return null;
     if (!this.ctx) {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       this.ctx = new AudioCtx();
@@ -17,6 +28,7 @@ class SoundController {
   playClick(isHigh: boolean = false) {
     try {
       const ctx = this.getContext();
+      if (!ctx) return;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
@@ -41,6 +53,7 @@ class SoundController {
   playTick() {
     try {
       const ctx = this.getContext();
+      if (!ctx) return;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
@@ -64,6 +77,7 @@ class SoundController {
   playTimeUp() {
     try {
       const ctx = this.getContext();
+      if (!ctx) return;
       const now = ctx.currentTime;
       [0, 0.12, 0.24, 0.36].forEach((delay) => {
         const osc = ctx.createOscillator();
@@ -86,6 +100,7 @@ class SoundController {
   playGacha() {
     try {
       const ctx = this.getContext();
+      if (!ctx) return;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
@@ -110,6 +125,7 @@ class SoundController {
   playWin() {
     try {
       const ctx = this.getContext();
+      if (!ctx) return;
       const notes = [523.25, 659.25, 783.99, 1046.5]; // C E G C
       const now = ctx.currentTime;
 
@@ -140,6 +156,7 @@ class SoundController {
   playEliminate() {
     try {
       const ctx = this.getContext();
+      if (!ctx) return;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
@@ -164,6 +181,7 @@ class SoundController {
   playRevive() {
     try {
       const ctx = this.getContext();
+      if (!ctx) return;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
