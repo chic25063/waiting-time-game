@@ -22,8 +22,8 @@ export default function ArenaJudgeBar({
   if (config.mode === "duel_1v1") {
     const [p1, p2] = config.players;
     return (
-      <div className="w-full max-w-xl mx-auto p-4 bg-slate-950/90 backdrop-blur-xl border-t border-white/10 rounded-t-3xl shadow-2xl space-y-2">
-        <div className="text-center text-xs font-bold text-slate-400">
+      <div className="w-full max-w-xl mx-auto p-4 bg-[#FAF6EB] border-t-2 border-x-2 border-[#2B2D42] rounded-t-3xl shadow-[0_-4px_0_rgba(43,45,66,0.12)] space-y-2.5">
+        <div className="text-center text-xs font-black text-[#2B2D42]">
           👑 このラウンドで勝ったのはどっち？
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -33,9 +33,9 @@ export default function ArenaJudgeBar({
               sound.playClick(true);
               onRecordWinner(p1.id);
             }}
-            className="py-4 px-3 rounded-2xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-black text-sm sm:text-base shadow-lg shadow-rose-600/30 flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer"
+            className="py-3.5 px-3 rounded-2xl bg-[#FFADAD] hover:brightness-95 text-[#2B2D42] border-2 border-[#2B2D42] font-black text-sm sm:text-base shadow-[3px_4px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[1px_2px_0_#2B2D42] flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
-            <Crown className="w-5 h-5 text-amber-300 shrink-0" />
+            <Crown className="w-5 h-5 text-[#2B2D42] shrink-0" />
             <span className="truncate">{p1.name} の勝ち！</span>
           </button>
 
@@ -45,9 +45,9 @@ export default function ArenaJudgeBar({
               sound.playClick(true);
               onRecordWinner(p2.id);
             }}
-            className="py-4 px-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm sm:text-base shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer"
+            className="py-3.5 px-3 rounded-2xl bg-[#7CE8DC] hover:brightness-95 text-[#2B2D42] border-2 border-[#2B2D42] font-black text-sm sm:text-base shadow-[3px_4px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[1px_2px_0_#2B2D42] flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
-            <Crown className="w-5 h-5 text-amber-300 shrink-0" />
+            <Crown className="w-5 h-5 text-[#2B2D42] shrink-0" />
             <span className="truncate">{p2.name} の勝ち！</span>
           </button>
         </div>
@@ -57,19 +57,21 @@ export default function ArenaJudgeBar({
 
   // 多人数 点数制（Point Race）
   if (config.multiRuleType === "point_race") {
-    // サドンデス中の場合は同点者のみ表示
-    const eligiblePlayers = state.isSuddenDeath && state.suddenDeathPlayerIds
-      ? config.players.filter((p) => state.suddenDeathPlayerIds?.includes(p.id))
-      : config.players;
+    const eligiblePlayers =
+      state.isSuddenDeath && state.suddenDeathPlayerIds
+        ? config.players.filter((p) =>
+            state.suddenDeathPlayerIds?.includes(p.id)
+          )
+        : config.players;
 
     return (
-      <div className="w-full max-w-xl mx-auto p-4 bg-slate-950/90 backdrop-blur-xl border-t border-white/10 rounded-t-3xl shadow-2xl space-y-2">
-        <div className="text-center text-xs font-bold text-slate-400 flex items-center justify-center gap-1.5">
+      <div className="w-full max-w-xl mx-auto p-4 bg-[#FAF6EB] border-t-2 border-x-2 border-[#2B2D42] rounded-t-3xl space-y-2.5">
+        <div className="text-center text-xs font-black text-[#2B2D42] flex items-center justify-center gap-1.5">
           {state.isSuddenDeath ? (
             <>
-              <Flame className="w-3.5 h-3.5 text-rose-400" />
-              <span className="text-rose-300 font-black">
-                サドンデス！ 勝った方が総合チャンピオン！
+              <Flame className="w-3.5 h-3.5 text-rose-600" />
+              <span className="text-rose-600 font-black">
+                サドンデス！ 勝った方が総合優勝！
               </span>
             </>
           ) : (
@@ -85,9 +87,9 @@ export default function ArenaJudgeBar({
                 sound.playClick(true);
                 onRecordWinner(p.id);
               }}
-              className="py-3 px-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-black text-xs sm:text-sm shadow-md flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+              className="py-3 px-2 rounded-xl bg-[#FFE066] hover:bg-[#ffd633] text-[#2B2D42] border-2 border-[#2B2D42] font-black text-xs sm:text-sm shadow-[2px_3px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[1px_1px_0_#2B2D42] flex items-center justify-center gap-1.5 transition-all cursor-pointer"
             >
-              <Crown className="w-4 h-4 text-amber-300 shrink-0" />
+              <Crown className="w-4 h-4 shrink-0" />
               <span className="truncate">{p.name} 勝ち！</span>
             </button>
           ))}
@@ -103,9 +105,9 @@ export default function ArenaJudgeBar({
     );
 
     return (
-      <div className="w-full max-w-xl mx-auto p-4 bg-slate-950/90 backdrop-blur-xl border-t border-white/10 rounded-t-3xl shadow-2xl space-y-2">
-        <div className="text-center text-xs font-bold text-slate-400 flex items-center justify-center gap-1.5">
-          <Skull className="w-3.5 h-3.5 text-rose-400" />
+      <div className="w-full max-w-xl mx-auto p-4 bg-[#FAF6EB] border-t-2 border-x-2 border-[#2B2D42] rounded-t-3xl space-y-2.5">
+        <div className="text-center text-xs font-black text-[#2B2D42] flex items-center justify-center gap-1.5">
+          <Skull className="w-3.5 h-3.5" />
           <span>ミスした人・負けた人をタップして脱落！</span>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
@@ -117,10 +119,10 @@ export default function ArenaJudgeBar({
                 sound.playEliminate();
                 onRecordEliminated(p.id);
               }}
-              className="py-3 px-2 rounded-xl bg-gradient-to-r from-gray-800 to-rose-950 hover:from-rose-900 hover:to-red-900 border border-rose-500/30 text-rose-200 font-black text-xs sm:text-sm shadow-md flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+              className="py-3 px-2 rounded-xl bg-[#FFADAD] hover:brightness-95 border-2 border-[#2B2D42] text-[#2B2D42] font-black text-xs sm:text-sm shadow-[2px_3px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[1px_1px_0_#2B2D42] flex items-center justify-center gap-1.5 transition-all cursor-pointer"
             >
-              <Skull className="w-4 h-4 text-rose-400 shrink-0" />
-              <span className="truncate">{p.name} OUT</span>
+              <Skull className="w-4 h-4 shrink-0" />
+              <span className="truncate">{p.name} 脱落</span>
             </button>
           ))}
         </div>
@@ -135,9 +137,9 @@ export default function ArenaJudgeBar({
     );
 
     return (
-      <div className="w-full max-w-xl mx-auto p-4 bg-slate-950/90 backdrop-blur-xl border-t border-white/10 rounded-t-3xl shadow-2xl space-y-2">
-        <div className="text-center text-xs font-bold text-slate-400 flex items-center justify-center gap-1.5">
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+      <div className="w-full max-w-xl mx-auto p-4 bg-[#FAF6EB] border-t-2 border-x-2 border-[#2B2D42] rounded-t-3xl space-y-2.5">
+        <div className="text-center text-xs font-black text-[#2B2D42] flex items-center justify-center gap-1.5">
+          <CheckCircle2 className="w-3.5 h-3.5" />
           <span>勝った人をタップして「セーフ！勝ち抜け！」</span>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
@@ -149,10 +151,10 @@ export default function ArenaJudgeBar({
                 sound.playWin();
                 onRecordWinner(p.id);
               }}
-              className="py-3 px-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs sm:text-sm shadow-md flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+              className="py-3 px-2 rounded-xl bg-[#9AF0A8] hover:brightness-95 text-[#2B2D42] border-2 border-[#2B2D42] font-black text-xs sm:text-sm shadow-[2px_3px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[1px_1px_0_#2B2D42] flex items-center justify-center gap-1.5 transition-all cursor-pointer"
             >
-              <CheckCircle2 className="w-4 h-4 text-white shrink-0" />
-              <span className="truncate">{p.name} SAFE!</span>
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span className="truncate">{p.name} 勝ち抜け！</span>
             </button>
           ))}
         </div>

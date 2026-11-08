@@ -42,7 +42,6 @@ export default function ScoreTool({
   onFullReset,
   onOpenPlayerSetup,
 }: ScoreToolProps) {
-  // 親から渡されない場合の内部ステート
   const [internalPlayers, setInternalPlayers] = useState<Player[]>(() => {
     const count = Math.max(2, Math.min(8, initialPlayerCount));
     return Array.from({ length: count }, (_, i) => ({
@@ -55,13 +54,9 @@ export default function ScoreTool({
 
   const [winnerName, setWinnerName] = useState<string | null>(null);
 
-  // 実際に使用するプレイヤーリスト
   const players = propPlayers || internalPlayers;
-
-  // 生存人数
   const activePlayers = players.filter((p) => !p.isOut);
 
-  // 脱落トグル
   const handleToggleOut = (id: string) => {
     const target = players.find((p) => p.id === id);
     if (target?.isOut) {
@@ -79,7 +74,6 @@ export default function ScoreTool({
     }
   };
 
-  // スコア変更
   const handleUpdateScore = (id: string, delta: number) => {
     sound.playTick();
     if (onUpdateScore) {
@@ -93,7 +87,6 @@ export default function ScoreTool({
     }
   };
 
-  // プレイヤー名編集
   const handleUpdateName = (id: string, name: string) => {
     if (onUpdateName) {
       onUpdateName(id, name);
@@ -104,7 +97,6 @@ export default function ScoreTool({
     }
   };
 
-  // 勝者判定
   const declareWinner = (player: Player) => {
     setWinnerName(player.name);
     sound.playWin();
@@ -113,14 +105,12 @@ export default function ScoreTool({
         particleCount: 75,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ["#fbbf24", "#f43f5e", "#38bdf8", "#a855f7"],
       });
     } catch {
       // fallback
     }
   };
 
-  // 全員復活
   const handleReviveAll = () => {
     sound.playRevive();
     setWinnerName(null);
@@ -131,7 +121,6 @@ export default function ScoreTool({
     }
   };
 
-  // スコア・脱落全リセット
   const handleFullReset = () => {
     sound.playTick();
     setWinnerName(null);
@@ -144,7 +133,6 @@ export default function ScoreTool({
     }
   };
 
-  // プレイヤー追加
   const handleAddPlayer = () => {
     if (players.length >= 8) return;
     if (onAddPlayer) {
@@ -159,7 +147,6 @@ export default function ScoreTool({
     }
   };
 
-  // プレイヤー削除
   const handleRemovePlayer = (id: string) => {
     if (players.length <= 2) return;
     if (onRemovePlayer) {
@@ -170,13 +157,10 @@ export default function ScoreTool({
   };
 
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950/70 via-slate-900/80 to-purple-950/70 border border-white/20 p-5 sm:p-6 shadow-2xl backdrop-blur-xl">
-      {/* 背景の光彩 */}
-      <div className="absolute -top-20 -right-20 w-48 h-48 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
-
+    <div className="relative overflow-hidden rounded-3xl bg-white border-2 border-[#2B2D42] p-5 sm:p-6 shadow-[4px_5px_0_#2B2D42] text-[#2B2D42]">
       {/* ヘッダーエリア */}
-      <div className="flex items-center justify-between gap-2 mb-4">
-        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-400/20 border border-emerald-400/40 text-emerald-300 text-xs font-bold">
+      <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#9AF0A8] border-2 border-[#2B2D42] text-[#2B2D42] text-xs font-black">
           <Users className="w-3.5 h-3.5" />
           <span>脱落・勝敗カウンター</span>
         </div>
@@ -186,17 +170,17 @@ export default function ScoreTool({
             <button
               type="button"
               onClick={onOpenPlayerSetup}
-              className="p-1.5 px-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 border border-white/10 active:scale-95 transition-all text-xs flex items-center gap-1"
+              className="p-1.5 px-2.5 rounded-xl bg-[#FAF6EB] hover:bg-slate-100 text-[#2B2D42] border-2 border-[#2B2D42] text-xs font-black flex items-center gap-1 cursor-pointer"
               title="プレイヤー名を一括編集"
             >
-              <UserCog className="w-3.5 h-3.5 text-purple-300" />
+              <UserCog className="w-3.5 h-3.5" />
               <span>設定</span>
             </button>
           )}
 
-          <span className="text-xs text-purple-200/90 font-medium">
+          <span className="text-xs text-[#2B2D42] font-bold">
             生存:{" "}
-            <strong className="text-amber-300 font-bold text-sm">
+            <strong className="px-1.5 py-0.2 rounded bg-[#FFF275] font-black text-sm">
               {activePlayers.length}
             </strong>{" "}
             / {players.length}人
@@ -206,7 +190,7 @@ export default function ScoreTool({
             <button
               type="button"
               onClick={handleAddPlayer}
-              className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 border border-white/10 active:scale-95 transition-all text-xs flex items-center gap-1"
+              className="p-1.5 px-2 rounded-xl bg-[#FAF6EB] hover:bg-slate-100 text-[#2B2D42] border-2 border-[#2B2D42] text-xs font-black flex items-center gap-1 cursor-pointer"
               title="プレイヤー追加"
             >
               <UserPlus className="w-3.5 h-3.5" />
@@ -218,20 +202,22 @@ export default function ScoreTool({
 
       {/* 勝者ポップアップ */}
       {winnerName && (
-        <div className="mb-4 p-4 rounded-2xl bg-gradient-to-r from-amber-500/25 via-pink-500/25 to-purple-500/25 border border-amber-400/50 flex items-center justify-between animate-in zoom-in-95">
+        <div className="mb-4 p-4 rounded-2xl bg-[#FFE066] border-2 border-[#2B2D42] shadow-[3px_3px_0_#2B2D42] flex items-center justify-between animate-in zoom-in-95">
           <div className="flex items-center gap-2.5">
-            <Trophy className="w-7 h-7 text-amber-300 animate-bounce" />
+            <Trophy className="w-7 h-7 text-[#2B2D42] animate-bounce" />
             <div>
-              <div className="text-[10px] text-amber-200 font-bold uppercase tracking-wider">
-                WINNER!! 勝者決定！
+              <div className="text-[10px] text-[#2B2D42]/80 font-black">
+                勝者決定！
               </div>
-              <div className="text-base font-black text-white">{winnerName}</div>
+              <div className="text-base font-black text-[#2B2D42]">
+                {winnerName}
+              </div>
             </div>
           </div>
           <button
             type="button"
             onClick={() => setWinnerName(null)}
-            className="text-xs px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-white font-semibold"
+            className="text-xs px-2.5 py-1 rounded-lg bg-white border border-[#2B2D42] text-[#2B2D42] font-extrabold cursor-pointer"
           >
             閉じる
           </button>
@@ -244,76 +230,75 @@ export default function ScoreTool({
           return (
             <div
               key={p.id}
-              className={`p-3 rounded-2xl border transition-all duration-200 flex items-center justify-between gap-2 ${
+              className={`p-3 rounded-2xl border-2 transition-all duration-200 flex items-center justify-between gap-2 ${
                 p.isOut
-                  ? "bg-slate-950/40 border-rose-500/20 opacity-50 grayscale"
-                  : "bg-white/10 border-white/15 hover:border-white/30 shadow-sm"
+                  ? "bg-slate-100 border-[#2B2D42]/30 opacity-55"
+                  : "bg-[#FAF6EB] border-[#2B2D42] shadow-[2px_2px_0_#2B2D42]"
               }`}
             >
-              {/* 名前と脱落状態ボタン */}
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <button
                   type="button"
                   onClick={() => handleToggleOut(p.id)}
-                  className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 transition-all ${
+                  className={`w-8 h-8 rounded-xl border-2 border-[#2B2D42] flex items-center justify-center font-black text-xs shrink-0 transition-all cursor-pointer ${
                     p.isOut
-                      ? "bg-rose-500 text-white shadow-md shadow-rose-500/30"
-                      : "bg-emerald-500/30 hover:bg-emerald-500/50 text-emerald-300 border border-emerald-400/40"
+                      ? "bg-[#FFADAD] text-[#2B2D42]"
+                      : "bg-[#9AF0A8] text-[#2B2D42]"
                   }`}
                   title={p.isOut ? "タップで復活" : "タップで脱落"}
                 >
-                  {p.isOut ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                  {p.isOut ? (
+                    <UserX className="w-4 h-4" />
+                  ) : (
+                    <UserCheck className="w-4 h-4" />
+                  )}
                 </button>
 
                 <input
                   type="text"
                   value={p.name}
                   onChange={(e) => handleUpdateName(p.id, e.target.value)}
-                  className="bg-transparent text-sm font-bold text-white border-b border-transparent hover:border-white/30 focus:border-purple-400 focus:outline-none px-1 py-0.5 truncate w-full max-w-[130px] sm:max-w-[180px]"
+                  className="bg-transparent text-sm font-black text-[#2B2D42] border-b border-transparent focus:border-[#2B2D42] focus:outline-none px-1 py-0.5 truncate w-full max-w-[130px] sm:max-w-[180px]"
                 />
               </div>
 
-              {/* 右側：スコア操作と勝者ボタン */}
               <div className="flex items-center gap-1.5 shrink-0">
-                {/* スコア操作 */}
-                <div className="flex items-center bg-slate-950/50 rounded-xl border border-white/10 p-0.5">
+                <div className="flex items-center bg-white rounded-xl border-2 border-[#2B2D42] p-0.5">
                   <button
                     type="button"
                     onClick={() => handleUpdateScore(p.id, -1)}
-                    className="w-6 h-6 rounded-lg text-slate-300 hover:text-white flex items-center justify-center active:scale-90"
+                    className="w-6 h-6 rounded-lg text-[#2B2D42] flex items-center justify-center active:scale-90 cursor-pointer"
                     title="スコア -1"
                   >
                     <Minus className="w-3 h-3" />
                   </button>
-                  <span className="w-7 text-center font-mono font-bold text-xs text-amber-300">
+                  <span className="w-7 text-center font-mono font-black text-xs text-[#2B2D42]">
                     {p.score}
                   </span>
                   <button
                     type="button"
                     onClick={() => handleUpdateScore(p.id, 1)}
-                    className="w-6 h-6 rounded-lg text-slate-300 hover:text-white flex items-center justify-center active:scale-90"
+                    className="w-6 h-6 rounded-lg text-[#2B2D42] flex items-center justify-center active:scale-90 cursor-pointer"
                     title="スコア +1"
                   >
                     <Plus className="w-3 h-3" />
                   </button>
                 </div>
 
-                {/* 勝者宣言ボタン */}
                 <button
                   type="button"
                   onClick={() => declareWinner(p)}
-                  className="p-1.5 rounded-xl bg-amber-400/20 hover:bg-amber-400/40 text-amber-300 border border-amber-400/30 active:scale-90 transition-all"
+                  className="p-1.5 rounded-xl bg-[#FFE066] hover:bg-[#ffd633] text-[#2B2D42] border-2 border-[#2B2D42] active:scale-90 transition-all cursor-pointer"
                   title="この人を勝者にする！"
                 >
                   <Trophy className="w-4 h-4" />
                 </button>
 
-                {/* 削除ボタン */}
                 {players.length > 2 && (
                   <button
                     type="button"
                     onClick={() => handleRemovePlayer(p.id)}
-                    className="p-1 rounded-lg text-slate-500 hover:text-rose-400 text-xs"
+                    className="p-1 rounded-lg text-[#2B2D42]/50 hover:text-rose-600 text-xs font-black cursor-pointer"
                     title="削除"
                   >
                     ×
@@ -330,16 +315,16 @@ export default function ScoreTool({
         <button
           type="button"
           onClick={handleReviveAll}
-          className="py-2.5 px-3 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 text-slate-200 font-semibold text-xs flex items-center justify-center gap-1.5 border border-white/15 transition-all"
+          className="py-2.5 px-3 rounded-2xl bg-[#FAF6EB] hover:bg-slate-100 text-[#2B2D42] font-black text-xs flex items-center justify-center gap-1.5 border-2 border-[#2B2D42] shadow-[2px_2px_0_#2B2D42] transition-all cursor-pointer"
         >
-          <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+          <Sparkles className="w-3.5 h-3.5" />
           <span>全員復活する</span>
         </button>
 
         <button
           type="button"
           onClick={handleFullReset}
-          className="py-2.5 px-3 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 text-slate-200 font-semibold text-xs flex items-center justify-center gap-1.5 border border-white/15 transition-all"
+          className="py-2.5 px-3 rounded-2xl bg-[#FAF6EB] hover:bg-slate-100 text-[#2B2D42] font-black text-xs flex items-center justify-center gap-1.5 border-2 border-[#2B2D42] shadow-[2px_2px_0_#2B2D42] transition-all cursor-pointer"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           <span>全リセット</span>

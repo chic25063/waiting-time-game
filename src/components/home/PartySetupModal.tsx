@@ -115,35 +115,48 @@ export default function PartySetupModal({ isOpen, onClose }: PartySetupModalProp
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-gradient-to-b from-gray-900 to-gray-950 border-2 border-indigo-500/40 rounded-3xl p-6 text-white shadow-2xl max-h-[92vh] overflow-y-auto space-y-5">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-xs animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-lg bg-[#FAF6EB] border-2 border-[#2B2D42] rounded-3xl p-5 sm:p-6 text-[#2B2D42] shadow-[6px_7px_0_#2B2D42] max-h-[92vh] overflow-y-auto space-y-5"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* ヘッダー */}
-        <div className="flex items-center justify-between pb-3 border-b border-gray-800">
-          <div className="flex items-center gap-2 text-indigo-400">
-            <Users className="w-5 h-5" />
-            <h3 className="text-lg font-black text-white">多人数 対戦モード設定</h3>
+        <div className="flex items-center justify-between pb-3 border-b-2 border-dashed border-[#2B2D42]/25">
+          <div className="flex items-center gap-2">
+            <span className="w-8 h-8 rounded-xl bg-[#E8F655] border-2 border-[#2B2D42] flex items-center justify-center">
+              <Users className="w-4 h-4 text-[#2B2D42]" />
+            </span>
+            <h3 className="text-lg font-black text-[#2B2D42]">
+              多人数 対戦モード設定
+            </h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 cursor-pointer"
+            className="p-1.5 rounded-xl bg-white border-2 border-[#2B2D42] text-[#2B2D42] hover:bg-amber-100 cursor-pointer"
+            aria-label="閉じる"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 stroke-[2.5]" />
           </button>
         </div>
 
         {/* 参加人数ピル選択 */}
         <div className="space-y-2">
-          <div className="text-xs font-bold text-gray-400">参加人数（3〜8人）:</div>
+          <div className="text-xs font-black text-[#2B2D42]">
+            参加人数（3〜8人）:
+          </div>
           <div className="flex gap-2 overflow-x-auto pb-1">
             {[3, 4, 5, 6, 7, 8].map((num) => (
               <button
                 type="button"
                 key={num}
                 onClick={() => handleCountChange(num)}
-                className={`flex-1 min-w-[50px] py-2.5 rounded-xl border text-center font-black text-sm transition-all cursor-pointer ${
+                className={`flex-1 min-w-[50px] py-2.5 rounded-xl border-2 border-[#2B2D42] text-center font-black text-sm transition-all cursor-pointer ${
                   playerCount === num
-                    ? "bg-indigo-600 border-indigo-400 text-white shadow-md shadow-indigo-600/30 scale-105"
-                    : "bg-gray-950/50 border-gray-800 text-gray-400 hover:text-white"
+                    ? "bg-[#E8F655] text-[#2B2D42] shadow-[2px_3px_0_#2B2D42]"
+                    : "bg-white text-[#2B2D42]/70 hover:bg-slate-50"
                 }`}
               >
                 {num}人
@@ -154,21 +167,21 @@ export default function PartySetupModal({ isOpen, onClose }: PartySetupModalProp
 
         {/* プレイヤー名入力 */}
         <div className="space-y-2">
-          <div className="text-xs font-bold text-gray-400">プレイヤー名:</div>
+          <div className="text-xs font-black text-[#2B2D42]">プレイヤー名:</div>
           <div className="grid grid-cols-2 gap-2">
             {Array.from({ length: playerCount }).map((_, idx) => (
               <div
                 key={idx}
-                className="bg-gray-950/70 border border-gray-800 p-2 rounded-xl"
+                className="bg-white border-2 border-[#2B2D42] p-2 rounded-xl shadow-[2px_2px_0_#2B2D42]"
               >
-                <label className="text-[10px] text-indigo-400 font-bold block mb-0.5">
-                  PLAYER {idx + 1}
+                <label className="text-[10px] px-1.5 py-0.2 rounded bg-[#CBC8FA] text-[#2B2D42] font-black inline-block mb-0.5">
+                  プレイヤー {idx + 1}
                 </label>
                 <input
                   type="text"
                   value={playerNames[idx] || ""}
                   onChange={(e) => handleNameChange(idx, e.target.value)}
-                  className="w-full bg-transparent text-sm font-bold text-white focus:outline-none"
+                  className="w-full bg-transparent text-sm font-black text-[#2B2D42] focus:outline-none"
                   placeholder={`プレイヤー ${idx + 1}`}
                   maxLength={10}
                 />
@@ -179,64 +192,74 @@ export default function PartySetupModal({ isOpen, onClose }: PartySetupModalProp
 
         {/* 対戦ルール選択 */}
         <div className="space-y-2">
-          <div className="text-xs font-bold text-gray-400">対戦形式（ルール）:</div>
+          <div className="text-xs font-black text-[#2B2D42]">
+            対戦形式（ルール）:
+          </div>
           <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
               onClick={() => setMultiRuleType("survival_knockout")}
-              className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
+              className={`p-3 rounded-2xl border-2 border-[#2B2D42] text-center transition-all cursor-pointer ${
                 multiRuleType === "survival_knockout"
-                  ? "bg-indigo-600/20 border-indigo-500 text-indigo-300 font-black shadow-md shadow-indigo-500/20"
-                  : "bg-gray-950/40 border-gray-800 text-gray-400 hover:text-white"
+                  ? "bg-[#E8F655] text-[#2B2D42] font-black shadow-[2px_3px_0_#2B2D42]"
+                  : "bg-white text-[#2B2D42]/70 hover:bg-slate-50"
               }`}
             >
-              <Trophy className="w-4 h-4 mx-auto mb-1 text-amber-400" />
-              <div className="text-xs font-bold">勝ち残り制</div>
-              <div className="text-[9px] text-gray-400 mt-0.5">敗者脱落サバイバル</div>
+              <Trophy className="w-4 h-4 mx-auto mb-1 text-[#2B2D42]" />
+              <div className="text-xs font-black">勝ち残り制</div>
+              <div className="text-[9px] font-bold opacity-75 mt-0.5">
+                敗者脱落サバイバル
+              </div>
             </button>
 
             <button
               type="button"
               onClick={() => setMultiRuleType("point_race")}
-              className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
+              className={`p-3 rounded-2xl border-2 border-[#2B2D42] text-center transition-all cursor-pointer ${
                 multiRuleType === "point_race"
-                  ? "bg-indigo-600/20 border-indigo-500 text-indigo-300 font-black shadow-md shadow-indigo-500/20"
-                  : "bg-gray-950/40 border-gray-800 text-gray-400 hover:text-white"
+                  ? "bg-[#7CE8DC] text-[#2B2D42] font-black shadow-[2px_3px_0_#2B2D42]"
+                  : "bg-white text-[#2B2D42]/70 hover:bg-slate-50"
               }`}
             >
-              <Target className="w-4 h-4 mx-auto mb-1 text-cyan-400" />
-              <div className="text-xs font-bold">点数制</div>
-              <div className="text-[9px] text-gray-400 mt-0.5">最多得点者が優勝</div>
+              <Target className="w-4 h-4 mx-auto mb-1 text-[#2B2D42]" />
+              <div className="text-xs font-black">点数制</div>
+              <div className="text-[9px] font-bold opacity-75 mt-0.5">
+                最多得点者が優勝
+              </div>
             </button>
 
             <button
               type="button"
               onClick={() => setMultiRuleType("loser_king")}
-              className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
+              className={`p-3 rounded-2xl border-2 border-[#2B2D42] text-center transition-all cursor-pointer ${
                 multiRuleType === "loser_king"
-                  ? "bg-rose-600/20 border-rose-500 text-rose-300 font-black shadow-md shadow-rose-500/20"
-                  : "bg-gray-950/40 border-gray-800 text-gray-400 hover:text-white"
+                  ? "bg-[#FFADAD] text-[#2B2D42] font-black shadow-[2px_3px_0_#2B2D42]"
+                  : "bg-white text-[#2B2D42]/70 hover:bg-slate-50"
               }`}
             >
-              <Skull className="w-4 h-4 mx-auto mb-1 text-rose-400" />
-              <div className="text-xs font-bold">最弱王決定戦</div>
-              <div className="text-[9px] text-rose-400/80 mt-0.5">負け残り脱落</div>
+              <Skull className="w-4 h-4 mx-auto mb-1 text-[#2B2D42]" />
+              <div className="text-xs font-black">最弱王決定戦</div>
+              <div className="text-[9px] font-bold opacity-75 mt-0.5">
+                負け残り脱落
+              </div>
             </button>
           </div>
         </div>
 
         {/* 点数制の追加オプション */}
         {multiRuleType === "point_race" && (
-          <div className="p-3 bg-gray-950/60 border border-gray-800 rounded-2xl space-y-2">
-            <div className="text-xs font-bold text-gray-300">点数制の勝利条件:</div>
+          <div className="p-3 bg-white border-2 border-[#2B2D42] rounded-2xl space-y-2 shadow-[2px_3px_0_#2B2D42]">
+            <div className="text-xs font-black text-[#2B2D42]">
+              点数制の勝利条件:
+            </div>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => setPointRaceGoal("rounds_3")}
-                className={`py-2 px-2 rounded-xl border text-center text-xs font-bold transition-all cursor-pointer ${
+                className={`py-2 px-2 rounded-xl border-2 border-[#2B2D42] text-center text-xs font-black transition-all cursor-pointer ${
                   pointRaceGoal === "rounds_3"
-                    ? "bg-cyan-500/20 border-cyan-400 text-cyan-300"
-                    : "bg-gray-900 border-gray-800 text-gray-400 hover:text-white"
+                    ? "bg-[#7CE8DC] text-[#2B2D42]"
+                    : "bg-[#FAF6EB] text-[#2B2D42]/70"
                 }`}
               >
                 全3回戦
@@ -244,10 +267,10 @@ export default function PartySetupModal({ isOpen, onClose }: PartySetupModalProp
               <button
                 type="button"
                 onClick={() => setPointRaceGoal("rounds_5")}
-                className={`py-2 px-2 rounded-xl border text-center text-xs font-bold transition-all cursor-pointer ${
+                className={`py-2 px-2 rounded-xl border-2 border-[#2B2D42] text-center text-xs font-black transition-all cursor-pointer ${
                   pointRaceGoal === "rounds_5"
-                    ? "bg-cyan-500/20 border-cyan-400 text-cyan-300"
-                    : "bg-gray-900 border-gray-800 text-gray-400 hover:text-white"
+                    ? "bg-[#7CE8DC] text-[#2B2D42]"
+                    : "bg-[#FAF6EB] text-[#2B2D42]/70"
                 }`}
               >
                 全5回戦
@@ -255,16 +278,16 @@ export default function PartySetupModal({ isOpen, onClose }: PartySetupModalProp
               <button
                 type="button"
                 onClick={() => setPointRaceGoal("points_3")}
-                className={`py-2 px-2 rounded-xl border text-center text-xs font-bold transition-all cursor-pointer ${
+                className={`py-2 px-2 rounded-xl border-2 border-[#2B2D42] text-center text-xs font-black transition-all cursor-pointer ${
                   pointRaceGoal === "points_3"
-                    ? "bg-cyan-500/20 border-cyan-400 text-cyan-300"
-                    : "bg-gray-900 border-gray-800 text-gray-400 hover:text-white"
+                    ? "bg-[#7CE8DC] text-[#2B2D42]"
+                    : "bg-[#FAF6EB] text-[#2B2D42]/70"
                 }`}
               >
                 3点先取
               </button>
             </div>
-            <div className="text-[11px] text-gray-400">
+            <div className="text-[11px] font-bold text-[#2B2D42]/75">
               ※ 同点の場合は、同点者同士の【サドンデス延長戦】で完全決着！
             </div>
           </div>
@@ -272,21 +295,21 @@ export default function PartySetupModal({ isOpen, onClose }: PartySetupModalProp
 
         {/* 最弱王の罰ゲーム設定 ＆ プリセット */}
         {multiRuleType === "loser_king" && (
-          <div className="p-3 bg-rose-950/30 border border-rose-900/50 rounded-2xl space-y-3">
+          <div className="p-3 bg-white border-2 border-[#2B2D42] rounded-2xl space-y-3 shadow-[2px_3px_0_#2B2D42]">
             {/* ON/OFF 切り替えトグル */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-rose-300">
-                <Skull className="w-3.5 h-3.5 text-rose-400" />
+              <div className="flex items-center gap-1.5 text-xs font-black text-[#2B2D42]">
+                <Skull className="w-3.5 h-3.5 text-[#2B2D42]" />
                 <span>最弱王の罰ゲーム:</span>
               </div>
-              <div className="flex items-center gap-1 bg-gray-950/80 p-0.5 rounded-xl border border-rose-900/40">
+              <div className="flex items-center gap-1 bg-[#FAF6EB] p-0.5 rounded-xl border-2 border-[#2B2D42]">
                 <button
                   type="button"
                   onClick={() => setHasPenalty(false)}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
                     !hasPenalty
-                      ? "bg-gray-800 text-white shadow-sm"
-                      : "text-gray-400 hover:text-white"
+                      ? "bg-[#2B2D42] text-white"
+                      : "text-[#2B2D42]/70 hover:text-[#2B2D42]"
                   }`}
                 >
                   なし (OFF)
@@ -294,10 +317,10 @@ export default function PartySetupModal({ isOpen, onClose }: PartySetupModalProp
                 <button
                   type="button"
                   onClick={() => setHasPenalty(true)}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
                     hasPenalty
-                      ? "bg-rose-600 text-white shadow-sm"
-                      : "text-gray-400 hover:text-white"
+                      ? "bg-[#FFADAD] text-[#2B2D42] border border-[#2B2D42]"
+                      : "text-[#2B2D42]/70 hover:text-[#2B2D42]"
                   }`}
                 >
                   あり (ON)
@@ -307,18 +330,18 @@ export default function PartySetupModal({ isOpen, onClose }: PartySetupModalProp
 
             {/* 罰ゲーム ON 時の入力フォーム */}
             {hasPenalty ? (
-              <div className="space-y-2.5 pt-2 border-t border-rose-900/30 animate-in fade-in">
+              <div className="space-y-2.5 pt-2 border-t-2 border-dashed border-[#2B2D42]/20 animate-in fade-in">
                 <input
                   type="text"
                   value={loserPenaltyText}
                   onChange={(e) => setLoserPenaltyText(e.target.value)}
-                  className="w-full bg-gray-950/90 border border-rose-900/70 p-2.5 rounded-xl text-sm font-bold text-rose-200 focus:outline-none focus:border-rose-500"
+                  className="w-full bg-[#FAF6EB] border-2 border-[#2B2D42] p-2.5 rounded-xl text-sm font-black text-[#2B2D42] focus:outline-none"
                   placeholder="例: ジュース奢り、変顔写真など"
                 />
                 {/* ワンタップ候補プリセット */}
                 <div className="space-y-1">
-                  <div className="text-[10px] text-gray-400 font-bold flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-amber-400" />
+                  <div className="text-[10px] text-[#2B2D42]/75 font-black flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-[#2B2D42]" />
                     <span>おすすめ候補（タップで即セット）:</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -327,7 +350,7 @@ export default function PartySetupModal({ isOpen, onClose }: PartySetupModalProp
                         type="button"
                         key={preset}
                         onClick={() => setLoserPenaltyText(preset)}
-                        className="text-[11px] px-2.5 py-1 bg-gray-900/80 hover:bg-rose-950/60 border border-rose-900/40 rounded-lg text-rose-200/90 hover:text-white transition-all cursor-pointer"
+                        className="text-[11px] px-2.5 py-1 bg-[#FAF6EB] hover:bg-[#FFADAD]/60 border border-[#2B2D42] rounded-lg text-[#2B2D42] font-bold transition-all cursor-pointer"
                       >
                         {preset}
                       </button>
@@ -336,7 +359,7 @@ export default function PartySetupModal({ isOpen, onClose }: PartySetupModalProp
                 </div>
               </div>
             ) : (
-              <div className="text-[11px] text-gray-400 pt-0.5">
+              <div className="text-[11px] font-bold text-[#2B2D42]/70 pt-0.5">
                 ※ 罰ゲームなしで「本日の最弱王」の称号決定のみを競います。
               </div>
             )}
@@ -353,10 +376,10 @@ export default function PartySetupModal({ isOpen, onClose }: PartySetupModalProp
         {/* スタートボタン */}
         <button
           onClick={handleStart}
-          className="w-full py-4 px-6 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 hover:from-indigo-400 hover:to-purple-400 text-white font-black text-lg rounded-2xl shadow-xl shadow-indigo-500/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all cursor-pointer"
+          className="w-full py-4 px-6 bg-[#FFE066] hover:bg-[#ffd633] text-[#2B2D42] border-2 border-[#2B2D42] font-black text-lg rounded-2xl shadow-[4px_5px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[2px_2px_0_#2B2D42] flex items-center justify-center gap-2 transition-all cursor-pointer"
         >
-          <Flame className="w-5 h-5 text-amber-300" />
-          <span>🔥 多人数 対戦スタート！</span>
+          <Flame className="w-5 h-5 fill-current" />
+          <span>多人数 対戦スタート！</span>
         </button>
       </div>
     </div>

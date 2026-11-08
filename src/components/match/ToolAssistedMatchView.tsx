@@ -38,12 +38,10 @@ export default function ToolAssistedMatchView({
 }: ToolAssistedMatchViewProps) {
   const meta = game.metadata;
 
-  // 利用可能なツール（prompt, bpm, timer, score）
   const tools: ToolType[] = (meta?.tools || []).filter(
     (t) => t === "prompt" || t === "bpm" || t === "timer" || t === "score"
   );
 
-  // デフォルトで最初のアクティブツールを選択（なければ prompt か timer）
   const [activeTab, setActiveTab] = useState<ToolType>(
     tools.length > 0 ? tools[0] : "prompt"
   );
@@ -56,36 +54,42 @@ export default function ToolAssistedMatchView({
   ];
 
   const availableTabs = toolTabs.filter((t) => tools.includes(t.type));
-
   const alivePlayers = players.filter((p) => !p.isOut);
 
   return (
     <div className="space-y-6">
       {/* ゲームタイトル ＆ ヘッダー情報 */}
-      <div className="bg-gray-900/80 border border-gray-800 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
+      <div className="relative bg-white border-2 border-[#2B2D42] rounded-2xl p-4 sm:p-5 shadow-[3px_4px_0_#2B2D42] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 overflow-hidden">
+        <div
+          className="absolute inset-y-0 right-0 w-[32%] pointer-events-none"
+          style={{
+            backgroundColor: "#7CE8DC",
+            clipPath: "polygon(35% 0%, 100% 0%, 100% 100%, 0% 100%)",
+          }}
+        />
+        <div className="relative z-10">
           <div className="flex items-center gap-2">
-            <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+            <span className="text-xs px-2.5 py-0.5 rounded-full font-black bg-[#7CE8DC] text-[#2B2D42] border-2 border-[#2B2D42]">
               🛠️ ツール連動バトル
             </span>
-            <span className="text-xs text-gray-400">
-              生存: <strong className="text-amber-400 text-sm">{alivePlayers.length}</strong> / {players.length}名
+            <span className="text-xs font-bold text-[#2B2D42]/70">
+              生存: <strong className="text-[#2B2D42] font-black text-sm">{alivePlayers.length}</strong> / {players.length}名
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black text-white mt-1">
+          <h2 className="text-xl sm:text-2xl font-black text-[#2B2D42] mt-1">
             {game.title}
           </h2>
-          <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">
+          <p className="text-xs font-bold text-[#2B2D42]/75 mt-0.5 line-clamp-1">
             {game.short_description || game.description}
           </p>
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="relative z-10 flex items-center gap-2 w-full sm:w-auto">
           <button
             onClick={onOpenRules}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-bold rounded-xl border border-gray-700 transition-colors cursor-pointer"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 bg-white hover:bg-[#FAF6EB] text-[#2B2D42] text-xs font-black rounded-xl border-2 border-[#2B2D42] shadow-[2px_2px_0_#2B2D42] active:translate-y-0.5 transition-all cursor-pointer"
           >
-            <HelpCircle className="w-4 h-4 text-amber-400" />
+            <HelpCircle className="w-4 h-4 text-[#2B2D42]" />
             <span>ルール確認</span>
           </button>
         </div>
@@ -93,17 +97,17 @@ export default function ToolAssistedMatchView({
 
       {/* ツール切り替えタブ（複数ツールがある場合） */}
       {availableTabs.length > 1 && (
-        <div className="flex p-1 bg-gray-900/80 rounded-2xl border border-gray-800 gap-1 overflow-x-auto">
+        <div className="flex p-1.5 bg-white rounded-2xl border-2 border-[#2B2D42] shadow-[2px_3px_0_#2B2D42] gap-1.5 overflow-x-auto">
           {availableTabs.map((tab) => {
             const isActive = activeTab === tab.type;
             return (
               <button
                 key={tab.type}
                 onClick={() => setActiveTab(tab.type)}
-                className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${
                   isActive
-                    ? "bg-amber-500 text-gray-950 shadow-md font-extrabold"
-                    : "text-gray-400 hover:text-gray-200 hover:bg-gray-800/60"
+                    ? "bg-[#FFE066] text-[#2B2D42] border-2 border-[#2B2D42] shadow-[1px_2px_0_#2B2D42]"
+                    : "text-[#2B2D42]/70 hover:text-[#2B2D42] hover:bg-[#FAF6EB]"
                 }`}
               >
                 {tab.icon}
@@ -114,8 +118,8 @@ export default function ToolAssistedMatchView({
         </div>
       )}
 
-      {/* 特大ツール表示エリア */}
-      <div className="bg-gray-900/90 border border-gray-800 rounded-3xl p-4 sm:p-6 shadow-2xl">
+      {/* ツール表示エリア */}
+      <div>
         {activeTab === "prompt" && meta?.promptList && (
           <PromptTool prompts={meta.promptList} />
         )}
@@ -139,17 +143,19 @@ export default function ToolAssistedMatchView({
       </div>
 
       {/* 下部：サバイバル脱落判定 & 勝者決定 */}
-      <div className="bg-gray-900/80 border border-gray-800 rounded-2xl p-4 sm:p-5 space-y-4">
+      <div className="bg-white border-2 border-[#2B2D42] rounded-2xl p-4 sm:p-5 shadow-[3px_4px_0_#2B2D42] space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-black text-white flex items-center gap-2">
-            <span>⚔️ サバイバル管理</span>
-            <span className="text-[11px] font-normal text-gray-400">
-              (ミスした人をタップしてOUT!)
+          <h3 className="text-sm font-black text-[#2B2D42] flex items-center gap-2">
+            <span className="px-2 py-0.5 bg-[#FFADAD] border border-[#2B2D42] rounded-md text-xs">
+              ⚔️ サバイバル管理
+            </span>
+            <span className="text-[11px] font-bold text-[#2B2D42]/65">
+              (ミスした人をタップして脱落)
             </span>
           </h3>
           <button
             onClick={onResetElimination}
-            className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-200 cursor-pointer"
+            className="flex items-center gap-1 text-[11px] font-black text-[#2B2D42] bg-[#FAF6EB] hover:bg-[#FFE066] px-2.5 py-1 rounded-lg border-2 border-[#2B2D42] cursor-pointer"
           >
             <RotateCcw className="w-3 h-3" />
             <span>全復活</span>
@@ -164,19 +170,19 @@ export default function ToolAssistedMatchView({
               <button
                 key={player.id}
                 onClick={() => onToggleEliminate(player.id)}
-                className={`py-3 px-3 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${
+                className={`py-3 px-3 rounded-xl border-2 border-[#2B2D42] text-xs sm:text-sm font-black flex items-center justify-between transition-all cursor-pointer ${
                   isAlive
-                    ? "bg-gray-950/80 border-gray-700 text-gray-200 hover:border-amber-500/50"
-                    : "bg-red-950/20 border-red-900/50 text-red-400/80 line-through"
+                    ? "bg-[#FAF6EB] text-[#2B2D42] hover:bg-[#FFF275]/50 shadow-[2px_2px_0_#2B2D42]"
+                    : "bg-[#FFADAD]/35 text-[#2B2D42]/60 line-through"
                 }`}
               >
                 <span className="truncate">{player.name}</span>
                 {isAlive ? (
-                  <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] flex items-center justify-center font-bold ml-1 shrink-0">
+                  <span className="w-5 h-5 rounded-full bg-[#9AF0A8] border border-[#2B2D42] text-[#2B2D42] text-[10px] flex items-center justify-center font-black ml-1 shrink-0">
                     生
                   </span>
                 ) : (
-                  <Skull className="w-4 h-4 text-red-400 shrink-0 ml-1" />
+                  <Skull className="w-4 h-4 text-[#2B2D42] shrink-0 ml-1" />
                 )}
               </button>
             );
@@ -184,10 +190,10 @@ export default function ToolAssistedMatchView({
         </div>
 
         {/* 勝者を即決定するボタン群 */}
-        <div className="pt-2 border-t border-gray-800">
+        <div className="pt-3 border-t-2 border-dashed border-[#2B2D42]/20">
           <div className="flex items-center gap-1.5 mb-2.5">
-            <Crown className="w-4 h-4 text-amber-400" />
-            <span className="text-xs font-bold text-amber-300">
+            <Crown className="w-4 h-4 text-[#2B2D42]" />
+            <span className="text-xs font-black text-[#2B2D42]">
               👑 勝者を決定して通算★を記録:
             </span>
           </div>
@@ -196,9 +202,9 @@ export default function ToolAssistedMatchView({
               <button
                 key={player.id}
                 onClick={() => onSelectWinner(player.id, player.name)}
-                className="py-2.5 px-3 bg-amber-500/10 hover:bg-amber-500/25 text-amber-200 border border-amber-500/30 hover:border-amber-400 font-bold text-xs rounded-xl active:scale-[0.97] transition-all flex items-center justify-center gap-1 cursor-pointer"
+                className="py-2.5 px-3 bg-[#FFE066] hover:bg-[#ffd633] text-[#2B2D42] border-2 border-[#2B2D42] font-black text-xs rounded-xl shadow-[2px_2px_0_#2B2D42] active:translate-y-0.5 transition-all flex items-center justify-center gap-1 cursor-pointer"
               >
-                <Crown className="w-3 h-3 text-amber-400 shrink-0" />
+                <Crown className="w-3 h-3 text-[#2B2D42] shrink-0" />
                 <span className="truncate">{player.name} 勝利</span>
               </button>
             ))}

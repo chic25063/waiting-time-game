@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { Game } from "@/types/game";
 import { ALL_GAMES } from "@/data/games";
+import { getCustomGames } from "@/lib/customGames";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
@@ -27,7 +28,9 @@ export const FALLBACK_GAMES: Game[] = ALL_GAMES;
  * Supabaseが設定されていればSupabaseを優先し、なければローカルデータから取得
  */
 export async function getGameById(id: string): Promise<Game | null> {
-  const localGame = ALL_GAMES.find((g) => g.id === id);
+  const localGame =
+    ALL_GAMES.find((g) => g.id === id) ||
+    getCustomGames().find((g) => g.id === id);
 
   if (!isSupabaseConfigured()) {
     return localGame || null;

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Trophy, RotateCcw, LayoutGrid, Sparkles } from "lucide-react";
+import { RotateCcw, LayoutGrid, Award } from "lucide-react";
 import { useGameSession } from "@/hooks/useGameSession";
 
 interface MatchWinnerModalProps {
@@ -11,6 +11,34 @@ interface MatchWinnerModalProps {
   isOpen: boolean;
   onRematch: () => void;
   onClose?: () => void;
+}
+
+/** ボールペン手書き風トロフィー＆王冠スタンプSVG */
+function WinnerTrophyDoodle({ className = "w-14 h-14" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 64 64"
+      fill="none"
+      className={className}
+      stroke="#2B2D42"
+      strokeWidth="2.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* トロフィーのカップ */}
+      <path d="M18 14 H46 V28 C46 37 39 43 32 43 C25 43 18 37 18 28 Z" fill="#FFFFFF" />
+      {/* 持ち手（左右） */}
+      <path d="M18 18 H11 C11 26 14 30 18 30" />
+      <path d="M46 18 H53 C53 26 50 30 46 30" />
+      {/* 支柱・台座 */}
+      <path d="M32 43 V51" />
+      <path d="M22 51 H42 V56 H22 Z" fill="#FFFFFF" />
+      {/* 中央の星マーク */}
+      <path d="M32 21 L34 26 L39 26 L35 29 L36.5 34 L32 31 L27.5 34 L29 29 L25 26 L30 26 Z" fill="#FFE066" />
+      {/* キラキラ手書き線 */}
+      <path d="M10 9 L13 12 M54 9 L51 12 M32 5 V9" />
+    </svg>
+  );
 }
 
 export default function MatchWinnerModal({
@@ -22,7 +50,6 @@ export default function MatchWinnerModal({
   const { players: sessionPlayers, recordWin } = useGameSession();
   const [recorded, setRecorded] = useState(false);
 
-  // モーダルが開いた時に通算成績に+1を記録
   useEffect(() => {
     if (isOpen && winnerId && !recorded) {
       recordWin(winnerId);
@@ -35,7 +62,6 @@ export default function MatchWinnerModal({
 
   if (!isOpen) return null;
 
-  // 最新の通算ランキング（勝利数順にソート）
   const sortedPlayers = [...sessionPlayers].sort((a, b) => {
     if (b.totalWins !== a.totalWins) {
       return b.totalWins - a.totalWins;
@@ -44,22 +70,21 @@ export default function MatchWinnerModal({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      {/* 紙吹雪エフェクト（CSSベース） */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2B2D42]/60 backdrop-blur-xs animate-in fade-in duration-200">
+      {/* ノート切れ端風・紙吹雪エフェクト */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {[...Array(24)].map((_, i) => (
+        {[...Array(18)].map((_, i) => (
           <div
             key={i}
-            className="absolute rounded-full animate-bounce"
+            className="absolute rounded-xs border border-[#2B2D42] animate-bounce"
             style={{
               left: `${(i * 17) % 95}%`,
               top: `${(i * 23) % 80}%`,
-              width: `${(i % 3) * 6 + 8}px`,
-              height: `${(i % 3) * 6 + 8}px`,
-              backgroundColor: ["#F59E0B", "#EF4444", "#3B82F6", "#10B981", "#EC4899", "#8B5CF6"][
+              width: `${(i % 3) * 5 + 8}px`,
+              height: `${(i % 3) * 5 + 8}px`,
+              backgroundColor: ["#FFE066", "#FFADAD", "#7CE8DC", "#9AF0A8", "#F9B8E0", "#CBC8FA"][
                 i % 6
               ],
-              opacity: 0.7,
               animationDuration: `${1.5 + (i % 5) * 0.4}s`,
               animationDelay: `${(i % 4) * 0.2}s`,
             }}
@@ -67,33 +92,49 @@ export default function MatchWinnerModal({
         ))}
       </div>
 
-      <div className="relative w-full max-w-md bg-gradient-to-b from-gray-900 to-gray-950 border-2 border-amber-500/50 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-amber-500/20 text-center text-white overflow-hidden">
-        {/* 背景の光彩 */}
-        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-48 h-48 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
+      {/* メインの大学ノートカード */}
+      <div
+        className="relative w-full max-w-md bg-[#FAF6EB] border-[3px] border-[#2B2D42] rounded-3xl p-5 sm:p-7 shadow-[6px_8px_0_#2B2D42] text-[#2B2D42] overflow-hidden"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(to bottom, transparent 0px, transparent 27px, #C5D6E8 27px, #C5D6E8 28px)",
+          backgroundPosition: "0 12px",
+        }}
+      >
+        {/* 勝者メインカード（ホーム＆ゲーム一覧と同じ白カード＋斜め蛍光イエロー帯＋手書きイラスト） */}
+        <div className="relative bg-white border-[2.5px] border-[#2B2D42] rounded-2xl p-5 mb-5 shadow-[3px_4px_0_#2B2D42] overflow-hidden text-left">
+          {/* 右側の斜め蛍光イエローマーカー帯 */}
+          <div
+            className="absolute inset-y-0 right-0 w-[38%] pointer-events-none"
+            style={{
+              backgroundColor: "#FFE066",
+              clipPath: "polygon(32% 0%, 100% 0%, 100% 100%, 0% 100%)",
+            }}
+          />
 
-        {/* トロフィーアイコン */}
-        <div className="relative inline-flex items-center justify-center w-20 h-20 mb-4 bg-gradient-to-tr from-amber-500 to-yellow-300 rounded-full shadow-lg shadow-amber-500/30 animate-pulse">
-          <Trophy className="w-10 h-10 text-gray-950" />
-          <Sparkles className="absolute -top-1 -right-1 w-6 h-6 text-yellow-200 animate-spin" style={{ animationDuration: "6s" }} />
+          <div className="relative z-10 pr-16">
+            <span className="inline-block text-xs font-black text-[#2B2D42] bg-[#FFF275] px-2.5 py-0.5 rounded-md border-2 border-[#2B2D42] mb-2">
+              勝者決定！
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-black text-[#2B2D42] leading-tight break-words">
+              {winnerName}
+            </h2>
+            <p className="text-xs font-black text-[#2B2D42]/80 mt-1.5">
+              通算 ★ +1 獲得！
+            </p>
+          </div>
+
+          {/* 右下の手書きトロフィーイラスト */}
+          <div className="absolute right-3 bottom-2 z-10 pointer-events-none">
+            <WinnerTrophyDoodle className="w-14 h-14 sm:w-16 sm:h-16" />
+          </div>
         </div>
 
-        {/* 勝者タイトル */}
-        <div className="mb-6">
-          <p className="text-xs uppercase tracking-widest font-black text-amber-400 mb-1">
-            🎉 WINNER !! 🎉
-          </p>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-300">
-            {winnerName}
-          </h2>
-          <p className="text-xs text-amber-400/80 mt-1 font-medium">
-            通算 ★ +1 獲得！
-          </p>
-        </div>
-
-        {/* 通算ランキング */}
-        <div className="mb-6 bg-gray-950/70 border border-gray-800 rounded-2xl p-4">
-          <h3 className="text-xs font-bold text-gray-400 mb-3 flex items-center justify-center gap-1.5">
-            <span>📊</span> 本日の通算ランキング
+        {/* 本日の通算ランキング */}
+        <div className="mb-5 bg-white border-[2.5px] border-[#2B2D42] rounded-2xl p-4 shadow-[3px_4px_0_#2B2D42]">
+          <h3 className="text-xs font-black text-[#2B2D42] mb-3 flex items-center justify-center gap-1.5">
+            <Award className="w-4 h-4 text-[#2B2D42]" />
+            <span>本日の通算ランキング</span>
           </h3>
           <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
             {sortedPlayers.map((player, index) => {
@@ -101,27 +142,27 @@ export default function MatchWinnerModal({
               return (
                 <div
                   key={player.id}
-                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-all ${
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm border-2 border-[#2B2D42] transition-all ${
                     isWinner
-                      ? "bg-amber-500/20 border border-amber-500/40 text-amber-200 font-bold"
-                      : "bg-gray-900/60 text-gray-300"
+                      ? "bg-[#FFE066] text-[#2B2D42] font-black shadow-[2px_2px_0_#2B2D42]"
+                      : "bg-[#FAF6EB] text-[#2B2D42] font-bold"
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 text-left text-xs font-bold text-gray-500">
-                      {index === 0 ? "👑" : `${index + 1}位`}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-8 text-left text-xs font-black text-[#2B2D42] shrink-0">
+                      {index + 1}位
                     </span>
                     <span className="truncate max-w-[140px]">{player.name}</span>
                     {isWinner && (
-                      <span className="text-[10px] bg-amber-400 text-gray-950 px-1.5 py-0.5 rounded-full font-black">
-                        UP!
+                      <span className="text-[10px] bg-white text-[#2B2D42] border border-[#2B2D42] px-2 py-0.5 rounded-full font-black shrink-0">
+                        +1勝
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-1 font-extrabold text-amber-400">
+                  <div className="flex items-center gap-1 font-black text-[#2B2D42] shrink-0">
                     <span>★</span>
                     <span className="text-base">{player.totalWins}</span>
-                    <span className="text-xs text-gray-400 font-normal">勝</span>
+                    <span className="text-xs text-[#2B2D42]/75 font-bold">勝</span>
                   </div>
                 </div>
               );
@@ -129,22 +170,22 @@ export default function MatchWinnerModal({
           </div>
         </div>
 
-        {/* アクション導線（シンプル2大ボタン） */}
-        <div className="space-y-3">
+        {/* アクションボタン（重複絵文字を排除した白カード＆蛍光イエローボタン） */}
+        <div className="space-y-2.5">
           <button
             onClick={onRematch}
-            className="w-full py-4 px-6 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-gray-950 font-black text-lg rounded-2xl shadow-xl shadow-amber-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-4 px-6 bg-[#FFE066] hover:bg-[#ffd633] text-[#2B2D42] font-black text-base sm:text-lg rounded-2xl border-[2.5px] border-[#2B2D42] shadow-[3px_4px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[1px_2px_0_#2B2D42] transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
-            <RotateCcw className="w-5 h-5" />
-            <span>🔄 もう1戦！（リベンジ）</span>
+            <RotateCcw className="w-5 h-5 stroke-[2.5]" />
+            <span>もう1戦！（リベンジ）</span>
           </button>
 
           <Link
             href="/"
-            className="w-full py-3.5 px-6 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold text-sm rounded-2xl border border-gray-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+            className="w-full py-3.5 px-6 bg-white hover:bg-[#FAF6EB] text-[#2B2D42] font-black text-sm rounded-2xl border-[2.5px] border-[#2B2D42] shadow-[3px_4px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[1px_2px_0_#2B2D42] transition-all flex items-center justify-center gap-2"
           >
-            <LayoutGrid className="w-4 h-4 text-amber-400" />
-            <span>🎲 次の対戦ゲームを選ぶ（通算★引継）</span>
+            <LayoutGrid className="w-4 h-4 stroke-[2.5] text-[#2B2D42]" />
+            <span>次の対戦ゲームを選ぶ（通算★引継）</span>
           </Link>
         </div>
       </div>

@@ -1,18 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import { MatchSessionConfig, MatchProgressState } from "@/types/matchMode";
 import {
   Flame,
-  RotateCcw,
   Home,
   Dices,
   Trophy,
   Skull,
   Target,
   Swords,
-  Users,
 } from "lucide-react";
 
 interface ArenaHeaderProps {
@@ -30,12 +27,11 @@ export default function ArenaHeader({
 }: ArenaHeaderProps) {
   const [showConfirmQuit, setShowConfirmQuit] = useState(false);
 
-  // ルールタイトル生成
   const getRuleBadge = () => {
     if (state.isSuddenDeath) {
       return (
-        <span className="px-2.5 py-1 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-black animate-pulse flex items-center gap-1">
-          <Flame className="w-3.5 h-3.5 text-rose-400" />
+        <span className="px-2.5 py-1 rounded-full bg-[#FFADAD] border-2 border-[#2B2D42] text-[#2B2D42] text-xs font-black animate-pulse flex items-center gap-1">
+          <Flame className="w-3.5 h-3.5" />
           <span>同点サドンデス延長戦！</span>
         </span>
       );
@@ -44,8 +40,8 @@ export default function ArenaHeader({
     if (config.mode === "duel_1v1") {
       const targetWins = config.duelRule === "first_to_5" ? 5 : 3;
       return (
-        <span className="px-2.5 py-1 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-black flex items-center gap-1">
-          <Swords className="w-3.5 h-3.5 text-rose-400" />
+        <span className="px-2.5 py-1 rounded-full bg-[#7CE8DC] border-2 border-[#2B2D42] text-[#2B2D42] text-xs font-black flex items-center gap-1">
+          <Swords className="w-3.5 h-3.5" />
           <span>1vs1 【{targetWins}本先取】</span>
         </span>
       );
@@ -59,8 +55,8 @@ export default function ArenaHeader({
           ? "全3回戦"
           : "全5回戦";
       return (
-        <span className="px-2.5 py-1 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-xs font-black flex items-center gap-1">
-          <Target className="w-3.5 h-3.5 text-cyan-400" />
+        <span className="px-2.5 py-1 rounded-full bg-[#7CE8DC] border-2 border-[#2B2D42] text-[#2B2D42] text-xs font-black flex items-center gap-1">
+          <Target className="w-3.5 h-3.5" />
           <span>点数制 【{goalText}】</span>
         </span>
       );
@@ -68,18 +64,18 @@ export default function ArenaHeader({
 
     if (config.multiRuleType === "survival_knockout") {
       return (
-        <span className="px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-black flex items-center gap-1">
-          <Trophy className="w-3.5 h-3.5 text-amber-400" />
-          <span>勝ち残り制（サバイバル）</span>
+        <span className="px-2.5 py-1 rounded-full bg-[#E8F655] border-2 border-[#2B2D42] text-[#2B2D42] text-xs font-black flex items-center gap-1">
+          <Trophy className="w-3.5 h-3.5" />
+          <span>勝ち残り制</span>
         </span>
       );
     }
 
     if (config.multiRuleType === "loser_king") {
       return (
-        <span className="px-2.5 py-1 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-300 text-xs font-black flex items-center gap-1">
-          <Skull className="w-3.5 h-3.5 text-rose-400" />
-          <span>負け残り最弱王決定戦</span>
+        <span className="px-2.5 py-1 rounded-full bg-[#FFADAD] border-2 border-[#2B2D42] text-[#2B2D42] text-xs font-black flex items-center gap-1">
+          <Skull className="w-3.5 h-3.5" />
+          <span>最弱王決定戦</span>
         </span>
       );
     }
@@ -88,21 +84,22 @@ export default function ArenaHeader({
   };
 
   return (
-    <header className="w-full bg-slate-950/80 backdrop-blur-md border-b border-white/10 p-3 sm:p-4 sticky top-0 z-40 space-y-3">
+    <header className="w-full bg-[#FAF6EB]/95 backdrop-blur-xs border-b-2 border-[#2B2D42] p-3 sm:p-4 sticky top-0 z-40 space-y-3">
       {/* 上部: ナビゲーション・タイトル・リロール */}
-      <div className="flex items-center justify-between gap-2 max-w-2xl mx-auto">
+      <div className="flex items-center justify-between gap-2 max-w-xl mx-auto">
         <button
           type="button"
           onClick={() => setShowConfirmQuit(true)}
-          className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 text-xs flex items-center gap-1 transition-all cursor-pointer"
+          className="w-10 h-10 rounded-xl bg-white border-2 border-[#2B2D42] shadow-[2px_3px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[1px_1px_0_#2B2D42] text-[#2B2D42] hover:bg-amber-50 flex items-center justify-center transition-all cursor-pointer"
+          title="トップへ戻る"
+          aria-label="トップへ戻る"
         >
-          <Home className="w-4 h-4" />
-          <span className="hidden sm:inline">トップへ</span>
+          <Home className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-xl bg-white/10 text-white font-black text-xs sm:text-sm">
-            ROUND {state.currentRound}
+        <div className="flex items-center gap-2 flex-wrap justify-center">
+          <span className="px-3 py-1 rounded-xl bg-[#2B2D42] text-white font-black text-xs sm:text-sm">
+            第{state.currentRound}戦
           </span>
           {getRuleBadge()}
         </div>
@@ -111,17 +108,17 @@ export default function ArenaHeader({
         <button
           type="button"
           onClick={onReroll}
-          className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-black flex items-center gap-1 transition-all active:scale-95 cursor-pointer shadow-sm"
+          className="px-3 py-2 rounded-xl bg-[#FFE066] hover:bg-[#ffd633] text-[#2B2D42] border-2 border-[#2B2D42] shadow-[2px_3px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[1px_1px_0_#2B2D42] text-xs font-black flex items-center gap-1 transition-all cursor-pointer"
           title="別のゲームを引き直す"
         >
-          <Dices className="w-3.5 h-3.5" />
-          <span>リロール</span>
+          <Dices className="w-4 h-4" />
+          <span>引き直す</span>
         </button>
       </div>
 
       {/* 下部: プレイヤーステータスバー */}
-      <div className="flex items-center justify-center gap-2 overflow-x-auto pb-1 max-w-2xl mx-auto">
-        {config.players.map((p, idx) => {
+      <div className="flex items-center justify-center gap-2 overflow-x-auto pb-1 max-w-xl mx-auto">
+        {config.players.map((p) => {
           const score = state.playerScores[p.id] || 0;
           const isEliminated = state.eliminatedPlayerIds.includes(p.id);
           const isEscaped = state.escapedPlayerIds.includes(p.id);
@@ -131,36 +128,34 @@ export default function ArenaHeader({
           return (
             <div
               key={p.id}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 border transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-black shrink-0 flex items-center gap-1.5 border-2 transition-all ${
                 isEliminated
-                  ? "bg-gray-950/40 border-gray-800 text-gray-500 line-through opacity-60"
+                  ? "bg-slate-200 border-[#2B2D42]/30 text-[#2B2D42]/45 line-through"
                   : isEscaped
-                  ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300"
+                  ? "bg-[#9AF0A8] border-[#2B2D42] text-[#2B2D42]"
                   : isSuddenDeathTarget
-                  ? "bg-rose-950/60 border-rose-500 text-rose-200 animate-pulse"
-                  : "bg-white/5 border-white/10 text-white"
+                  ? "bg-[#FFADAD] border-[#2B2D42] text-[#2B2D42] animate-pulse"
+                  : "bg-white border-[#2B2D42] text-[#2B2D42] shadow-[2px_2px_0_#2B2D42]"
               }`}
             >
               <span className="truncate max-w-[80px]">{p.name}</span>
 
-              {/* 1vs1または点数制のスコア */}
-              {(config.mode === "duel_1v1" || config.multiRuleType === "point_race") && (
-                <span className="px-1.5 py-0.5 rounded-md bg-amber-400 text-slate-950 font-black text-[10px]">
+              {(config.mode === "duel_1v1" ||
+                config.multiRuleType === "point_race") && (
+                <span className="px-1.5 py-0.5 rounded-md bg-[#FFE066] border border-[#2B2D42] text-[#2B2D42] font-black text-[10px]">
                   ★ {score}
                 </span>
               )}
 
-              {/* 勝ち残り制の脱落バッジ */}
               {config.multiRuleType === "survival_knockout" && (
-                <span className="text-[10px]">
-                  {isEliminated ? "💀 OUT" : "ALIVE"}
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#FAF6EB] border border-[#2B2D42]/40">
+                  {isEliminated ? "脱落" : "生存"}
                 </span>
               )}
 
-              {/* 最弱王決定戦の勝ち抜けバッジ */}
               {config.multiRuleType === "loser_king" && (
-                <span className="text-[10px]">
-                  {isEscaped ? "🎉 SAFE" : "⚠️ 参戦中"}
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#FAF6EB] border border-[#2B2D42]/40">
+                  {isEscaped ? "🎉 勝ち抜け" : "対戦中"}
                 </span>
               )}
             </div>
@@ -170,24 +165,24 @@ export default function ArenaHeader({
 
       {/* 離脱確認モーダル */}
       {showConfirmQuit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-slate-900 border border-white/20 p-6 rounded-3xl max-w-sm w-full text-center space-y-4">
-            <h3 className="text-base font-black text-white">対戦を中断しますか？</h3>
-            <p className="text-xs text-slate-400">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-xs">
+          <div className="bg-[#FAF6EB] border-2 border-[#2B2D42] p-6 rounded-3xl max-w-sm w-full text-center space-y-4 shadow-[6px_7px_0_#2B2D42] text-[#2B2D42]">
+            <h3 className="text-base font-black">対戦を中断しますか？</h3>
+            <p className="text-xs font-bold text-[#2B2D42]/75">
               現在の対戦データはリセットされます。
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-2.5">
               <button
                 type="button"
                 onClick={() => setShowConfirmQuit(false)}
-                className="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white cursor-pointer"
+                className="flex-1 py-2.5 rounded-xl bg-white hover:bg-slate-100 border-2 border-[#2B2D42] text-xs font-black text-[#2B2D42] cursor-pointer"
               >
                 続ける
               </button>
               <button
                 type="button"
                 onClick={onQuit}
-                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white cursor-pointer"
+                className="flex-1 py-2.5 rounded-xl bg-[#FFADAD] hover:brightness-95 border-2 border-[#2B2D42] text-xs font-black text-[#2B2D42] cursor-pointer"
               >
                 トップへ戻る
               </button>

@@ -25,7 +25,6 @@ export default function ArenaPage() {
     clearMatch,
   } = useActiveMatch();
 
-  // 対戦セッションがない場合はトップへリダイレクト
   useEffect(() => {
     if (!config || !state) {
       router.replace("/");
@@ -34,18 +33,19 @@ export default function ArenaPage() {
 
   if (!config || !state) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
-        <div className="animate-pulse text-sm text-slate-400">
+      <div className="min-h-screen bg-[#FAF6EB] flex items-center justify-center text-[#2B2D42]">
+        <div className="animate-pulse text-sm font-black">
           対戦データを読み込み中...
         </div>
       </div>
     );
   }
 
-  // 現在の抽選ゲーム（自作ゲームを含む全プールから取得）
   const allAvailable = getAllGamesWithCustom();
   const currentGame =
-    allAvailable.find((g) => g.id === state.currentGameId) || allAvailable[0] || ALL_GAMES[0];
+    allAvailable.find((g) => g.id === state.currentGameId) ||
+    allAvailable[0] ||
+    ALL_GAMES[0];
 
   const handleQuitToHome = () => {
     clearMatch();
@@ -58,7 +58,20 @@ export default function ArenaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-white flex flex-col justify-between font-sans selection:bg-rose-500 selection:text-white">
+    <div
+      className="min-h-screen bg-[#FAF6EB] text-[#2B2D42] flex flex-col justify-between relative"
+      style={{
+        backgroundImage:
+          "repeating-linear-gradient(to bottom, transparent 0px, transparent 27px, rgba(116, 162, 209, 0.32) 27px, rgba(116, 162, 209, 0.32) 28px)",
+        backgroundPosition: "0 16px",
+      }}
+    >
+      {/* 大学ノートの左端：赤い縦マージン2本線 */}
+      <div
+        className="pointer-events-none fixed inset-y-0 left-4 sm:left-10 w-1 border-l-2 border-r border-rose-400/45 z-0"
+        aria-hidden="true"
+      />
+
       {/* 対戦ヘッダー */}
       <ArenaHeader
         config={config}
@@ -68,7 +81,7 @@ export default function ArenaPage() {
       />
 
       {/* メインゲームホスト（GMツール＆お題） */}
-      <main className="flex-1 p-4 sm:p-6 overflow-y-auto max-w-xl mx-auto w-full space-y-6">
+      <main className="relative z-10 flex-1 p-4 sm:p-6 overflow-y-auto max-w-xl mx-auto w-full space-y-5">
         <ArenaGameHost game={currentGame} />
       </main>
 

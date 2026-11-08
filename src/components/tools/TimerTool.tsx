@@ -16,8 +16,8 @@ import {
 import confetti from "canvas-confetti";
 
 interface TimerToolProps {
-  defaultDuration?: number; // 秒数
-  isBlindDefault?: boolean; // ブラインドモードがデフォルトか
+  defaultDuration?: number;
+  isBlindDefault?: boolean;
 }
 
 type Mode = "blind" | "countdown";
@@ -31,13 +31,14 @@ export default function TimerTool({
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [elapsedMs, setElapsedMs] = useState<number>(0);
   const [remainingSec, setRemainingSec] = useState<number>(defaultDuration);
-  const [result, setResult] = useState<{ actual: number; diff: number } | null>(null);
+  const [result, setResult] = useState<{ actual: number; diff: number } | null>(
+    null
+  );
 
   const startTimeRef = useRef<number>(0);
   const timerFrameRef = useRef<number | null>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // ブラインドタイマーのループ
   useEffect(() => {
     if (mode !== "blind" || !isRunning) {
       if (timerFrameRef.current) cancelAnimationFrame(timerFrameRef.current);
@@ -59,10 +60,10 @@ export default function TimerTool({
     };
   }, [mode, isRunning]);
 
-  // カウントダウンタイマーのループ
   useEffect(() => {
     if (mode !== "countdown" || !isRunning) {
-      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+      if (countdownIntervalRef.current)
+        clearInterval(countdownIntervalRef.current);
       return;
     }
 
@@ -82,11 +83,11 @@ export default function TimerTool({
     }, 1000);
 
     return () => {
-      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+      if (countdownIntervalRef.current)
+        clearInterval(countdownIntervalRef.current);
     };
   }, [mode, isRunning]);
 
-  // ブラインドスタート・ストップ
   const handleBlindToggle = () => {
     if (!isRunning) {
       setResult(null);
@@ -116,7 +117,6 @@ export default function TimerTool({
     }
   };
 
-  // カウントダウントグル
   const handleCountdownToggle = () => {
     if (!isRunning) {
       if (remainingSec === 0) setRemainingSec(targetSeconds);
@@ -134,40 +134,48 @@ export default function TimerTool({
     setResult(null);
   };
 
-  // 評価コメント取得
   const getRating = (diff: number) => {
     const abs = Math.abs(diff);
-    if (abs < 0.2) return { text: "神の体内時計！完全感覚！", color: "text-amber-300", badge: "GOD" };
-    if (abs < 0.5) return { text: "凄まじい精度！お見事！", color: "text-emerald-300", badge: "EXCELLENT" };
-    if (abs < 1.0) return { text: "ナイス！ほぼピッタリ！", color: "text-cyan-300", badge: "GOOD" };
-    if (abs < 2.0) return { text: "惜しい！あと一歩！", color: "text-purple-300", badge: "NICE TRY" };
-    return { text: "体内時計がズレてるかも？！", color: "text-rose-300", badge: "OOPS" };
+    if (abs < 0.2)
+      return { text: "神の体内時計！完全感覚！", badge: "大成功！" };
+    if (abs < 0.5)
+      return { text: "凄まじい精度！お見事！", badge: "すばらしい！" };
+    if (abs < 1.0)
+      return { text: "ナイス！ほぼピッタリ！", badge: "おしい！" };
+    if (abs < 2.0) return { text: "あと一歩！", badge: "まずまず" };
+    return { text: "体内時計がズレてるかも？！", badge: "ずれすぎ！" };
   };
 
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950/70 via-slate-900/80 to-purple-950/70 border border-white/20 p-5 sm:p-6 shadow-2xl backdrop-blur-xl">
-      {/* 背景の光彩 */}
-      <div className="absolute -bottom-20 -right-20 w-48 h-48 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
+    <div className="relative overflow-hidden rounded-3xl bg-white border-2 border-[#2B2D42] p-5 sm:p-6 shadow-[4px_5px_0_#2B2D42] text-[#2B2D42]">
+      {/* 右上の斜め蛍光マーカー装飾 */}
+      <div
+        className="absolute top-0 right-0 w-36 h-16 pointer-events-none opacity-65"
+        style={{
+          backgroundColor: "#7CE8DC",
+          clipPath: "polygon(35% 0, 100% 0, 100% 100%, 0 0)",
+        }}
+      />
 
       {/* ヘッダーエリア & モード切替タブ */}
-      <div className="flex items-center justify-between gap-2 mb-4">
-        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-400/20 border border-cyan-400/40 text-cyan-300 text-xs font-bold">
+      <div className="relative z-10 flex items-center justify-between gap-2 mb-4 flex-wrap">
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#7CE8DC] border-2 border-[#2B2D42] text-[#2B2D42] text-xs font-black">
           <Clock className="w-3.5 h-3.5" />
-          <span>タイマーツール</span>
+          <span>タイマー</span>
         </div>
 
         {/* モード選択 */}
-        <div className="flex bg-white/10 rounded-xl p-1 border border-white/10 text-xs font-semibold">
+        <div className="flex bg-[#FAF6EB] rounded-xl p-1 border-2 border-[#2B2D42] text-xs font-black">
           <button
             type="button"
             onClick={() => {
               handleReset();
               setMode("blind");
             }}
-            className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 ${
+            className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
               mode === "blind"
-                ? "bg-cyan-500 text-slate-950 shadow-md font-bold"
-                : "text-slate-300 hover:text-white"
+                ? "bg-[#2B2D42] text-white"
+                : "text-[#2B2D42]/70 hover:text-[#2B2D42]"
             }`}
           >
             <EyeOff className="w-3 h-3" />
@@ -179,10 +187,10 @@ export default function TimerTool({
               handleReset();
               setMode("countdown");
             }}
-            className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 ${
+            className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
               mode === "countdown"
-                ? "bg-pink-500 text-white shadow-md font-bold"
-                : "text-slate-300 hover:text-white"
+                ? "bg-[#2B2D42] text-white"
+                : "text-[#2B2D42]/70 hover:text-[#2B2D42]"
             }`}
           >
             <Eye className="w-3 h-3" />
@@ -192,8 +200,8 @@ export default function TimerTool({
       </div>
 
       {/* 目標秒数プリセット */}
-      <div className="flex items-center justify-between gap-2 mb-4 bg-slate-950/40 p-2.5 rounded-2xl border border-white/10">
-        <span className="text-xs text-purple-200/80 font-medium pl-1">
+      <div className="flex items-center justify-between gap-2 mb-4 bg-[#FAF6EB] p-2.5 rounded-2xl border-2 border-[#2B2D42]">
+        <span className="text-xs text-[#2B2D42] font-black pl-1">
           {mode === "blind" ? "目標秒数:" : "制限時間:"}
         </span>
         <div className="flex gap-1">
@@ -207,10 +215,10 @@ export default function TimerTool({
                 setRemainingSec(s);
                 setResult(null);
               }}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all border ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-black transition-all border border-[#2B2D42] cursor-pointer ${
                 targetSeconds === s
-                  ? "bg-cyan-400 text-slate-950 border-cyan-300 shadow-sm"
-                  : "bg-white/5 hover:bg-white/15 text-slate-300 border-white/10"
+                  ? "bg-[#7CE8DC] text-[#2B2D42]"
+                  : "bg-white hover:bg-slate-100 text-[#2B2D42]/70"
               }`}
             >
               {s}秒
@@ -221,88 +229,96 @@ export default function TimerTool({
 
       {/* メインタイマー表示エリア */}
       {mode === "blind" ? (
-        <div className="flex flex-col items-center justify-center p-6 bg-slate-950/60 rounded-3xl border border-white/15 mb-4 relative overflow-hidden min-h-[170px]">
+        <div className="flex flex-col items-center justify-center p-6 bg-[#FAF6EB] rounded-2xl border-2 border-[#2B2D42] mb-4 relative overflow-hidden min-h-[160px]">
           {isRunning ? (
-            /* 計測中（数字を隠すブラインド演出） */
             <div className="text-center animate-pulse">
-              <div className="text-5xl sm:text-6xl font-black text-cyan-300 tracking-wider font-mono">
+              <div className="text-5xl sm:text-6xl font-black text-[#2B2D42] tracking-wider font-mono">
                 ??.??
               </div>
-              <div className="mt-2 text-xs sm:text-sm text-cyan-200/80 font-bold flex items-center justify-center gap-1.5">
-                <Flame className="w-4 h-4 text-orange-400 animate-bounce" />
+              <div className="mt-2 text-xs sm:text-sm text-[#2B2D42] font-black flex items-center justify-center gap-1.5">
+                <Flame className="w-4 h-4 text-rose-500 animate-bounce" />
                 <span>心の中で {targetSeconds}秒 をカウント中…！</span>
               </div>
-              <p className="text-[11px] text-slate-400 mt-1">
+              <p className="text-[11px] font-bold text-[#2B2D42]/65 mt-1">
                 「今だ！」と思ったら下のストップをタップ！
               </p>
             </div>
           ) : result ? (
-            /* 結果発表 */
             <div className="text-center animate-in zoom-in-95 duration-200 w-full">
-              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[11px] font-black uppercase mb-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#FFE066] border border-[#2B2D42] text-[#2B2D42] text-[11px] font-black mb-1">
                 <Trophy className="w-3.5 h-3.5" />
                 <span>{getRating(result.diff).badge}</span>
               </div>
 
-              <div className="text-5xl sm:text-6xl font-black text-white font-mono tracking-tight drop-shadow-md">
+              <div className="text-5xl sm:text-6xl font-black text-[#2B2D42] font-mono tracking-tight">
                 {result.actual.toFixed(2)}
-                <span className="text-xl font-normal text-slate-400 ml-1">秒</span>
-              </div>
-
-              <div className="mt-2 flex items-center justify-center gap-2">
-                <span className="text-xs text-slate-300">目標: {targetSeconds}秒</span>
-                <span
-                  className={`text-sm font-black px-2.5 py-0.5 rounded-full ${
-                    Math.abs(result.diff) <= 0.5
-                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/40"
-                      : "bg-rose-500/20 text-rose-300 border border-rose-400/40"
-                  }`}
-                >
-                  誤差 {result.diff > 0 ? `+${result.diff.toFixed(2)}` : result.diff.toFixed(2)}秒
+                <span className="text-xl font-bold text-[#2B2D42]/70 ml-1">
+                  秒
                 </span>
               </div>
 
-              <p className={`text-sm font-bold mt-2 ${getRating(result.diff).color}`}>
+              <div className="mt-2 flex items-center justify-center gap-2">
+                <span className="text-xs font-bold text-[#2B2D42]/80">
+                  目標: {targetSeconds}秒
+                </span>
+                <span
+                  className={`text-sm font-black px-2.5 py-0.5 rounded-full border border-[#2B2D42] ${
+                    Math.abs(result.diff) <= 0.5
+                      ? "bg-[#9AF0A8] text-[#2B2D42]"
+                      : "bg-[#FFADAD] text-[#2B2D42]"
+                  }`}
+                >
+                  誤差{" "}
+                  {result.diff > 0
+                    ? `+${result.diff.toFixed(2)}`
+                    : result.diff.toFixed(2)}
+                  秒
+                </span>
+              </div>
+
+              <p className="text-sm font-black mt-2 text-[#2B2D42]">
                 {getRating(result.diff).text}
               </p>
             </div>
           ) : (
-            /* 待機状態 */
             <div className="text-center">
-              <div className="text-5xl sm:text-6xl font-black text-slate-500 font-mono tracking-wider">
+              <div className="text-5xl sm:text-6xl font-black text-[#2B2D42]/50 font-mono tracking-wider">
                 {targetSeconds}.00
-                <span className="text-xl font-normal text-slate-600 ml-1">秒</span>
+                <span className="text-xl font-bold text-[#2B2D42]/50 ml-1">
+                  秒
+                </span>
               </div>
-              <p className="text-xs text-slate-400 mt-2">
+              <p className="text-xs font-bold text-[#2B2D42]/65 mt-2">
                 「スタート」を押すと数字が隠れます！
               </p>
             </div>
           )}
         </div>
       ) : (
-        /* 通常カウントダウン表示 */
-        <div className="flex flex-col items-center justify-center p-6 bg-slate-950/60 rounded-3xl border border-white/15 mb-4 relative min-h-[170px]">
+        <div className="flex flex-col items-center justify-center p-6 bg-[#FAF6EB] rounded-2xl border-2 border-[#2B2D42] mb-4 relative min-h-[160px]">
           <div
             className={`text-6xl sm:text-7xl font-black font-mono tracking-tight transition-colors ${
               remainingSec <= 3 && remainingSec > 0
-                ? "text-rose-400 animate-ping"
+                ? "text-rose-600 animate-ping"
                 : remainingSec === 0
-                ? "text-rose-500"
-                : "text-pink-300"
+                ? "text-rose-600"
+                : "text-[#2B2D42]"
             }`}
           >
             {remainingSec}
-            <span className="text-2xl font-normal text-slate-400 ml-1">秒</span>
+            <span className="text-2xl font-bold text-[#2B2D42]/70 ml-1">
+              秒
+            </span>
           </div>
 
           {remainingSec === 0 && (
-            <div className="mt-2 text-rose-400 font-black text-base animate-bounce flex items-center gap-1">
+            <div className="mt-2 text-rose-600 font-black text-base animate-bounce flex items-center gap-1">
               <Award className="w-5 h-5" />
-              <span>TIME UP!! 終了！</span>
+              <span>時間切れ！終了！</span>
             </div>
           )}
           {isRunning && (
-            <div className="mt-2 text-xs text-purple-200 animate-pulse font-medium">
+            <div className="mt-2 text-xs text-[#2B2D42]/75 animate-pulse font-bold">
               カウントダウン進行中…
             </div>
           )}
@@ -310,16 +326,16 @@ export default function TimerTool({
       )}
 
       {/* 操作ボタン */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-2.5">
         <button
           type="button"
-          onClick={mode === "blind" ? handleBlindToggle : handleCountdownToggle}
-          className={`col-span-2 py-3.5 px-4 rounded-2xl font-black text-base flex items-center justify-center gap-2 shadow-xl active:scale-95 transition-all ${
+          onClick={
+            mode === "blind" ? handleBlindToggle : handleCountdownToggle
+          }
+          className={`col-span-2 py-3.5 px-4 rounded-2xl border-2 border-[#2B2D42] font-black text-base flex items-center justify-center gap-2 shadow-[3px_4px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[1px_2px_0_#2B2D42] transition-all cursor-pointer ${
             isRunning
-              ? "bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/30 ring-2 ring-rose-400/40"
-              : mode === "blind"
-              ? "bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 shadow-cyan-500/30"
-              : "bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 text-white shadow-pink-500/30"
+              ? "bg-[#FFADAD] text-[#2B2D42]"
+              : "bg-[#FFE066] hover:bg-[#ffd633] text-[#2B2D42]"
           }`}
         >
           {isRunning ? (
@@ -338,7 +354,7 @@ export default function TimerTool({
         <button
           type="button"
           onClick={handleReset}
-          className="py-3.5 px-3 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 text-white font-semibold text-xs flex items-center justify-center gap-1 border border-white/15 shadow-sm transition-all"
+          className="py-3.5 px-3 rounded-2xl bg-[#FAF6EB] hover:bg-slate-100 border-2 border-[#2B2D42] text-[#2B2D42] font-black text-xs flex items-center justify-center gap-1 shadow-[3px_4px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[1px_2px_0_#2B2D42] transition-all cursor-pointer"
         >
           <RotateCcw className="w-4 h-4" />
           <span>リセット</span>

@@ -10,13 +10,10 @@ import {
 import {
   X,
   Sparkles,
-  Dices,
   Clock,
   Activity,
   MessageSquare,
-  Plus,
   Save,
-  Trash2,
   HelpCircle,
   FileText,
 } from "lucide-react";
@@ -39,7 +36,9 @@ export default function CustomGameModal({
   const [ruleText, setRuleText] = useState("");
   const [minPlayers, setMinPlayers] = useState(2);
   const [maxPlayers, setMaxPlayers] = useState(8);
-  const [selectedTool, setSelectedTool] = useState<"prompt" | "bpm" | "timer" | "none">("prompt");
+  const [selectedTool, setSelectedTool] = useState<
+    "prompt" | "bpm" | "timer" | "none"
+  >("prompt");
   const [promptListText, setPromptListText] = useState("");
   const [defaultBpm, setDefaultBpm] = useState(120);
   const [timerDuration, setTimerDuration] = useState(10);
@@ -60,7 +59,9 @@ export default function CustomGameModal({
         const list = meta.promptList || gameToEdit.prompt_list || [];
         setPromptListText(
           list
-            .map((p) => (typeof p === "string" ? p : `${p.question} (答: ${p.answer})`))
+            .map((p) =>
+              typeof p === "string" ? p : `${p.question} (答: ${p.answer})`
+            )
             .join("\n")
         );
       } else if (meta?.tools?.includes("bpm") || meta?.defaultBpm) {
@@ -134,29 +135,38 @@ export default function CustomGameModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-gradient-to-b from-gray-900 to-gray-950 border-2 border-amber-500/40 rounded-3xl p-6 text-white shadow-2xl max-h-[92vh] overflow-y-auto space-y-5">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-xs animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-lg bg-[#FAF6EB] border-2 border-[#2B2D42] rounded-3xl p-5 sm:p-6 text-[#2B2D42] shadow-[6px_7px_0_#2B2D42] max-h-[92vh] overflow-y-auto space-y-4"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* ヘッダー */}
-        <div className="flex items-center justify-between pb-3 border-b border-gray-800">
-          <div className="flex items-center gap-2 text-amber-400">
-            <Sparkles className="w-5 h-5" />
-            <h3 className="text-lg font-black text-white">
+        <div className="flex items-center justify-between pb-3 border-b-2 border-dashed border-[#2B2D42]/25">
+          <div className="flex items-center gap-2">
+            <span className="w-8 h-8 rounded-xl bg-[#FFADAD] border-2 border-[#2B2D42] flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-[#2B2D42]" />
+            </span>
+            <h3 className="text-lg font-black text-[#2B2D42]">
               {gameToEdit ? "オリジナルゲームを編集" : "オリジナルゲームを作成"}
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 cursor-pointer"
+            className="p-1.5 rounded-xl bg-white border-2 border-[#2B2D42] text-[#2B2D42] hover:bg-amber-100 cursor-pointer"
+            aria-label="閉じる"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 stroke-[2.5]" />
           </button>
         </div>
 
         {/* テンプレート選択（新規時のみ） */}
         {!gameToEdit && (
           <div className="space-y-2">
-            <div className="text-xs font-bold text-gray-400 flex items-center gap-1">
-              <FileText className="w-3.5 h-3.5 text-amber-400" />
+            <div className="text-xs font-black text-[#2B2D42] flex items-center gap-1">
+              <FileText className="w-3.5 h-3.5 text-[#2B2D42]" />
               <span>おすすめテンプレートから作る（ワンタップ入力）:</span>
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -165,13 +175,15 @@ export default function CustomGameModal({
                   type="button"
                   key={tpl.name}
                   onClick={() => applyTemplate(tpl)}
-                  className="p-2.5 rounded-xl bg-gray-950/60 hover:bg-amber-950/30 border border-gray-800 hover:border-amber-500/40 text-left transition-all cursor-pointer group"
+                  className="p-2.5 rounded-xl bg-white hover:bg-[#FFF275]/60 border-2 border-[#2B2D42] shadow-[2px_2px_0_#2B2D42] text-left transition-all cursor-pointer"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-white group-hover:text-amber-300">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="text-[11px] font-black text-[#2B2D42] truncate">
                       {tpl.name}
                     </span>
-                    <span className="text-[10px] text-gray-400">{tpl.badge}</span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#FAF6EB] border border-[#2B2D42]/30 shrink-0">
+                      {tpl.badge}
+                    </span>
                   </div>
                 </button>
               ))}
@@ -181,14 +193,14 @@ export default function CustomGameModal({
 
         {/* ゲームタイトル */}
         <div className="space-y-1.5">
-          <label className="text-xs font-bold text-gray-300 block">
-            ゲームタイトル <span className="text-rose-400">*</span>
+          <label className="text-xs font-black text-[#2B2D42] block">
+            ゲームタイトル <span className="text-rose-600">*</span>
           </label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-gray-950/80 border border-gray-800 focus:border-amber-400 p-2.5 rounded-xl text-sm font-bold text-white focus:outline-none"
+            className="w-full bg-white border-2 border-[#2B2D42] p-2.5 rounded-xl text-sm font-black text-[#2B2D42] shadow-[2px_2px_0_#2B2D42] focus:outline-none"
             placeholder="例: オリジナル古今東西、一言大喜利など"
             maxLength={30}
           />
@@ -196,14 +208,14 @@ export default function CustomGameModal({
 
         {/* 簡単な説明 */}
         <div className="space-y-1.5">
-          <label className="text-xs font-bold text-gray-300 block">
+          <label className="text-xs font-black text-[#2B2D42] block">
             簡単な説明（スロット・一覧に表示）
           </label>
           <input
             type="text"
             value={shortDesc}
             onChange={(e) => setShortDesc(e.target.value)}
-            className="w-full bg-gray-950/80 border border-gray-800 focus:border-amber-400 p-2.5 rounded-xl text-sm text-white focus:outline-none"
+            className="w-full bg-white border-2 border-[#2B2D42] p-2.5 rounded-xl text-sm font-bold text-[#2B2D42] shadow-[2px_2px_0_#2B2D42] focus:outline-none"
             placeholder="例: リズムに合わせてお題を答えていくゲーム！"
             maxLength={60}
           />
@@ -211,34 +223,38 @@ export default function CustomGameModal({
 
         {/* プレイ可能人数 */}
         <div className="space-y-1.5">
-          <label className="text-xs font-bold text-gray-300 block">
+          <label className="text-xs font-black text-[#2B2D42] block">
             プレイ可能人数
           </label>
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-gray-950/80 border border-gray-800 p-2.5 rounded-xl flex items-center justify-between">
-              <span className="text-xs text-gray-400">最小人数:</span>
+            <div className="bg-white border-2 border-[#2B2D42] p-2.5 rounded-xl shadow-[2px_2px_0_#2B2D42] flex items-center justify-between">
+              <span className="text-xs font-bold text-[#2B2D42]/75">
+                最小人数:
+              </span>
               <select
                 value={minPlayers}
                 onChange={(e) => setMinPlayers(Number(e.target.value))}
-                className="bg-transparent text-sm font-bold text-white focus:outline-none cursor-pointer"
+                className="bg-transparent text-sm font-black text-[#2B2D42] focus:outline-none cursor-pointer"
               >
                 {[2, 3, 4, 5, 6, 7, 8].map((n) => (
-                  <option key={n} value={n} className="bg-gray-900 text-white">
+                  <option key={n} value={n}>
                     {n}人
                   </option>
                 ))}
               </select>
             </div>
 
-            <div className="bg-gray-950/80 border border-gray-800 p-2.5 rounded-xl flex items-center justify-between">
-              <span className="text-xs text-gray-400">最大人数:</span>
+            <div className="bg-white border-2 border-[#2B2D42] p-2.5 rounded-xl shadow-[2px_2px_0_#2B2D42] flex items-center justify-between">
+              <span className="text-xs font-bold text-[#2B2D42]/75">
+                最大人数:
+              </span>
               <select
                 value={maxPlayers}
                 onChange={(e) => setMaxPlayers(Number(e.target.value))}
-                className="bg-transparent text-sm font-bold text-white focus:outline-none cursor-pointer"
+                className="bg-transparent text-sm font-black text-[#2B2D42] focus:outline-none cursor-pointer"
               >
                 {[2, 3, 4, 5, 6, 7, 8].map((n) => (
-                  <option key={n} value={n} className="bg-gray-900 text-white">
+                  <option key={n} value={n}>
                     {n}人
                   </option>
                 ))}
@@ -249,59 +265,59 @@ export default function CustomGameModal({
 
         {/* 連動GMツール選択 */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-gray-300 block">
+          <label className="text-xs font-black text-[#2B2D42] block">
             連動させるゲームマスター（GM）ツール:
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <button
               type="button"
               onClick={() => setSelectedTool("prompt")}
-              className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+              className={`p-2.5 rounded-xl border-2 border-[#2B2D42] text-center transition-all cursor-pointer ${
                 selectedTool === "prompt"
-                  ? "bg-amber-500/20 border-amber-400 text-amber-300 font-bold"
-                  : "bg-gray-950/50 border-gray-800 text-gray-400 hover:text-white"
+                  ? "bg-[#FFE066] text-[#2B2D42] font-black shadow-[2px_2px_0_#2B2D42]"
+                  : "bg-white text-[#2B2D42]/70"
               }`}
             >
-              <MessageSquare className="w-4 h-4 mx-auto mb-1 text-amber-400" />
+              <MessageSquare className="w-4 h-4 mx-auto mb-1 text-[#2B2D42]" />
               <div className="text-xs">お題ガチャ</div>
             </button>
 
             <button
               type="button"
               onClick={() => setSelectedTool("bpm")}
-              className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+              className={`p-2.5 rounded-xl border-2 border-[#2B2D42] text-center transition-all cursor-pointer ${
                 selectedTool === "bpm"
-                  ? "bg-purple-500/20 border-purple-400 text-purple-300 font-bold"
-                  : "bg-gray-950/50 border-gray-800 text-gray-400 hover:text-white"
+                  ? "bg-[#CBC8FA] text-[#2B2D42] font-black shadow-[2px_2px_0_#2B2D42]"
+                  : "bg-white text-[#2B2D42]/70"
               }`}
             >
-              <Activity className="w-4 h-4 mx-auto mb-1 text-purple-400" />
+              <Activity className="w-4 h-4 mx-auto mb-1 text-[#2B2D42]" />
               <div className="text-xs">BPMリズム</div>
             </button>
 
             <button
               type="button"
               onClick={() => setSelectedTool("timer")}
-              className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+              className={`p-2.5 rounded-xl border-2 border-[#2B2D42] text-center transition-all cursor-pointer ${
                 selectedTool === "timer"
-                  ? "bg-cyan-500/20 border-cyan-400 text-cyan-300 font-bold"
-                  : "bg-gray-950/50 border-gray-800 text-gray-400 hover:text-white"
+                  ? "bg-[#7CE8DC] text-[#2B2D42] font-black shadow-[2px_2px_0_#2B2D42]"
+                  : "bg-white text-[#2B2D42]/70"
               }`}
             >
-              <Clock className="w-4 h-4 mx-auto mb-1 text-cyan-400" />
+              <Clock className="w-4 h-4 mx-auto mb-1 text-[#2B2D42]" />
               <div className="text-xs">タイマー</div>
             </button>
 
             <button
               type="button"
               onClick={() => setSelectedTool("none")}
-              className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+              className={`p-2.5 rounded-xl border-2 border-[#2B2D42] text-center transition-all cursor-pointer ${
                 selectedTool === "none"
-                  ? "bg-rose-500/20 border-rose-400 text-rose-300 font-bold"
-                  : "bg-gray-950/50 border-gray-800 text-gray-400 hover:text-white"
+                  ? "bg-[#FFADAD] text-[#2B2D42] font-black shadow-[2px_2px_0_#2B2D42]"
+                  : "bg-white text-[#2B2D42]/70"
               }`}
             >
-              <HelpCircle className="w-4 h-4 mx-auto mb-1 text-rose-400" />
+              <HelpCircle className="w-4 h-4 mx-auto mb-1 text-[#2B2D42]" />
               <div className="text-xs">ツールなし</div>
             </button>
           </div>
@@ -309,30 +325,35 @@ export default function CustomGameModal({
 
         {/* ツール別設定エリア */}
         {selectedTool === "prompt" && (
-          <div className="p-3 bg-gray-950/60 border border-gray-800 rounded-2xl space-y-2">
-            <div className="text-xs font-bold text-amber-300 flex items-center justify-between">
+          <div className="p-3 bg-white border-2 border-[#2B2D42] rounded-2xl space-y-2 shadow-[2px_2px_0_#2B2D42]">
+            <div className="text-xs font-black text-[#2B2D42] flex items-center justify-between">
               <span>お題リスト（1行に1つ入力）:</span>
-              <span className="text-[10px] text-gray-400">
-                {promptListText.split("\n").filter((s) => s.trim().length > 0).length}個
+              <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#FFE066] border border-[#2B2D42]">
+                {
+                  promptListText
+                    .split("\n")
+                    .filter((s) => s.trim().length > 0).length
+                }
+                個
               </span>
             </div>
             <textarea
               rows={4}
               value={promptListText}
               onChange={(e) => setPromptListText(e.target.value)}
-              className="w-full bg-gray-900 border border-gray-800 rounded-xl p-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+              className="w-full bg-[#FAF6EB] border-2 border-[#2B2D42]/30 rounded-xl p-2.5 text-xs font-bold text-[#2B2D42] focus:outline-none focus:border-[#2B2D42]"
               placeholder="お題1&#10;お題2&#10;お題3..."
             />
-            <div className="text-[10px] text-gray-400">
-              ※ 対戦中にお題ガチャを引くと、このリストからランダムで出題されます！
-            </div>
           </div>
         )}
 
         {selectedTool === "bpm" && (
-          <div className="p-3 bg-gray-950/60 border border-gray-800 rounded-2xl space-y-2">
-            <div className="text-xs font-bold text-purple-300">
-              デフォルトテンポ（BPM）: <span className="text-white">{defaultBpm}</span>
+          <div className="p-3 bg-white border-2 border-[#2B2D42] rounded-2xl space-y-2 shadow-[2px_2px_0_#2B2D42]">
+            <div className="text-xs font-black text-[#2B2D42]">
+              デフォルトテンポ（BPM）:{" "}
+              <span className="px-1.5 py-0.2 rounded bg-[#CBC8FA]">
+                {defaultBpm}
+              </span>
             </div>
             <input
               type="range"
@@ -341,9 +362,9 @@ export default function CustomGameModal({
               step={5}
               value={defaultBpm}
               onChange={(e) => setDefaultBpm(Number(e.target.value))}
-              className="w-full accent-purple-500 cursor-pointer"
+              className="w-full accent-[#2B2D42] cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-gray-400">
+            <div className="flex justify-between text-[10px] font-bold text-[#2B2D42]/70">
               <span>ゆったり (60)</span>
               <span>普通 (120)</span>
               <span>超高速 (180)</span>
@@ -352,19 +373,21 @@ export default function CustomGameModal({
         )}
 
         {selectedTool === "timer" && (
-          <div className="p-3 bg-gray-950/60 border border-gray-800 rounded-2xl space-y-3">
+          <div className="p-3 bg-white border-2 border-[#2B2D42] rounded-2xl space-y-3 shadow-[2px_2px_0_#2B2D42]">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-cyan-300">タイマー秒数:</span>
+              <span className="text-xs font-black text-[#2B2D42]">
+                タイマー秒数:
+              </span>
               <div className="flex items-center gap-1.5">
                 {[5, 10, 15, 30, 60].map((sec) => (
                   <button
                     type="button"
                     key={sec}
                     onClick={() => setTimerDuration(sec)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-lg border border-[#2B2D42] text-xs font-black transition-all cursor-pointer ${
                       timerDuration === sec
-                        ? "bg-cyan-500 text-slate-950"
-                        : "bg-gray-800 text-gray-300 hover:text-white"
+                        ? "bg-[#7CE8DC] text-[#2B2D42]"
+                        : "bg-[#FAF6EB] text-[#2B2D42]/70"
                     }`}
                   >
                     {sec}秒
@@ -373,28 +396,30 @@ export default function CustomGameModal({
               </div>
             </div>
 
-            <label className="flex items-center gap-2 text-xs text-gray-300 cursor-pointer pt-1 border-t border-gray-800">
+            <label className="flex items-center gap-2 text-xs font-bold text-[#2B2D42] cursor-pointer pt-2 border-t border-[#2B2D42]/20">
               <input
                 type="checkbox"
                 checked={isBlindTimer}
                 onChange={(e) => setIsBlindTimer(e.target.checked)}
-                className="accent-cyan-500 rounded"
+                className="accent-[#2B2D42] rounded"
               />
-              <span>ブラインドタイマー（カウント開始後に秒数を非表示にする）</span>
+              <span>
+                ブラインドタイマー（カウント開始後に秒数を非表示にする）
+              </span>
             </label>
           </div>
         )}
 
         {/* 詳しいルール */}
         <div className="space-y-1.5">
-          <label className="text-xs font-bold text-gray-300 block">
+          <label className="text-xs font-black text-[#2B2D42] block">
             詳しいルール・遊び方（任意）
           </label>
           <textarea
             rows={2}
             value={ruleText}
             onChange={(e) => setRuleText(e.target.value)}
-            className="w-full bg-gray-950/80 border border-gray-800 focus:border-amber-400 p-2.5 rounded-xl text-xs text-white focus:outline-none"
+            className="w-full bg-white border-2 border-[#2B2D42] p-2.5 rounded-xl text-xs font-bold text-[#2B2D42] shadow-[2px_2px_0_#2B2D42] focus:outline-none"
             placeholder="例: 手拍子2回で答える。被り・詰まりは即アウト！"
           />
         </div>
@@ -403,10 +428,12 @@ export default function CustomGameModal({
         <button
           type="button"
           onClick={handleSave}
-          className="w-full py-4 px-6 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-base rounded-2xl shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all cursor-pointer"
+          className="w-full py-4 px-6 bg-[#FFE066] hover:bg-[#ffd633] text-[#2B2D42] border-2 border-[#2B2D42] font-black text-base rounded-2xl shadow-[4px_5px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[2px_2px_0_#2B2D42] flex items-center justify-center gap-2 transition-all cursor-pointer"
         >
           <Save className="w-5 h-5" />
-          <span>{gameToEdit ? "変更を保存する" : "オリジナルゲームを登録する！"}</span>
+          <span>
+            {gameToEdit ? "変更を保存する" : "オリジナルゲームを登録する！"}
+          </span>
         </button>
       </div>
     </div>

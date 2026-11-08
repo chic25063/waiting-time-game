@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
-import { ALL_GAMES } from "@/data/games";
 import { getAllGamesWithCustom } from "@/lib/customGames";
-import { CheckSquare, Square, Filter, Star } from "lucide-react";
+import { CheckSquare, Square, Filter } from "lucide-react";
 
 interface GameExclusionSelectorProps {
   playerCount: number;
@@ -85,36 +84,39 @@ export default function GameExclusionSelector({
   const activeCount = eligibleGames.length - excludedGameIds.length;
 
   return (
-    <div className="bg-gray-950/60 border border-gray-800 rounded-2xl p-3.5 space-y-2.5">
+    <div className="bg-white border-2 border-[#2B2D42] rounded-2xl p-3.5 space-y-2.5 shadow-[2px_3px_0_#2B2D42]">
       <div className="flex items-center justify-between text-xs">
-        <span className="font-bold text-gray-300 flex items-center gap-1.5">
-          <Filter className="w-3.5 h-3.5 text-amber-400" />
+        <span className="font-black text-[#2B2D42] flex items-center gap-1.5">
+          <Filter className="w-3.5 h-3.5 text-[#2B2D42]" />
           <span>除外設定 (やりたくないゲームをOFF)</span>
         </span>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={handleSelectAll}
-            className="text-[11px] text-amber-400 hover:text-amber-300 font-bold cursor-pointer"
+            className="text-[11px] px-2 py-0.5 rounded bg-[#FFF275] border border-[#2B2D42] text-[#2B2D42] font-black cursor-pointer hover:brightness-95"
           >
             全ON
           </button>
-          <span className="text-gray-700">|</span>
           <button
             type="button"
             onClick={handleDeselectAll}
-            className="text-[11px] text-gray-400 hover:text-gray-300 font-medium cursor-pointer"
+            className="text-[11px] px-2 py-0.5 rounded bg-[#FAF6EB] border border-[#2B2D42]/40 text-[#2B2D42]/70 hover:text-[#2B2D42] font-bold cursor-pointer"
           >
             全OFF
           </button>
         </div>
       </div>
 
-      <div className="text-[11px] text-gray-400">
-        抽選対象: <strong className="text-amber-400">{activeCount}</strong> / {eligibleGames.length} 種類
+      <div className="text-[11px] font-bold text-[#2B2D42]/75">
+        抽選対象:{" "}
+        <strong className="px-1.5 py-0.2 rounded bg-[#FFF275] text-[#2B2D42] font-black">
+          {activeCount}
+        </strong>{" "}
+        / {eligibleGames.length} 種類
       </div>
 
-      <div className="grid grid-cols-2 gap-1.5 max-h-48 overflow-y-auto pr-1">
+      <div className="grid grid-cols-2 gap-1.5 max-h-44 overflow-y-auto pr-1">
         {eligibleGames.map((g) => {
           const isExcluded = excludedGameIds.includes(g.id);
           const isIncluded = !isExcluded;
@@ -124,21 +126,21 @@ export default function GameExclusionSelector({
               type="button"
               key={g.id}
               onClick={() => toggleGame(g.id)}
-              className={`p-2 rounded-xl text-left border text-xs transition-all flex items-center gap-2 cursor-pointer ${
+              className={`p-2 rounded-xl text-left border-2 text-xs transition-all flex items-center gap-1.5 cursor-pointer ${
                 isIncluded
-                  ? "bg-gray-800/80 border-gray-700 text-white hover:bg-gray-700/80"
-                  : "bg-gray-950/40 border-gray-800/80 text-gray-500 line-through"
+                  ? "bg-[#FAF6EB] border-[#2B2D42] text-[#2B2D42] font-extrabold hover:bg-[#FFF275]/40"
+                  : "bg-slate-100 border-[#2B2D42]/25 text-[#2B2D42]/40 line-through"
               }`}
             >
               {isIncluded ? (
-                <CheckSquare className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <CheckSquare className="w-3.5 h-3.5 text-[#2B2D42] shrink-0" />
               ) : (
-                <Square className="w-3.5 h-3.5 text-gray-600 shrink-0" />
+                <Square className="w-3.5 h-3.5 text-[#2B2D42]/35 shrink-0" />
               )}
-              <span className="truncate font-medium flex-1">{g.title}</span>
+              <span className="truncate flex-1">{g.title}</span>
               {g.isCustom && (
-                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold shrink-0">
-                  自作
+                <span className="text-[9px] px-1 py-0.2 rounded bg-[#FFE066] border border-[#2B2D42] text-[#2B2D42] font-black shrink-0">
+                  ★自作
                 </span>
               )}
             </button>
