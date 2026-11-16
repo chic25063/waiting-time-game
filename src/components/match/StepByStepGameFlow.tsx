@@ -484,7 +484,10 @@ export default function StepByStepGameFlow({
             {/* ゲーム基本情報（人数・時間・？ルールボタン・アリーナ時引き直し） */}
             <div className="flex items-center justify-center gap-3 text-xs sm:text-sm font-black text-[#2B2D42]">
               <span>
-                👥 {game.min_players}-{game.max_players}人
+                👥{" "}
+                {game.min_players === game.max_players
+                  ? `${game.min_players}人専用`
+                  : `${game.min_players}-${game.max_players}人`}
               </span>
               <span>⏱️ 約3分</span>
               <button
