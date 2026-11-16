@@ -73,14 +73,18 @@ export async function getAllGames(): Promise<Game[]> {
       return ALL_GAMES;
     }
 
-    // ローカルのmetadataをマージ
-    return data.map((item) => {
-      const local = ALL_GAMES.find((g) => g.id === item.id);
-      return {
-        ...item,
-        metadata: item.metadata || local?.metadata,
-      } as Game;
-    });
+    // ALL_GAMESに残っているゲームのみを対象にし、ローカルのmetadataをマージ
+    const allowedIds = new Set(ALL_GAMES.map((g) => g.id));
+    const filtered = data
+      .filter((item) => allowedIds.has(item.id))
+      .map((item) => {
+        const local = ALL_GAMES.find((g) => g.id === item.id);
+        return {
+          ...item,
+          metadata: item.metadata || local?.metadata,
+        } as Game;
+      });
+    return filtered.length > 0 ? filtered : ALL_GAMES;
   } catch (err) {
     console.warn("Error fetching games from Supabase, using local data:", err);
     return ALL_GAMES;
