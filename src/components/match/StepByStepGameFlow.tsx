@@ -1066,48 +1066,22 @@ export default function StepByStepGameFlow({
             </button>
           </header>
 
-          {/* メイン1枚白カード */}
-          <div className="bg-white border-[2.5px] border-[#2B2D42] rounded-3xl p-5 shadow-[4px_5px_0_#2B2D42] space-y-4 flex-1 flex flex-col justify-between">
-            {/* 現在の手番プレイヤー表示 */}
-            <div className="flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-[#FFE066] border-2 border-[#2B2D42] shadow-[2px_2px_0_#2B2D42]">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <PlayerStampAvatar
-                  index={orderedPlayers.findIndex(
-                    (p) => p.id === currentTurnPlayer?.id
-                  )}
-                  size="sm"
-                />
-                <div className="min-w-0">
-                  <div className="text-[10px] font-black text-[#2B2D42]/75">
-                    現在の番（生存 {aliveOrderedPlayers.length}/
-                    {orderedPlayers.length}人）
+          {/* メイン1枚白カード（プレイヤー勝敗・ミス判定をメインに大きく配置） */}
+          <div className="bg-white border-[2.5px] border-[#2B2D42] rounded-3xl p-4 sm:p-5 shadow-[4px_5px_0_#2B2D42] space-y-3.5 flex-1 flex flex-col">
+            {/* 上部：コンパクトな補助情報（お題 / かけ声早見 / タイマー / BPM） */}
+            <div className="space-y-2 shrink-0">
+              {hasPrompt ? (
+                <div className="px-3.5 py-2.5 rounded-2xl bg-[#FAF6EB] border-2 border-[#2B2D42] flex items-center justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <span className="inline-block text-[10px] font-black px-1.5 py-0.2 rounded bg-[#F9B8E0] border border-[#2B2D42] mr-1.5">
+                      {promptMode === "app" ? "お題" : "自由お題"}
+                    </span>
+                    <span className="text-sm sm:text-base font-black text-[#2B2D42]">
+                      {promptMode === "app"
+                        ? `「${currentPromptText}」`
+                        : "最初の人が自由にお題を決めてスタート！"}
+                    </span>
                   </div>
-                  <div className="text-base font-black text-[#2B2D42] truncate">
-                    {currentTurnPlayer?.name} の番！
-                  </div>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  sound.playTick();
-                  setTurnIndex(
-                    (prev) => (prev + 1) % (aliveOrderedPlayers.length || 1)
-                  );
-                }}
-                className="px-2.5 py-1 rounded-xl bg-white hover:bg-[#FAF6EB] border-2 border-[#2B2D42] text-xs font-black text-[#2B2D42] shrink-0 cursor-pointer"
-              >
-                次の人へ ➔
-              </button>
-            </div>
-
-            {/* お題セクション（お題を使うゲームのみ表示）または かけ声・アクション早見表 */}
-            {hasPrompt ? (
-              <div className="p-4 rounded-2xl bg-[#FAF6EB] border-2 border-[#2B2D42] text-center space-y-2">
-                <div className="flex items-center justify-between text-xs font-black text-[#2B2D42]">
-                  <span className="px-2 py-0.5 rounded bg-[#F9B8E0] border border-[#2B2D42]">
-                    {promptMode === "app" ? "お題（アプリ）" : "お題（自由）"}
-                  </span>
                   {promptMode === "app" && (
                     <button
                       type="button"
@@ -1115,320 +1089,191 @@ export default function StepByStepGameFlow({
                         sound.playGacha();
                         setPromptIndex((prev) => prev + 1);
                       }}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white hover:bg-[#FFE066] border border-[#2B2D42] text-[11px] font-black cursor-pointer"
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white hover:bg-[#FFE066] border-2 border-[#2B2D42] text-[11px] font-black shrink-0 cursor-pointer"
                     >
                       <Shuffle className="w-3 h-3" />
-                      <span>別のお題</span>
+                      <span>変更</span>
                     </button>
                   )}
                 </div>
-
-                <div className="py-2">
-                  {promptMode === "app" ? (
-                    <p className="text-xl sm:text-2xl font-black text-[#2B2D42] leading-snug">
-                      「{currentPromptText}」
-                    </p>
-                  ) : (
-                    <p className="text-sm sm:text-base font-black text-[#2B2D42]">
-                      最初の人が自由にお題を決めてスタート！
-                    </p>
-                  )}
-                </div>
-              </div>
-            ) : isRhythmNameGame ? (
-              <div className="p-3.5 rounded-2xl bg-[#FFF275]/50 border-2 border-[#2B2D42] space-y-2 text-left">
-                <div className="px-2.5 py-1.5 rounded-xl bg-white border-2 border-[#2B2D42] text-center font-black text-xs sm:text-sm text-[#2B2D42]">
-                  📢 開始コール：「{orderedPlayers[0]?.name}」から始まるリズムに合わせて！
-                </div>
-                <div className="space-y-1 text-xs font-bold text-[#2B2D42] leading-relaxed">
-                  <div>
-                    ・<span className="font-black">通常パス（1〜4）</span>：相手の名前＋数字（例：「ガリ 3」「まる 1」）➔ 指名された人は自分の名前をその回数コールして次の人を指名！
+              ) : isRhythmNameGame ? (
+                <div className="px-3 py-2 rounded-2xl bg-[#FFF275]/55 border-2 border-[#2B2D42] text-xs text-[#2B2D42] space-y-1">
+                  <div className="font-black text-center">
+                    📢「{orderedPlayers[0]?.name}」から始まるリズムに合わせて！
                   </div>
-                  <div className="p-2 rounded-xl bg-[#FFADAD]/45 border border-[#2B2D42] font-black">
-                    🔥「ちぇけ」指定時：名前コールの代わりに「よう・チェケ・ラッ・チョ！」と言って次を指名！
+                  <div className="text-[11px] font-bold text-[#2B2D42]/85 text-center">
+                    名前＋1〜4でパス ／「ちぇけ」➔「よう・チェケ・ラッ・チョ！」
                   </div>
                 </div>
-              </div>
-            ) : (
-              (game.call_examples?.length || game.metadata?.callExample) && (
-                <div className="p-3.5 rounded-2xl bg-[#FFF275]/45 border-2 border-[#2B2D42] space-y-1.5 text-left">
-                  <div className="text-xs font-black text-[#2B2D42]">
-                    かけ声・アクション早見表
-                  </div>
-                  <div className="text-xs font-bold text-[#2B2D42] whitespace-pre-wrap leading-relaxed">
+              ) : (
+                (game.call_examples?.length || game.metadata?.callExample) && (
+                  <div className="px-3 py-2 rounded-2xl bg-[#FFF275]/45 border-2 border-[#2B2D42] text-[11px] font-bold text-[#2B2D42] whitespace-pre-wrap leading-snug">
                     {game.call_examples
                       ? game.call_examples.join("\n")
                       : game.metadata?.callExample}
                   </div>
-                </div>
-              )
-            )}
+                )
+              )}
 
-            {/* タイマーセクション（タイマー対応ゲームのみ） */}
-            {hasTimer && (
-              <div className="p-4 rounded-2xl bg-[#FAF6EB] border-2 border-[#2B2D42] text-center space-y-3">
-                {isPrecisionTimer ? (
-                  <>
-                    <div className="text-xs font-black text-[#2B2D42]">
-                      目標タイム: {timerSeconds}.00 秒
-                    </div>
-                    <div className="text-4xl font-mono font-black text-[#2B2D42]">
-                      {isTimerRunning
-                        ? "??.??"
-                        : measuredRecords[currentTurnPlayer?.id]
-                        ? `${measuredRecords[
-                            currentTurnPlayer.id
-                          ].actual.toFixed(2)}秒`
-                        : `${timerSeconds}.00`}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!isTimerRunning) {
-                          setElapsedMs(0);
-                          setIsTimerRunning(true);
-                          sound.playTick();
-                        } else {
-                          setIsTimerRunning(false);
-                          const actual = elapsedMs / 1000;
-                          const diff = actual - timerSeconds;
-                          sound.playTimeUp();
-                          if (currentTurnPlayer) {
-                            setMeasuredRecords((prev) => ({
-                              ...prev,
-                              [currentTurnPlayer.id]: { actual, diff },
-                            }));
-                          }
-                        }
-                      }}
-                      className={`w-full py-3 rounded-xl border-2 border-[#2B2D42] font-black text-sm shadow-[2px_3px_0_#2B2D42] cursor-pointer ${
-                        isTimerRunning
-                          ? "bg-[#FFADAD] text-[#2B2D42]"
-                          : "bg-[#7CE8DC] text-[#2B2D42]"
-                      }`}
-                    >
-                      {isTimerRunning
-                        ? "ストップ！（今だ！）"
-                        : "体内時計スタート"}
-                    </button>
-                  </>
-                ) : (
-                  <div className="flex items-center justify-between">
-                    <div className="text-left">
-                      <div className="text-[11px] font-black text-[#2B2D42]/70">
-                        タイマー
-                      </div>
-                      <div className="text-3xl font-mono font-black text-[#2B2D42]">
-                        {timeLeft}
-                        <span className="text-xs ml-1">秒</span>
+              {/* コンパクトなタイマー・BPM行 */}
+              {(hasTimer || hasBpm) && (
+                <div className="flex flex-wrap items-center gap-2">
+                  {hasTimer && (
+                    <div className="flex-1 min-w-[180px] px-3 py-2 rounded-2xl bg-[#FAF6EB] border-2 border-[#2B2D42] flex items-center justify-between">
+                      <span className="font-mono text-lg font-black text-[#2B2D42]">
+                        ⏱️ {timeLeft}秒
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            sound.playTick();
+                            if (!isTimerRunning) {
+                              if (timeLeft === 0) setTimeLeft(timerSeconds);
+                              setIsTimerRunning(true);
+                            } else {
+                              setIsTimerRunning(false);
+                            }
+                          }}
+                          className={`px-3 py-1 rounded-xl border-2 border-[#2B2D42] font-black text-xs cursor-pointer ${
+                            isTimerRunning ? "bg-[#FFADAD]" : "bg-[#7CE8DC]"
+                          }`}
+                        >
+                          {isTimerRunning ? "停止" : "開始"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            sound.playTick();
+                            setIsTimerRunning(false);
+                            setTimeLeft(timerSeconds);
+                          }}
+                          className="p-1 rounded-lg bg-white border border-[#2B2D42] text-[#2B2D42] cursor-pointer"
+                          title="リセット"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                  )}
+
+                  {hasBpm && (
+                    <div className="flex-1 min-w-[180px] px-3 py-2 rounded-2xl bg-[#FAF6EB] border-2 border-[#2B2D42] flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        {[1, 2, 3, 4].map((b) => (
+                          <span
+                            key={b}
+                            className={`w-5 h-5 rounded-full border border-[#2B2D42] flex items-center justify-center text-[10px] font-black ${
+                              currentBeat === b
+                                ? "bg-[#FFE066] scale-110"
+                                : "bg-white text-[#2B2D42]/45"
+                            }`}
+                          >
+                            {b}
+                          </span>
+                        ))}
+                        <span className="text-[11px] font-black text-[#2B2D42] ml-1">
+                          {bpmValue}
+                        </span>
+                      </div>
                       <button
                         type="button"
-                        onClick={() => {
-                          sound.playTick();
-                          if (!isTimerRunning) {
-                            if (timeLeft === 0) setTimeLeft(timerSeconds);
-                            setIsTimerRunning(true);
-                          } else {
-                            setIsTimerRunning(false);
-                          }
-                        }}
-                        className={`px-4 py-2.5 rounded-xl border-2 border-[#2B2D42] font-black text-xs shadow-[2px_2px_0_#2B2D42] flex items-center gap-1.5 cursor-pointer ${
-                          isTimerRunning
-                            ? "bg-[#FFADAD] text-[#2B2D42]"
-                            : "bg-[#7CE8DC] text-[#2B2D42]"
+                        onClick={() => setIsBpmPlaying((v) => !v)}
+                        className={`px-3 py-1 rounded-xl border-2 border-[#2B2D42] font-black text-xs cursor-pointer ${
+                          isBpmPlaying ? "bg-[#FFADAD]" : "bg-[#CBC8FA]"
                         }`}
                       >
-                        {isTimerRunning ? (
-                          <>
-                            <Square className="w-3.5 h-3.5 fill-current" />
-                            <span>一時停止</span>
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-3.5 h-3.5 fill-current" />
-                            <span>スタート</span>
-                          </>
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          sound.playTick();
-                          setIsTimerRunning(false);
-                          setTimeLeft(timerSeconds);
-                        }}
-                        className="p-2.5 rounded-xl bg-white border-2 border-[#2B2D42] text-[#2B2D42] cursor-pointer"
-                        title="リセット"
-                      >
-                        <RotateCcw className="w-4 h-4" />
+                        {isBpmPlaying ? "停止" : "リズム"}
                       </button>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* BPMリズムセクション（リズム系ゲームのみ） */}
-            {hasBpm && (
-              <div className="p-3.5 rounded-2xl bg-[#FAF6EB] border-2 border-[#2B2D42] flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {[1, 2, 3, 4].map((b) => (
-                    <span
-                      key={b}
-                      className={`w-6 h-6 rounded-full border-2 border-[#2B2D42] flex items-center justify-center text-[10px] font-black ${
-                        currentBeat === b
-                          ? "bg-[#FFE066] scale-110"
-                          : "bg-white text-[#2B2D42]/50"
-                      }`}
-                    >
-                      {b}
-                    </span>
-                  ))}
-                  <span className="text-xs font-black text-[#2B2D42] ml-1">
-                    {bpmValue} BPM
-                  </span>
+                  )}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsBpmPlaying((v) => !v)}
-                  className={`px-3.5 py-2 rounded-xl border-2 border-[#2B2D42] font-black text-xs shadow-[2px_2px_0_#2B2D42] cursor-pointer ${
-                    isBpmPlaying
-                      ? "bg-[#FFADAD] text-[#2B2D42]"
-                      : "bg-[#CBC8FA] text-[#2B2D42]"
-                  }`}
-                >
-                  {isBpmPlaying ? "リズム停止" : "リズム再生"}
-                </button>
-              </div>
-            )}
+              )}
+            </div>
 
-            {/* プレイヤー勝敗・脱落ワンタップリスト */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-black text-[#2B2D42]">
-                  {arenaContext?.judgeLabel ||
-                    "勝った人（または脱落した人）をタップ"}
-                </span>
+            {/* メイン領域：プレイヤー勝敗・脱落ワンタップ塊（大きく表示） */}
+            <div className="flex-1 flex flex-col pt-1">
+              <div className="flex items-center justify-between mb-3 px-0.5">
+                <h2 className="text-sm sm:text-base font-black text-[#2B2D42] flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-lg bg-[#FFE066] border-2 border-[#2B2D42]">
+                    {arenaContext?.judgeLabel ||
+                      "勝った人・ミスした人をタップ"}
+                  </span>
+                  <span className="text-xs font-bold text-[#2B2D42]/70">
+                    （残り {aliveOrderedPlayers.length}/{orderedPlayers.length}人）
+                  </span>
+                </h2>
                 <button
                   type="button"
                   onClick={onResetElimination}
-                  className="text-[11px] font-black text-[#2B2D42]/70 hover:text-[#2B2D42] underline cursor-pointer"
+                  className="px-2.5 py-1 rounded-xl bg-[#FAF6EB] hover:bg-[#FFE066] border-2 border-[#2B2D42] text-xs font-black text-[#2B2D42] cursor-pointer"
                 >
                   全員復活
                 </button>
               </div>
 
-              <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
-                {orderedPlayers.map((player, idx) => {
-                  const isTurn =
-                    player.id === currentTurnPlayer?.id && !player.isOut;
-                  return (
-                    <div
-                      key={player.id}
-                      className={`flex items-center justify-between px-3 py-2 rounded-2xl border-2 border-[#2B2D42] transition-all ${
-                        player.isOut
-                          ? "bg-[#2B2D42]/10 opacity-60"
-                          : isTurn
-                          ? "bg-[#FFF275]/60 shadow-[2px_2px_0_#2B2D42]"
-                          : "bg-[#FAF6EB]"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <span className="w-4 text-center font-black text-xs text-[#2B2D42]">
-                          {idx + 1}
-                        </span>
-                        <PlayerStampAvatar
-                          index={idx}
-                          size="sm"
-                          isOut={player.isOut}
-                        />
-                        <span
-                          className={`text-sm font-black text-[#2B2D42] truncate ${
-                            player.isOut ? "line-through" : ""
-                          }`}
-                        >
-                          {player.name}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {/* ミス・脱落ボタン */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (arenaContext?.onRecordEliminated) {
-                              arenaContext.onRecordEliminated(player.id);
-                            } else {
-                              onToggleEliminate(player.id);
-                            }
-                          }}
-                          className={`px-2.5 py-1.5 rounded-xl border-2 border-[#2B2D42] text-[11px] font-black cursor-pointer ${
-                            player.isOut
-                              ? "bg-white text-[#2B2D42]"
-                              : "bg-[#FFADAD] hover:bg-[#ff9494] text-[#2B2D42]"
-                          }`}
-                        >
-                          {player.isOut ? "復活" : "ミス"}
-                        </button>
-
-                        {/* 勝利決定ボタン */}
-                        <button
-                          type="button"
-                          onClick={() => onSelectWinner(player.id, player.name)}
-                          className="px-2.5 py-1.5 rounded-xl bg-[#FFE066] hover:bg-[#ffd633] border-2 border-[#2B2D42] text-[11px] font-black text-[#2B2D42] flex items-center gap-1 cursor-pointer"
-                        >
-                          <Crown className="w-3 h-3" />
-                          <span>勝ち</span>
-                        </button>
-                      </div>
+              <div className="space-y-3 flex-1 overflow-y-auto pr-0.5">
+                {orderedPlayers.map((player, idx) => (
+                  <div
+                    key={player.id}
+                    className={`flex items-center justify-between p-3.5 sm:p-4 rounded-2xl border-[2.5px] border-[#2B2D42] transition-all ${
+                      player.isOut
+                        ? "bg-[#2B2D42]/10 opacity-55"
+                        : "bg-[#FAF6EB] shadow-[3px_4px_0_#2B2D42]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="w-5 text-center font-black text-sm sm:text-base text-[#2B2D42] shrink-0">
+                        {idx + 1}
+                      </span>
+                      <PlayerStampAvatar
+                        index={idx}
+                        size="md"
+                        isOut={player.isOut}
+                      />
+                      <span
+                        className={`text-base sm:text-lg font-black text-[#2B2D42] truncate ${
+                          player.isOut ? "line-through" : ""
+                        }`}
+                      >
+                        {player.name}
+                      </span>
                     </div>
-                  );
-                })}
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {/* ミス・脱落ボタン */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (arenaContext?.onRecordEliminated) {
+                            arenaContext.onRecordEliminated(player.id);
+                          } else {
+                            onToggleEliminate(player.id);
+                          }
+                        }}
+                        className={`px-4 py-2.5 rounded-xl border-2 border-[#2B2D42] shadow-[2px_3px_0_#2B2D42] active:translate-y-0.5 text-xs sm:text-sm font-black transition-all cursor-pointer ${
+                          player.isOut
+                            ? "bg-white text-[#2B2D42]"
+                            : "bg-[#FFADAD] hover:bg-[#ff9494] text-[#2B2D42]"
+                        }`}
+                      >
+                        {player.isOut ? "復活" : "ミス"}
+                      </button>
+
+                      {/* 勝利決定ボタン */}
+                      <button
+                        type="button"
+                        onClick={() => onSelectWinner(player.id, player.name)}
+                        className="px-4 py-2.5 rounded-xl bg-[#FFE066] hover:bg-[#ffd633] border-2 border-[#2B2D42] shadow-[2px_3px_0_#2B2D42] active:translate-y-0.5 text-xs sm:text-sm font-black text-[#2B2D42] flex items-center gap-1.5 transition-all cursor-pointer"
+                      >
+                        <Crown className="w-4 h-4" />
+                        <span>勝ち</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
-
-          {/* 下部2列進行ボタン：左「セーフ（次の人へ）」 | 右「現在の人がミス！」 */}
-          <div className="grid grid-cols-2 gap-3 pt-1 pb-2">
-            <button
-              type="button"
-              onClick={() => {
-                sound.playGacha();
-                setTurnIndex(
-                  (prev) => (prev + 1) % (aliveOrderedPlayers.length || 1)
-                );
-                if (promptMode === "app") {
-                  setPromptIndex((prev) => prev + 1);
-                }
-                if (hasTimer && !isPrecisionTimer) {
-                  setTimeLeft(timerSeconds);
-                  setIsTimerRunning(true);
-                }
-              }}
-              className="py-4 px-3 rounded-2xl bg-[#9AF0A8] hover:bg-[#82e893] border-[2.5px] border-[#2B2D42] shadow-[3px_4px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[1px_2px_0_#2B2D42] text-[#2B2D42] font-black text-sm sm:text-base flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-            >
-              <CheckCircle2 className="w-5 h-5" />
-              <span>セーフ！次へ</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                if (!currentTurnPlayer) return;
-                if (arenaContext?.onRecordEliminated) {
-                  arenaContext.onRecordEliminated(currentTurnPlayer.id);
-                } else {
-                  onToggleEliminate(currentTurnPlayer.id);
-                }
-              }}
-              className="py-4 px-3 rounded-2xl bg-[#FFADAD] hover:bg-[#ff9494] border-[2.5px] border-[#2B2D42] shadow-[3px_4px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[1px_2px_0_#2B2D42] text-[#2B2D42] font-black text-sm sm:text-base flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-            >
-              <Skull className="w-5 h-5" />
-              <span>{currentTurnPlayer?.name} がミス</span>
-            </button>
           </div>
         </div>
       )}
