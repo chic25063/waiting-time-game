@@ -63,8 +63,9 @@ const STAMP_COLORS = [
 ];
 
 /**
- * ノート風・ボールペン手書きのオリジナル顔スタンプアイコン
- * プレイヤー番号(0〜7)ごとに異なる手書き表情を描く完全オリジナルSVG
+ * ユーザー手書きイラスト準拠の8種オリジナルマスコットアイコン
+ * （丸枠に入れず、キャラクター自身の輪郭＋パステルマーカーのワンポイントで表現）
+ * 0: クマ / 1: ネコ / 2: ウサギ(ブチ) / 3: トリ / 4: ライオン / 5: コウモリ / 6: 長鼻 / 7: ニコニコもち
  */
 export function PlayerStampAvatar({
   index,
@@ -75,94 +76,240 @@ export function PlayerStampAvatar({
   size?: "sm" | "md" | "lg";
   isOut?: boolean;
 }) {
-  const bg = isOut ? "#E2E8F0" : STAMP_COLORS[index % STAMP_COLORS.length];
-  const faceVariant = index % 6;
+  const accent = isOut ? "#CBD5E1" : STAMP_COLORS[index % STAMP_COLORS.length];
+  const charType = index % 8;
 
   const sizeClass =
     size === "lg"
-      ? "w-15 h-15 sm:w-16 sm:h-16"
+      ? "w-14 h-14 sm:w-16 sm:h-16"
       : size === "md"
       ? "w-11 h-11"
       : "w-9 h-9";
 
   return (
     <div
-      className={`${sizeClass} rounded-full border-2 border-[#2B2D42] shadow-[2px_2px_0_#2B2D42] flex items-center justify-center relative shrink-0 select-none transition-transform`}
-      style={{ backgroundColor: bg }}
+      className={`${sizeClass} relative flex items-center justify-center shrink-0 select-none transition-transform ${
+        isOut ? "opacity-50 grayscale" : ""
+      }`}
     >
+      {/* 背面の蛍光マーカー風パステル座布団（丸枠ではなく斜めハイライト） */}
+      <span
+        className="absolute inset-1.5 rounded-2xl -rotate-3 pointer-events-none"
+        style={{ backgroundColor: accent, opacity: 0.55 }}
+        aria-hidden="true"
+      />
       <svg
-        viewBox="0 0 48 48"
-        className="w-full h-full p-1"
+        viewBox="0 0 56 52"
+        className="relative z-10 w-full h-full overflow-visible"
         fill="none"
         stroke="#2B2D42"
-        strokeWidth="2.6"
+        strokeWidth="2.3"
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        {isOut ? (
-          <>
-            {/* バツ目（脱落時） */}
-            <path d="M13 17 L19 23 M19 17 L13 23" />
-            <path d="M29 17 L35 23 M35 17 L29 23" />
-            <path d="M18 33 Q24 29 30 33" />
-          </>
-        ) : faceVariant === 0 ? (
-          <>
-            {/* 1. 元気な丸目スマイル */}
-            <ellipse cx="17" cy="19" rx="3.2" ry="4.2" fill="#FFFFFF" />
-            <circle cx="18" cy="19" r="1.5" fill="#2B2D42" />
-            <ellipse cx="31" cy="19" rx="3.2" ry="4.2" fill="#FFFFFF" />
-            <circle cx="32" cy="19" r="1.5" fill="#2B2D42" />
-            <path d="M19 29 Q24 35 29 29" />
-          </>
-        ) : faceVariant === 1 ? (
-          <>
-            {/* 2. ジト目・クールスマイル */}
-            <ellipse cx="17" cy="20" rx="3.8" ry="3" fill="#FFFFFF" />
-            <line x1="13" y1="18" x2="21" y2="18" strokeWidth="2.8" />
-            <circle cx="17" cy="20.5" r="1.3" fill="#2B2D42" />
-            <ellipse cx="31" cy="20" rx="3.8" ry="3" fill="#FFFFFF" />
-            <line x1="27" y1="18" x2="35" y2="18" strokeWidth="2.8" />
-            <circle cx="31" cy="20.5" r="1.3" fill="#2B2D42" />
-            <path d="M21 29 Q25 32 28 28" />
-          </>
-        ) : faceVariant === 2 ? (
-          <>
-            {/* 3. にっこりウィンク (><) */}
-            <ellipse cx="17" cy="20" rx="4" ry="3.8" fill="#FFFFFF" />
-            <path d="M15 18.5 L19 20 L15 21.5" strokeWidth="2.2" />
-            <ellipse cx="31" cy="20" rx="4" ry="3.8" fill="#FFFFFF" />
-            <path d="M33 18.5 L29 20 L33 21.5" strokeWidth="2.2" />
-            <path d="M21 29 Q24 34 27 29" />
-          </>
-        ) : faceVariant === 3 ? (
-          <>
-            {/* 4. メガネっ子スタンプ */}
-            <circle cx="16.5" cy="20" r="4.8" fill="#FFFFFF" />
-            <circle cx="31.5" cy="20" r="4.8" fill="#FFFFFF" />
-            <line x1="21.3" y1="20" x2="26.7" y2="20" />
-            <circle cx="16.5" cy="20" r="1.4" fill="#2B2D42" />
-            <circle cx="31.5" cy="20" r="1.4" fill="#2B2D42" />
-            <path d="M19 30 Q24 34 29 30" />
-          </>
-        ) : faceVariant === 4 ? (
-          <>
-            {/* 5. キラキラ目＆猫ヒゲ */}
-            <circle cx="17" cy="19" r="3" fill="#FFFFFF" />
-            <circle cx="17" cy="19" r="1.3" fill="#2B2D42" />
-            <circle cx="31" cy="19" r="3" fill="#FFFFFF" />
-            <circle cx="31" cy="19" r="1.3" fill="#2B2D42" />
-            <path d="M19 28 Q21.5 32 24 28 Q26.5 32 29 28" />
-            <line x1="8" y1="23" x2="12" y2="24" strokeWidth="2" />
-            <line x1="40" y1="23" x2="36" y2="24" strokeWidth="2" />
-          </>
-        ) : (
-          <>
-            {/* 6. ニカッと笑顔 */}
-            <path d="M14 20 Q17 16 20 20" strokeWidth="2.8" />
-            <path d="M28 20 Q31 16 34 20" strokeWidth="2.8" />
-            <path d="M16 27 H32 C32 33 28 36 24 36 C20 36 16 33 16 27 Z" fill="#FFFFFF" />
-          </>
+        {/* 0: クマ（丸耳＋ちょこん足＋楕円マズル） */}
+        {charType === 0 && (
+          <g>
+            {/* 耳 */}
+            <path d="M16 16 C15 10, 22 10, 22 15" fill="#FFFFFF" />
+            <path d="M34 15 C34 10, 41 10, 40 16" fill="#FFFFFF" />
+            {/* 足 */}
+            <path d="M13 38 C8 38, 8 44, 15 43" fill="#FFFFFF" />
+            <path d="M42 39 C47 40, 46 46, 40 43" fill="#FFFFFF" />
+            {/* もちっとした胴体 */}
+            <path
+              d="M11 35 C9 20, 17 13, 28 13 C39 13, 47 20, 45 35 C44 43, 12 43, 11 35 Z"
+              fill="#FFFFFF"
+            />
+            {/* 目 */}
+            <circle cx="21" cy="24" r="1.8" fill="#2B2D42" />
+            <circle cx="35" cy="25" r="1.8" fill="#2B2D42" />
+            {/* 鼻周りの楕円 */}
+            <ellipse cx="27.5" cy="31.5" rx="6.8" ry="4.4" fill="#FFFFFF" />
+            <ellipse cx="27.5" cy="31.5" rx="2.1" ry="1.4" fill="#2B2D42" />
+          </g>
+        )}
+
+        {/* 1: ネコ（三角耳＋ヒゲ＋逆三角鼻＋ω口） */}
+        {charType === 1 && (
+          <g>
+            {/* 足 */}
+            <path d="M14 40 C10 41, 10 46, 16 44" fill="#FFFFFF" />
+            <path d="M41 40 C46 40, 46 45, 40 43" fill="#FFFFFF" />
+            {/* 胴体 */}
+            <path
+              d="M11 35 C9 21, 17 14, 28 14 C39 14, 47 21, 45 35 C44 43, 12 43, 11 35 Z"
+              fill="#FFFFFF"
+            />
+            {/* 三角耳 */}
+            <path d="M17 17 L21 9 L25 15" fill="#FFFFFF" />
+            <path d="M31 15 L35 9 L39 17" fill="#FFFFFF" />
+            {/* 目 */}
+            <circle cx="23" cy="22.5" r="1.7" fill="#2B2D42" />
+            <circle cx="33" cy="22.5" r="1.7" fill="#2B2D42" />
+            {/* 逆三角の鼻 */}
+            <polygon points="25,26.5 31,26.5 28,31" fill="#FFFFFF" />
+            {/* ωの口 */}
+            <path d="M25.5 33.5 C25.5 36.5, 28 36.5, 28 34 C28 36.5, 30.5 36.5, 30.5 33.5" />
+            {/* 左右のヒゲ */}
+            <line x1="14" y1="27" x2="21" y2="26.5" />
+            <line x1="13.5" y1="30.5" x2="20.5" y2="30.5" />
+            <line x1="14" y1="34" x2="21" y2="34" />
+            <line x1="35" y1="26.5" x2="42" y2="27" />
+            <line x1="35.5" y1="30.5" x2="42.5" y2="30.5" />
+            <line x1="36" y1="33.5" x2="41.5" y2="36" />
+          </g>
+        )}
+
+        {/* 2: ウサギ・ブチ犬（長い耳＋ブチ模様＋への字口） */}
+        {charType === 2 && (
+          <g>
+            {/* 長い耳 */}
+            <path d="M18 16 C17 3, 24 2, 25 14" fill="#FFFFFF" />
+            <path d="M32 14 C34 2, 42 3, 38 16" fill="#FFFFFF" />
+            {/* 足 */}
+            <path d="M13 38 C8 38, 8 43, 14 42" fill="#FFFFFF" />
+            <path d="M41 39 C46 39, 46 44, 40 42" fill="#FFFFFF" />
+            {/* 胴体 */}
+            <path
+              d="M12 34 C11 20, 18 13, 28 13 C38 13, 45 20, 44 34 C43 43, 13 43, 12 34 Z"
+              fill="#FFFFFF"
+            />
+            {/* ブチ模様の線 */}
+            <path d="M31 13.5 C27 24, 21 30, 12.5 32" />
+            <path d="M43 21 C38 22, 38 28, 44 29" />
+            {/* 目・鼻・口 */}
+            <circle cx="22.5" cy="22.5" r="1.6" fill="#2B2D42" />
+            <circle cx="33" cy="22.5" r="1.4" fill="#2B2D42" />
+            <circle cx="28" cy="29.5" r="1.2" />
+            <path d="M20 40 C23 33.5, 33 33.5, 36 40" />
+          </g>
+        )}
+
+        {/* 3: トリ（トサカ＋左右の羽＋笑顔） */}
+        {charType === 3 && (
+          <g>
+            {/* トサカ */}
+            <path
+              d="M20 19 C17 11, 24 8, 26 14 C28 5, 36 5, 35 14 C40 9, 44 15, 38 20"
+              fill="#FFFFFF"
+            />
+            {/* 足 */}
+            <path d="M18 42 C16 46, 21 47, 21 43" fill="#FFFFFF" />
+            <path d="M35 43 C35 47, 40 46, 38 42" fill="#FFFFFF" />
+            {/* 胴体 */}
+            <path
+              d="M13 33 C13 21, 20 17, 28 17 C36 17, 43 21, 43 33 C43 43, 13 43, 13 33 Z"
+              fill="#FFFFFF"
+            />
+            {/* 左右の丸い羽 */}
+            <path d="M16 28 C8 27, 8 39, 17 37" fill="#FFFFFF" />
+            <path d="M40 28 C47 27, 47 39, 39 37" fill="#FFFFFF" />
+            {/* 目・笑顔の口 */}
+            <circle cx="23" cy="26" r="1.8" fill="#2B2D42" />
+            <circle cx="33" cy="26" r="1.8" fill="#2B2D42" />
+            <path d="M23 32 Q28 33.5 33 32 Q28 38.5 23 32 Z" fill="#FFFFFF" />
+          </g>
+        )}
+
+        {/* 4: ライオン（もこもこタテガミ＋三角鼻ヒゲ） */}
+        {charType === 4 && (
+          <g>
+            {/* もこもこタテガミ */}
+            <path
+              d="M11 36 C6 33, 6 26, 10 23 C8 17, 13 13, 18 14 C21 9, 28 9, 31 12 C36 9, 42 12, 43 17 C48 19, 49 25, 45 29 C48 33, 46 38, 41 38"
+              fill="#FFFFFF"
+            />
+            {/* 足 */}
+            <path d="M16 40 C13 43, 16 46, 19 42" fill="#FFFFFF" />
+            <path d="M36 42 C38 46, 42 43, 39 39" fill="#FFFFFF" />
+            {/* 丸い顔 */}
+            <path
+              d="M14 33 C14 21, 20 17, 28 17 C36 17, 41 22, 41 33 C41 42, 14 42, 14 33 Z"
+              fill="#FFFFFF"
+            />
+            {/* 目 */}
+            <circle cx="24" cy="26.5" r="1.6" fill="#2B2D42" />
+            <circle cx="31.5" cy="26.5" r="1.6" fill="#2B2D42" />
+            {/* 三角鼻＋ヒゲ＋口 */}
+            <polygon points="28,30 24.5,34.5 31.5,34.5" fill="#FFFFFF" />
+            <line x1="21" y1="31.5" x2="25" y2="32" />
+            <line x1="20.5" y1="34" x2="24.5" y2="34" />
+            <line x1="31" y1="32" x2="35" y2="31.5" />
+            <line x1="31.5" y1="34" x2="35.5" y2="34" />
+            <path d="M26 39 L28 36 L30 39" />
+          </g>
+        )}
+
+        {/* 5: コウモリ（小さなツノ＋左右のコウモリ羽＋w口） */}
+        {charType === 5 && (
+          <g>
+            {/* 左右のコウモリ羽 */}
+            <path
+              d="M15 26 C10 19, 6 24, 8 36 L12 31 L15 33"
+              fill="#FFFFFF"
+            />
+            <path
+              d="M41 26 C46 19, 50 24, 48 36 L44 31 L41 33"
+              fill="#FFFFFF"
+            />
+            {/* 足 */}
+            <path d="M18 41 C15 45, 19 47, 21 42" fill="#FFFFFF" />
+            <path d="M37 40 C41 42, 43 45, 38 43" fill="#FFFFFF" />
+            {/* 胴体 */}
+            <path
+              d="M14 33 C14 21, 20 17, 28 17 C36 17, 42 21, 42 33 C42 42, 14 42, 14 33 Z"
+              fill="#FFFFFF"
+            />
+            {/* 小さな三角ツノ */}
+            <path d="M21.5 18 L23 13.5 L24.8 17.5" fill="#FFFFFF" />
+            <path d="M31.2 17.5 L33 13.5 L34.5 18" fill="#FFFFFF" />
+            {/* 目＋w口 */}
+            <circle cx="24" cy="25" r="1.7" fill="#2B2D42" />
+            <circle cx="32" cy="25" r="1.7" fill="#2B2D42" />
+            <path d="M24.5 31.5 L26.3 35.5 L28 32.5 L29.7 35.5 L31.5 31.5" />
+          </g>
+        )}
+
+        {/* 6: 長鼻キャラ（とんがり鼻＋にっこり口） */}
+        {charType === 6 && (
+          <g>
+            {/* 足 */}
+            <path d="M13 39 C9 41, 10 46, 15 42" fill="#FFFFFF" />
+            <path d="M42 39 C45 41, 45 45, 41 42" fill="#FFFFFF" />
+            {/* 胴体 */}
+            <path
+              d="M12 35 C10 19, 18 12, 28 12 C39 12, 46 20, 44 35 C43 43, 13 43, 12 35 Z"
+              fill="#FFFFFF"
+            />
+            {/* 目 */}
+            <circle cx="22.5" cy="21" r="1.8" fill="#2B2D42" />
+            <circle cx="33.5" cy="21" r="1.8" fill="#2B2D42" />
+            {/* 左下へ伸びるとんがり鼻 */}
+            <path d="M27.5 24.5 L18.5 34.5 L28.5 31.5" fill="#FFFFFF" />
+            {/* にっこり口 */}
+            <path d="M23 36 Q31 38 36 31.5" />
+            <path d="M34.5 29.5 L37.5 33" />
+          </g>
+        )}
+
+        {/* 7: ニコニコもち（アーチ目＋にっこり笑顔） */}
+        {charType === 7 && (
+          <g>
+            {/* 足 */}
+            <path d="M13 38 C8 39, 9 44, 15 42" fill="#FFFFFF" />
+            <path d="M42 39 C47 39, 47 44, 41 42" fill="#FFFFFF" />
+            {/* 胴体 */}
+            <path
+              d="M12 35 C11 21, 18 14, 28 14 C38 14, 45 21, 44 35 C43 43, 13 43, 12 35 Z"
+              fill="#FFFFFF"
+            />
+            {/* アーチ目 (^ ^) */}
+            <path d="M20 25 Q22 19.5 24 25" />
+            <path d="M32 25 Q34 19.5 36 25" />
+            {/* 口 */}
+            <path d="M22.5 32.5 Q28 37.5 33.5 32.5" />
+          </g>
         )}
       </svg>
     </div>
@@ -458,176 +605,135 @@ export default function StepByStepGameFlow({
             </button>
           </header>
 
-          {/* 上段：選択されたゲームのノートカード ＋ 人数・時間・？ボタン */}
-          <div className="flex flex-col items-center space-y-3">
-            <div className="relative h-[96px] w-[240px] sm:w-[260px] rounded-2xl bg-white border-[2.5px] border-[#2B2D42] overflow-hidden text-left flex items-center pl-4 pr-14 shadow-[4px_5px_0_#2B2D42]">
-              <div
-                className="absolute inset-y-0 right-0 w-[52%] pointer-events-none"
-                style={{
-                  backgroundColor: game.isCustom
-                    ? "#FFE066"
-                    : cardTheme.markerColor,
-                  clipPath: "polygon(40% 0, 100% 0, 100% 100%, 0% 100%)",
-                }}
-              />
-              <span className="relative z-10 font-black text-[#2B2D42] text-base sm:text-lg leading-snug tracking-tight line-clamp-2">
-                {game.title}
-              </span>
-              <div className="absolute bottom-1 right-1.5 z-10 pointer-events-none">
-                <NotebookDoodle
-                  type={doodleType}
-                  inkColor={game.isCustom ? "#2B2D42" : cardTheme.inkAccent}
-                />
-              </div>
-            </div>
+          {/* 上段：横幅いっぱいの「ノート見出しゲームカード」（オリジナリティのある見出し構成） */}
+          <div className="relative w-full rounded-3xl bg-white border-[2.5px] border-[#2B2D42] p-4 sm:p-5 shadow-[4px_5px_0_#2B2D42] overflow-hidden">
+            {/* 右側の斜め蛍光マーカー帯 */}
+            <div
+              className="absolute inset-y-0 right-0 w-[38%] pointer-events-none"
+              style={{
+                backgroundColor: game.isCustom
+                  ? "#FFE066"
+                  : cardTheme.markerColor,
+                clipPath: "polygon(34% 0, 100% 0, 100% 100%, 0% 100%)",
+              }}
+            />
 
-            {/* ゲーム基本情報（人数・時間・？ルールボタン・アリーナ時引き直し） */}
-            <div className="flex items-center justify-center gap-3 text-xs sm:text-sm font-black text-[#2B2D42]">
-              <span>
-                👥{" "}
-                {game.min_players === game.max_players
-                  ? `${game.min_players}人専用`
-                  : `${game.min_players}-${game.max_players}人`}
-              </span>
-              <span>⏱️ 約3分</span>
+            <div className="relative z-10 flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="px-2.5 py-0.5 rounded-full bg-[#2B2D42] text-white text-[11px] font-black">
+                  👥{" "}
+                  {game.min_players === game.max_players
+                    ? `${game.min_players}人専用`
+                    : `${game.min_players}〜${game.max_players}人`}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-[#FAF6EB] border border-[#2B2D42] text-[#2B2D42] text-[11px] font-black">
+                  ⏱️ 約3分
+                </span>
+                {arenaContext?.onRerollGame && (
+                  <button
+                    type="button"
+                    onClick={arenaContext.onRerollGame}
+                    className="px-2.5 py-0.5 rounded-full bg-white hover:bg-[#FFE066] border border-[#2B2D42] flex items-center gap-1 text-[11px] font-black cursor-pointer"
+                  >
+                    <Dices className="w-3 h-3" />
+                    <span>別ゲーム抽選</span>
+                  </button>
+                )}
+              </div>
+
               <button
                 type="button"
                 onClick={() => setShowRulePopup(true)}
-                className="w-7 h-7 rounded-full bg-white hover:bg-[#FFE066] border-2 border-[#2B2D42] shadow-[1px_2px_0_#2B2D42] flex items-center justify-center text-[#2B2D42] font-black text-xs cursor-pointer"
+                className="px-2.5 py-1 rounded-xl bg-white hover:bg-[#FFE066] border-2 border-[#2B2D42] shadow-[1px_2px_0_#2B2D42] flex items-center gap-1 text-[#2B2D42] font-black text-xs cursor-pointer shrink-0"
                 title="ルールを見る"
               >
-                ?
+                <HelpCircle className="w-3.5 h-3.5" />
+                <span>ルール</span>
               </button>
-              {arenaContext?.onRerollGame && (
-                <button
-                  type="button"
-                  onClick={arenaContext.onRerollGame}
-                  className="px-2.5 py-1 rounded-full bg-white hover:bg-[#FFE066] border-2 border-[#2B2D42] shadow-[1px_2px_0_#2B2D42] flex items-center gap-1 text-[11px] font-black cursor-pointer"
-                >
-                  <Dices className="w-3.5 h-3.5" />
-                  <span>別ゲーム抽選</span>
-                </button>
-              )}
+            </div>
+
+            <div className="relative z-10 pr-14">
+              <h2 className="font-black text-[#2B2D42] text-xl sm:text-2xl leading-tight tracking-tight">
+                {game.title}
+              </h2>
+              <p className="text-xs font-bold text-[#2B2D42]/75 mt-1 line-clamp-2">
+                {game.short_description || game.description}
+              </p>
+            </div>
+
+            {/* 右下：ノートの落書きスタンプ */}
+            <div className="absolute bottom-1.5 right-2 z-10 pointer-events-none">
+              <NotebookDoodle
+                type={doodleType}
+                inkColor={game.isCustom ? "#2B2D42" : cardTheme.inkAccent}
+              />
             </div>
           </div>
 
-          {/* 中段：「プレイヤーX人」カード（1枚目の画像準拠） */}
-          <div className="bg-white border-[2.5px] border-[#2B2D42] rounded-3xl p-5 shadow-[4px_5px_0_#2B2D42] relative">
-            {/* カード上部：中央に「プレイヤーX人」、右上に⚙️ボタン */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-9" />
-              <h2 className="text-lg sm:text-xl font-black text-[#2B2D42]">
-                プレイヤー{players.length}人
-              </h2>
+          {/* 中段：「参加メンバー」ノート付箋グリッド（左の3ボタンを廃止し、2列の名札タグ構成に） */}
+          <div className="bg-white border-[2.5px] border-[#2B2D42] rounded-3xl p-4 sm:p-5 shadow-[4px_5px_0_#2B2D42] relative flex-1 flex flex-col justify-between">
+            {/* カード上部：左に「参加メンバー X人」、右に「人数・名前変更 ⚙️」ボタン */}
+            <div className="flex items-center justify-between pb-3 border-b-2 border-dashed border-[#2B2D42]/20 mb-3">
+              <div className="flex items-center gap-2">
+                <span className="inline-block w-2.5 h-5 rounded-xs bg-[#FFE066] border border-[#2B2D42]" />
+                <h3 className="text-base sm:text-lg font-black text-[#2B2D42]">
+                  参加メンバー（{players.length}人）
+                </h3>
+              </div>
+
               <button
                 type="button"
                 onClick={onOpenPlayerModal}
-                className="w-9 h-9 rounded-full bg-[#FAF6EB] hover:bg-[#FFE066] border-2 border-[#2B2D42] shadow-[2px_2px_0_#2B2D42] flex items-center justify-center text-[#2B2D42] active:translate-y-0.5 transition-all cursor-pointer"
+                className="px-3 py-1.5 rounded-xl bg-[#FAF6EB] hover:bg-[#FFE066] border-2 border-[#2B2D42] shadow-[2px_2px_0_#2B2D42] flex items-center gap-1.5 text-[#2B2D42] text-xs font-black active:translate-y-0.5 transition-all cursor-pointer"
                 title="プレイヤー人数・名前を変更"
               >
-                <Settings className="w-4 h-4 stroke-[2.5]" />
+                <Settings className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>人数・名前変更</span>
               </button>
             </div>
 
-            {/* 左側3連ボタン ＋ 中央プレイヤーアイコン並び */}
-            <div className="flex items-center gap-3">
-              {/* 左側の縦3連サブボタン */}
-              <div className="flex flex-col gap-2 shrink-0">
+            {/* 2列のノート付箋風名札カードグリッド */}
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3 my-auto py-1">
+              {orderedPlayers.map((player, idx) => (
                 <button
+                  key={player.id}
                   type="button"
-                  onClick={() => {
-                    sound.playTick();
-                    setCompactPlayerView((v) => !v);
-                  }}
-                  className={`w-10 h-10 rounded-xl border-2 border-[#2B2D42] flex items-center justify-center transition-all cursor-pointer ${
-                    !compactPlayerView
-                      ? "bg-[#2B2D42] text-white"
-                      : "bg-[#FAF6EB] text-[#2B2D42] hover:bg-[#FFE066]"
-                  }`}
-                  title="表示切替"
+                  onClick={onOpenPlayerModal}
+                  className="flex items-center gap-2.5 p-2.5 sm:p-3 rounded-2xl bg-[#FAF6EB] hover:bg-[#FFF275]/45 border-2 border-[#2B2D42] shadow-[2px_3px_0_#2B2D42] text-left transition-all active:translate-y-0.5 cursor-pointer"
                 >
-                  <LayoutGrid className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleShuffleOrder}
-                  className="w-10 h-10 rounded-xl bg-[#FAF6EB] hover:bg-[#FFE066] border-2 border-[#2B2D42] flex items-center justify-center text-[#2B2D42] transition-all cursor-pointer"
-                  title="順番をシャッフル"
-                >
-                  <Shuffle className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleToggleSound}
-                  className={`w-10 h-10 rounded-xl border-2 border-[#2B2D42] flex items-center justify-center transition-all cursor-pointer ${
-                    !isMuted
-                      ? "bg-[#FAF6EB] text-[#2B2D42] hover:bg-[#FFE066]"
-                      : "bg-[#FFADAD] text-[#2B2D42]"
-                  }`}
-                  title="サウンド切替"
-                >
-                  <Music className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* プレイヤー一覧（丸スタンプアイコン＋名前） */}
-              <div className="flex-1 min-w-0">
-                {!compactPlayerView ? (
-                  <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 py-2">
-                    {orderedPlayers.map((player, idx) => (
-                      <button
-                        key={player.id}
-                        type="button"
-                        onClick={onOpenPlayerModal}
-                        className="flex flex-col items-center gap-1.5 group cursor-pointer"
-                      >
-                        <PlayerStampAvatar
-                          index={idx}
-                          size="lg"
-                          isOut={player.isOut}
-                        />
-                        <span className="text-xs font-black text-[#2B2D42] max-w-[76px] truncate group-hover:underline">
-                          {player.name}
-                        </span>
-                      </button>
-                    ))}
+                  <PlayerStampAvatar
+                    index={idx}
+                    size="md"
+                    isOut={player.isOut}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <span className="block text-[10px] font-black text-[#2B2D42]/60">
+                      メンバー {idx + 1}
+                    </span>
+                    <span className="block text-xs sm:text-sm font-black text-[#2B2D42] truncate">
+                      {player.name}
+                    </span>
                   </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-2 py-1">
-                    {orderedPlayers.map((player, idx) => (
-                      <button
-                        key={player.id}
-                        type="button"
-                        onClick={onOpenPlayerModal}
-                        className="flex items-center gap-2 p-2 rounded-xl bg-[#FAF6EB] border-2 border-[#2B2D42] text-left cursor-pointer"
-                      >
-                        <PlayerStampAvatar
-                          index={idx}
-                          size="sm"
-                          isOut={player.isOut}
-                        />
-                        <span className="text-xs font-black text-[#2B2D42] truncate">
-                          {player.name}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+                </button>
+              ))}
             </div>
+
+            <p className="text-[11px] font-bold text-[#2B2D42]/60 text-center pt-2">
+              名札または右上のボタンから人数・名前を変更できます
+            </p>
           </div>
 
-          {/* 下段：特大「スタート」ボタン（1枚目の画像のグリーンのSTARTボタン準拠） */}
-          <div className="pt-1 pb-2 flex justify-center">
+          {/* 下段：ノート風「このメンバーで始める ➔」ボタン */}
+          <div className="pt-1 pb-2">
             <button
               type="button"
               onClick={() => {
                 sound.playTick();
                 setStep("settings");
               }}
-              className="w-full max-w-[280px] py-4 px-8 rounded-3xl bg-[#9AF0A8] hover:bg-[#82e893] border-[3px] border-[#2B2D42] shadow-[4px_6px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[2px_3px_0_#2B2D42] text-[#2B2D42] font-black text-2xl tracking-wider transition-all cursor-pointer"
+              className="w-full py-4 px-6 rounded-2xl bg-[#9AF0A8] hover:bg-[#82e893] border-[2.5px] border-[#2B2D42] shadow-[4px_5px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[2px_3px_0_#2B2D42] text-[#2B2D42] font-black text-lg sm:text-xl tracking-wide transition-all cursor-pointer"
             >
-              スタート
+              このメンバーで始める ➔
             </button>
           </div>
         </div>
