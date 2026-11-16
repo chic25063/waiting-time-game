@@ -35,6 +35,7 @@ interface StepByStepGameFlowProps {
   game: Game;
   players: Player[];
   onOpenPlayerModal: () => void;
+  onRenamePlayer?: (playerId: string, newName: string) => void;
   onToggleEliminate: (playerId: string) => void;
   onResetElimination: () => void;
   onSelectWinner: (playerId: string, playerName: string) => void;
@@ -172,12 +173,14 @@ export default function StepByStepGameFlow({
   game,
   players,
   onOpenPlayerModal,
+  onRenamePlayer,
   onToggleEliminate,
   onResetElimination,
   onSelectWinner,
   onBackToHome,
   arenaContext,
 }: StepByStepGameFlowProps) {
+  const isRhythmNameGame = game.id === "rhythm-shiritori";
   const [step, setStep] = useState<FlowStep>("standby");
   const [isMuted, setIsMuted] = useState<boolean>(() => sound.isMuted());
   const [compactPlayerView, setCompactPlayerView] = useState<boolean>(false);
@@ -777,7 +780,7 @@ export default function StepByStepGameFlow({
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <h2 className="text-sm font-black text-[#2B2D42]">
-                    プレイの順番
+                    {isRhythmNameGame ? "プレイの順番・2文字ネーム" : "プレイの順番"}
                   </h2>
                   <button
                     type="button"
@@ -788,8 +791,10 @@ export default function StepByStepGameFlow({
                     <span>ランダム</span>
                   </button>
                 </div>
-                <p className="text-[11px] font-bold text-[#2B2D42]/65 mb-2.5">
-                  矢印ボタンで順番を並べ替えられます
+                <p className="text-[11px] font-bold text-[#2B2D42]/70 mb-2.5">
+                  {isRhythmNameGame
+                    ? "通常の名前から2文字取った呼び名（例：えび・まる・ガリ）を入力・並べ替えできます"
+                    : "名前をタップして編集、矢印ボタンで順番を並べ替えられます"}
                 </p>
 
                 {/* 番号付きプレイヤーリスト */}
@@ -799,7 +804,7 @@ export default function StepByStepGameFlow({
                       key={player.id}
                       className="flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-[#FAF6EB] border-2 border-[#2B2D42] shadow-[2px_2px_0_#2B2D42]"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1 mr-2">
                         <span className="w-4 text-center font-black text-sm text-[#2B2D42] shrink-0">
                           {idx + 1}
                         </span>
@@ -808,11 +813,27 @@ export default function StepByStepGameFlow({
                           size="sm"
                           isOut={player.isOut}
                         />
-                        <div className="min-w-0">
-                          <div className="text-sm font-black text-[#2B2D42] truncate">
-                            {player.name}
-                          </div>
-                          <div className="text-[11px] font-bold text-[#2B2D42]/65">
+                        <div className="min-w-0 flex-1">
+                          {onRenamePlayer ? (
+                            <input
+                              type="text"
+                              value={player.name}
+                              onChange={(e) =>
+                                onRenamePlayer(player.id, e.target.value)
+                              }
+                              placeholder={
+                                isRhythmNameGame
+                                  ? ["えび", "まる", "ガリ", "たろ"][idx % 4]
+                                  : `プレイヤー${idx + 1}`
+                              }
+                              className="w-full px-2 py-0.5 rounded-lg bg-white border border-[#2B2D42]/40 focus:border-[#2B2D42] focus:outline-none text-sm font-black text-[#2B2D42]"
+                            />
+                          ) : (
+                            <div className="text-sm font-black text-[#2B2D42] truncate">
+                              {player.name}
+                            </div>
+                          )}
+                          <div className="text-[11px] font-bold text-[#2B2D42]/65 mt-0.5">
                             {getRoleLabel(idx, orderedPlayers.length)}
                           </div>
                         </div>
@@ -844,12 +865,23 @@ export default function StepByStepGameFlow({
               </div>
             </div>
 
-            {/* 下部：最初の人（親）またはアンカー表示 */}
+            {/* 下部：最初の人（親）または開始掛け声表示 */}
             <div className="pt-3 border-t-2 border-dashed border-[#2B2D42]/20 text-center text-xs sm:text-sm font-black text-[#2B2D42]">
-              最初の人（スタート）：{" "}
-              <span className="px-2 py-0.5 rounded bg-[#FFE066] border border-[#2B2D42]">
-                {orderedPlayers[0]?.name}
-              </span>
+              {isRhythmNameGame ? (
+                <div>
+                  開始掛け声：{" "}
+                  <span className="px-2 py-0.5 rounded bg-[#FFE066] border border-[#2B2D42]">
+                    「{orderedPlayers[0]?.name}」から始まるリズムに合わせて！
+                  </span>
+                </div>
+              ) : (
+                <div>
+                  最初の人（スタート）：{" "}
+                  <span className="px-2 py-0.5 rounded bg-[#FFE066] border border-[#2B2D42]">
+                    {orderedPlayers[0]?.name}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -1101,6 +1133,20 @@ export default function StepByStepGameFlow({
                       最初の人が自由にお題を決めてスタート！
                     </p>
                   )}
+                </div>
+              </div>
+            ) : isRhythmNameGame ? (
+              <div className="p-3.5 rounded-2xl bg-[#FFF275]/50 border-2 border-[#2B2D42] space-y-2 text-left">
+                <div className="px-2.5 py-1.5 rounded-xl bg-white border-2 border-[#2B2D42] text-center font-black text-xs sm:text-sm text-[#2B2D42]">
+                  📢 開始コール：「{orderedPlayers[0]?.name}」から始まるリズムに合わせて！
+                </div>
+                <div className="space-y-1 text-xs font-bold text-[#2B2D42] leading-relaxed">
+                  <div>
+                    ・<span className="font-black">通常パス（1〜4）</span>：相手の名前＋数字（例：「ガリ 3」「まる 1」）➔ 指名された人は自分の名前をその回数コールして次の人を指名！
+                  </div>
+                  <div className="p-2 rounded-xl bg-[#FFADAD]/45 border border-[#2B2D42] font-black">
+                    🔥「ちぇけ」指定時：名前コールの代わりに「よう・チェケ・ラッ・チョ！」と言って次を指名！
+                  </div>
                 </div>
               </div>
             ) : (

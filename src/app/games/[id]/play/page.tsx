@@ -154,6 +154,16 @@ function GamePlayContent() {
     setPlayerCount(newPlayers.length);
   };
 
+  const handleRenamePlayer = (playerId: string, newName: string) => {
+    setPlayers((prev) => {
+      const updated = prev.map((p) =>
+        p.id === playerId ? { ...p, name: newName } : p
+      );
+      saveStoredPlayers(updated);
+      return updated;
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#FAF6EB] text-[#2B2D42] flex items-center justify-center">
@@ -204,6 +214,7 @@ function GamePlayContent() {
           game={game}
           players={players}
           onOpenPlayerModal={() => setShowPlayerModal(true)}
+          onRenamePlayer={handleRenamePlayer}
           onToggleEliminate={handleToggleEliminate}
           onResetElimination={handleResetElimination}
           onSelectWinner={handleSelectWinner}

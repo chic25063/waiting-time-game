@@ -47,12 +47,14 @@ export async function getGameById(id: string): Promise<Game | null> {
       return localGame || null;
     }
 
-    // Supabaseから取得したデータにローカルのmetadataを補完
-    const game = data as Game;
-    if (!game.metadata && localGame?.metadata) {
-      game.metadata = localGame.metadata;
+    // ローカルの最新定義（description, rules, call_examples, metadata）を優先してマージ
+    if (localGame) {
+      return {
+        ...(data as Game),
+        ...localGame,
+      };
     }
-    return game;
+    return data as Game;
   } catch (err) {
     console.warn("Error fetching game from Supabase, using local fallback:", err);
     return localGame || null;
@@ -73,18 +75,11 @@ export async function getAllGames(): Promise<Game[]> {
       return ALL_GAMES;
     }
 
-    // ALL_GAMESに残っているゲームのみを対象にし、ローカルのmetadataをマージ
-    const allowedIds = new Set(ALL_GAMES.map((g) => g.id));
-    const filtered = data
-      .filter((item) => allowedIds.has(item.id))
-      .map((item) => {
-        const local = ALL_GAMES.find((g) => g.id === item.id);
-        return {
-          ...item,
-          metadata: item.metadata || local?.metadata,
-        } as Game;
-      });
-    return filtered.length > 0 ? filtered : ALL_GAMES;
+    // ALL_GAMESの最新定義を常に優先して返却
+    return ALL_GAMES.map((local) => {
+      const dbItem = data.find((item) => item.id === local.id);
+      return dbItem ? ({ ...dbItem, ...local } as Game) : local;
+    });
   } catch (err) {
     console.warn("Error fetching games from Supabase, using local data:", err);
     return ALL_GAMES;
