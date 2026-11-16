@@ -329,11 +329,17 @@ export default function StepByStepGameFlow({
   arenaContext,
 }: StepByStepGameFlowProps) {
   const isRhythmNameGame = game.id === "rhythm-shiritori";
+  const isStarterOnlyGame =
+    game.id === "chin-chin-samurai" || game.id === "rhythm-shiritori";
   const { players: sessionPlayers, resetSessionWins } = useGameSession();
   const [step, setStep] = useState<FlowStep>("standby");
   const [isMuted, setIsMuted] = useState<boolean>(() => sound.isMuted());
-  const [compactPlayerView, setCompactPlayerView] = useState<boolean>(false);
   const [showRulePopup, setShowRulePopup] = useState<boolean>(false);
+
+  // 「誰から始めるか」専用ステート（ちんちん侍・○○から始まるリズムに合わせて用）
+  const [starterId, setStarterId] = useState<string>(
+    () => players[0]?.id || "p-1"
+  );
 
   // ゲームが変わったらStep 1(standby)へ戻す
   useEffect(() => {
@@ -379,6 +385,28 @@ export default function StepByStepGameFlow({
     }
     setOrderIds(ids);
   };
+
+  // 「誰から始めるか」をランダム抽選
+  const handlePickRandomStarter = () => {
+    sound.playGacha();
+    if (players.length === 0) return;
+    if (players.length === 1) {
+      setStarterId(players[0].id);
+      return;
+    }
+    const candidates = players.filter((p) => p.id !== starterId);
+    const pool = candidates.length > 0 ? candidates : players;
+    const picked = pool[Math.floor(Math.random() * pool.length)];
+    setStarterId(picked.id);
+  };
+
+  const starterPlayer = useMemo(() => {
+    return (
+      players.find((p) => p.id === starterId) ||
+      orderedPlayers[0] ||
+      players[0]
+    );
+  }, [players, starterId, orderedPlayers]);
 
   // 順番を上下に入れ替え
   const handleMoveOrder = (index: number, direction: -1 | 1) => {
@@ -916,93 +944,160 @@ export default function StepByStepGameFlow({
                 <hr className="border-t-2 border-[#2B2D42]/15" />
               )}
 
-              {/* プレイの順番セクション */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <h2 className="text-sm font-black text-[#2B2D42]">
-                    {isRhythmNameGame ? "プレイの順番・2文字ネーム" : "プレイの順番"}
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={handleShuffleOrder}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white hover:bg-[#FFE066] border-2 border-[#2B2D42] shadow-[1px_2px_0_#2B2D42] text-xs font-black text-[#2B2D42] active:translate-y-0.5 transition-all cursor-pointer"
-                  >
-                    <Shuffle className="w-3.5 h-3.5" />
-                    <span>ランダム</span>
-                  </button>
-                </div>
-                <p className="text-[11px] font-bold text-[#2B2D42]/70 mb-2.5">
-                  {isRhythmNameGame
-                    ? "通常の名前から2文字取った呼び名（例：えび・まる・ガリ）を入力・並べ替えできます"
-                    : "名前をタップして編集、矢印ボタンで順番を並べ替えられます"}
-                </p>
-
-                {/* 番号付きプレイヤーリスト */}
-                <div className="space-y-2 max-h-[230px] overflow-y-auto pr-1">
-                  {orderedPlayers.map((player, idx) => (
-                    <div
-                      key={player.id}
-                      className="flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-[#FAF6EB] border-2 border-[#2B2D42] shadow-[2px_2px_0_#2B2D42]"
+              {/* 「誰から始めるか」（ちんちん侍・○○から始まるリズムに合わせて） または 「プレイの順番」（あぶりカルビ等） */}
+              {isStarterOnlyGame ? (
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <h2 className="text-sm font-black text-[#2B2D42]">
+                      {isRhythmNameGame
+                        ? "誰から始めるか・2文字ネーム"
+                        : "誰から始めるか"}
+                    </h2>
+                    <button
+                      type="button"
+                      onClick={handlePickRandomStarter}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white hover:bg-[#FFE066] border-2 border-[#2B2D42] shadow-[1px_2px_0_#2B2D42] text-xs font-black text-[#2B2D42] active:translate-y-0.5 transition-all cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0 flex-1 mr-2">
-                        <span className="w-4 text-center font-black text-sm text-[#2B2D42] shrink-0">
-                          {idx + 1}
-                        </span>
-                        <PlayerStampAvatar
-                          index={idx}
-                          size="sm"
-                          isOut={player.isOut}
-                        />
-                        <div className="min-w-0 flex-1">
-                          {onRenamePlayer ? (
-                            <input
-                              type="text"
-                              value={player.name}
-                              onChange={(e) =>
-                                onRenamePlayer(player.id, e.target.value)
-                              }
-                              placeholder={
-                                isRhythmNameGame
-                                  ? ["えび", "まる", "ガリ", "たろ"][idx % 4]
-                                  : `プレイヤー${idx + 1}`
-                              }
-                              className="w-full px-2 py-0.5 rounded-lg bg-white border border-[#2B2D42]/40 focus:border-[#2B2D42] focus:outline-none text-sm font-black text-[#2B2D42]"
+                      <Shuffle className="w-3.5 h-3.5" />
+                      <span>ランダムで決める</span>
+                    </button>
+                  </div>
+                  <p className="text-[11px] font-bold text-[#2B2D42]/70 mb-2.5">
+                    {isRhythmNameGame
+                      ? "最初に始める人を選び、2文字の呼び名（例：えび・まる・ガリ）を入力できます"
+                      : "最初に指差しを始める人（親）をタップして選ぶか、ランダムで決められます"}
+                  </p>
+
+                  <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
+                    {players.map((player, idx) => {
+                      const isStarter = starterPlayer?.id === player.id;
+                      return (
+                        <div
+                          key={player.id}
+                          onClick={() => {
+                            sound.playTick();
+                            setStarterId(player.id);
+                          }}
+                          className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl border-2 border-[#2B2D42] transition-all cursor-pointer ${
+                            isStarter
+                              ? "bg-[#FFE066] shadow-[3px_3px_0_#2B2D42]"
+                              : "bg-[#FAF6EB] hover:bg-[#FFF275]/40"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0 flex-1 mr-2">
+                            <PlayerStampAvatar
+                              index={idx}
+                              size="sm"
+                              isOut={player.isOut}
                             />
-                          ) : (
+                            <div className="min-w-0 flex-1">
+                              {onRenamePlayer && isRhythmNameGame ? (
+                                <input
+                                  type="text"
+                                  value={player.name}
+                                  onClick={(e) => e.stopPropagation()}
+                                  onChange={(e) =>
+                                    onRenamePlayer(player.id, e.target.value)
+                                  }
+                                  placeholder={
+                                    ["えび", "まる", "ガリ", "たろ"][idx % 4]
+                                  }
+                                  className="w-full px-2 py-0.5 rounded-lg bg-white border border-[#2B2D42]/40 focus:border-[#2B2D42] focus:outline-none text-sm font-black text-[#2B2D42]"
+                                />
+                              ) : (
+                                <div className="text-sm font-black text-[#2B2D42] truncate">
+                                  {player.name}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <span
+                            className={`px-2.5 py-1 rounded-full border-2 border-[#2B2D42] text-xs font-black shrink-0 ${
+                              isStarter
+                                ? "bg-white text-[#2B2D42]"
+                                : "bg-white/60 text-[#2B2D42]/60"
+                            }`}
+                          >
+                            {isStarter ? "★ この人から始める" : "タップで選択"}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <h2 className="text-sm font-black text-[#2B2D42]">
+                      プレイの順番
+                    </h2>
+                    <button
+                      type="button"
+                      onClick={handleShuffleOrder}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white hover:bg-[#FFE066] border-2 border-[#2B2D42] shadow-[1px_2px_0_#2B2D42] text-xs font-black text-[#2B2D42] active:translate-y-0.5 transition-all cursor-pointer"
+                    >
+                      <Shuffle className="w-3.5 h-3.5" />
+                      <span>ランダム</span>
+                    </button>
+                  </div>
+                  <p className="text-[11px] font-bold text-[#2B2D42]/70 mb-2.5">
+                    1番目 ➔ 2番目 ➔ 3番目…の順番で回します（矢印で入れ替え可能）
+                  </p>
+
+                  {/* 番号付きプレイヤーリスト */}
+                  <div className="space-y-2 max-h-[230px] overflow-y-auto pr-1">
+                    {orderedPlayers.map((player, idx) => (
+                      <div
+                        key={player.id}
+                        className="flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-[#FAF6EB] border-2 border-[#2B2D42] shadow-[2px_2px_0_#2B2D42]"
+                      >
+                        <div className="flex items-center gap-3 min-w-0 flex-1 mr-2">
+                          <span className="px-2 py-0.5 rounded-lg bg-[#FFE066] border border-[#2B2D42] text-center font-black text-xs text-[#2B2D42] shrink-0">
+                            {idx + 1}番目
+                          </span>
+                          <PlayerStampAvatar
+                            index={idx}
+                            size="sm"
+                            isOut={player.isOut}
+                          />
+                          <div className="min-w-0 flex-1">
                             <div className="text-sm font-black text-[#2B2D42] truncate">
                               {player.name}
                             </div>
-                          )}
-                          <div className="text-[11px] font-bold text-[#2B2D42]/65 mt-0.5">
-                            {getRoleLabel(idx, orderedPlayers.length)}
+                            <div className="text-[11px] font-bold text-[#2B2D42]/65 mt-0.5">
+                              {game.id === "aburi-karubi"
+                                ? `${idx + 1}巡目（まずは${idx + 1}回言う）`
+                                : getRoleLabel(idx, orderedPlayers.length)}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          type="button"
-                          disabled={idx === 0}
-                          onClick={() => handleMoveOrder(idx, -1)}
-                          className="p-1.5 rounded-lg bg-white hover:bg-[#FFE066] disabled:opacity-30 border border-[#2B2D42] text-[#2B2D42] cursor-pointer"
-                          aria-label="上へ"
-                        >
-                          <ArrowUp className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          disabled={idx === orderedPlayers.length - 1}
-                          onClick={() => handleMoveOrder(idx, 1)}
-                          className="p-1.5 rounded-lg bg-white hover:bg-[#FFE066] disabled:opacity-30 border border-[#2B2D42] text-[#2B2D42] cursor-pointer"
-                          aria-label="下へ"
-                        >
-                          <ArrowDown className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            disabled={idx === 0}
+                            onClick={() => handleMoveOrder(idx, -1)}
+                            className="p-1.5 rounded-lg bg-white hover:bg-[#FFE066] disabled:opacity-30 border border-[#2B2D42] text-[#2B2D42] cursor-pointer"
+                            aria-label="上へ"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={idx === orderedPlayers.length - 1}
+                            onClick={() => handleMoveOrder(idx, 1)}
+                            className="p-1.5 rounded-lg bg-white hover:bg-[#FFE066] disabled:opacity-30 border border-[#2B2D42] text-[#2B2D42] cursor-pointer"
+                            aria-label="下へ"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* 下部：最初の人（親）または開始掛け声表示 */}
@@ -1011,12 +1106,19 @@ export default function StepByStepGameFlow({
                 <div>
                   開始掛け声：{" "}
                   <span className="px-2 py-0.5 rounded bg-[#FFE066] border border-[#2B2D42]">
-                    「{orderedPlayers[0]?.name}」から始まるリズムに合わせて！
+                    「{starterPlayer?.name}」から始まるリズムに合わせて！
+                  </span>
+                </div>
+              ) : isStarterOnlyGame ? (
+                <div>
+                  始める人（親）：{" "}
+                  <span className="px-2.5 py-0.5 rounded bg-[#FFE066] border border-[#2B2D42]">
+                    {starterPlayer?.name} からスタート！
                   </span>
                 </div>
               ) : (
                 <div>
-                  最初の人（スタート）：{" "}
+                  1番目（スタート）：{" "}
                   <span className="px-2 py-0.5 rounded bg-[#FFE066] border border-[#2B2D42]">
                     {orderedPlayers[0]?.name}
                   </span>
@@ -1079,47 +1181,79 @@ export default function StepByStepGameFlow({
             </button>
           </header>
 
-          {/* メイン白カード（順番確認 ＋ ルール説明） */}
+          {/* メイン白カード（順番確認 or 始める人確認 ＋ ルール説明） */}
           <div className="bg-white border-[2.5px] border-[#2B2D42] rounded-3xl p-5 shadow-[4px_5px_0_#2B2D42] space-y-5 flex-1 flex flex-col justify-between">
-            {/* 上段：順番セクション */}
-            <div>
-              <div className="text-center pb-2 border-b-2 border-[#2B2D42]">
-                <h2 className="text-sm font-black text-[#2B2D42]">順番</h2>
-              </div>
+            {/* 上段：「誰から始めるか」 または 「プレイの順番」 */}
+            {isStarterOnlyGame ? (
+              <div>
+                <div className="text-center pb-2 border-b-2 border-[#2B2D42]">
+                  <h2 className="text-sm font-black text-[#2B2D42]">
+                    誰から始めるか
+                  </h2>
+                </div>
 
-              <div className="space-y-2 mt-3 max-h-[175px] overflow-y-auto pr-1">
-                {orderedPlayers.map((player, idx) => (
-                  <div
-                    key={player.id}
-                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl bg-[#FAF6EB] border-2 border-[#2B2D42]"
-                  >
-                    <span className="w-4 text-center font-black text-sm text-[#2B2D42] shrink-0">
-                      {idx + 1}
-                    </span>
-                    <PlayerStampAvatar
-                      index={idx}
-                      size="sm"
-                      isOut={player.isOut}
-                    />
-                    <div className="min-w-0">
-                      <div className="text-sm font-black text-[#2B2D42] truncate">
-                        {player.name}
-                      </div>
-                      <div className="text-[11px] font-bold text-[#2B2D42]/65">
-                        {getRoleLabel(idx, orderedPlayers.length)}
-                      </div>
+                <div className="mt-3 p-3.5 rounded-2xl bg-[#FFE066] border-2 border-[#2B2D42] shadow-[2px_3px_0_#2B2D42] flex items-center justify-center gap-3">
+                  <PlayerStampAvatar
+                    index={Math.max(
+                      0,
+                      players.findIndex((p) => p.id === starterPlayer?.id)
+                    )}
+                    size="md"
+                  />
+                  <div className="text-left">
+                    <div className="text-[11px] font-black text-[#2B2D42]/75">
+                      最初に始める人（スタート）
+                    </div>
+                    <div className="text-lg sm:text-xl font-black text-[#2B2D42]">
+                      {starterPlayer?.name}
                     </div>
                   </div>
-                ))}
+                </div>
               </div>
+            ) : (
+              <div>
+                <div className="text-center pb-2 border-b-2 border-[#2B2D42]">
+                  <h2 className="text-sm font-black text-[#2B2D42]">
+                    プレイの順番
+                  </h2>
+                </div>
 
-              <div className="mt-3 text-center text-xs sm:text-sm font-black text-[#2B2D42]">
-                最初の人：{" "}
-                <span className="text-rose-600 underline decoration-2 underline-offset-4">
-                  {orderedPlayers[0]?.name}
-                </span>
+                <div className="space-y-2 mt-3 max-h-[175px] overflow-y-auto pr-1">
+                  {orderedPlayers.map((player, idx) => (
+                    <div
+                      key={player.id}
+                      className="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl bg-[#FAF6EB] border-2 border-[#2B2D42]"
+                    >
+                      <span className="px-2 py-0.5 rounded-lg bg-[#FFE066] border border-[#2B2D42] text-center font-black text-xs text-[#2B2D42] shrink-0">
+                        {idx + 1}番目
+                      </span>
+                      <PlayerStampAvatar
+                        index={idx}
+                        size="sm"
+                        isOut={player.isOut}
+                      />
+                      <div className="min-w-0">
+                        <div className="text-sm font-black text-[#2B2D42] truncate">
+                          {player.name}
+                        </div>
+                        <div className="text-[11px] font-bold text-[#2B2D42]/65">
+                          {game.id === "aburi-karubi"
+                            ? `${idx + 1}巡目（まずは${idx + 1}回言う）`
+                            : getRoleLabel(idx, orderedPlayers.length)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-3 text-center text-xs sm:text-sm font-black text-[#2B2D42]">
+                  1番目（スタート）：{" "}
+                  <span className="text-rose-600 underline decoration-2 underline-offset-4">
+                    {orderedPlayers[0]?.name}
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* 下段：ルール説明セクション */}
             <div className="flex-1 flex flex-col justify-center">
@@ -1239,7 +1373,7 @@ export default function StepByStepGameFlow({
               ) : isRhythmNameGame ? (
                 <div className="px-3 py-2 rounded-2xl bg-[#FFF275]/55 border-2 border-[#2B2D42] text-xs text-[#2B2D42] space-y-1">
                   <div className="font-black text-center">
-                    📢「{orderedPlayers[0]?.name}」から始まるリズムに合わせて！
+                    📢「{starterPlayer?.name}」から始まるリズムに合わせて！
                   </div>
                   <div className="text-[11px] font-bold text-[#2B2D42]/85 text-center">
                     名前＋1〜4でパス ／「ちぇけ」➔「よう・チェケ・ラッ・チョ！」
@@ -1247,12 +1381,40 @@ export default function StepByStepGameFlow({
                 </div>
               ) : (
                 (game.call_examples?.length || game.metadata?.callExample) && (
-                  <div className="px-3 py-2 rounded-2xl bg-[#FFF275]/45 border-2 border-[#2B2D42] text-[11px] font-bold text-[#2B2D42] whitespace-pre-wrap leading-snug">
-                    {game.call_examples
-                      ? game.call_examples.join("\n")
-                      : game.metadata?.callExample}
+                  <div className="px-3 py-2 rounded-2xl bg-[#FFF275]/45 border-2 border-[#2B2D42] text-[11px] font-bold text-[#2B2D42] whitespace-pre-wrap leading-snug space-y-1">
+                    {isStarterOnlyGame && (
+                      <div className="font-black text-[#2B2D42] pb-1 border-b border-[#2B2D42]/20">
+                        📢 最初は「{starterPlayer?.name}」からスタート！
+                      </div>
+                    )}
+                    <div>
+                      {game.call_examples
+                        ? game.call_examples.join("\n")
+                        : game.metadata?.callExample}
+                    </div>
                   </div>
                 )
+              )}
+
+              {/* 順番制ゲーム（あぶりカルビ等）のプレイ順番バー */}
+              {!isStarterOnlyGame && orderedPlayers.length >= 2 && (
+                <div className="px-3 py-2 rounded-2xl bg-[#FAF6EB] border-2 border-[#2B2D42] flex items-center gap-1.5 overflow-x-auto text-xs font-black text-[#2B2D42]">
+                  <span className="px-2 py-0.5 rounded bg-[#FFE066] border border-[#2B2D42] shrink-0 text-[10px]">
+                    順番
+                  </span>
+                  <div className="flex items-center gap-1.5 whitespace-nowrap">
+                    {orderedPlayers.map((p, idx) => (
+                      <React.Fragment key={p.id}>
+                        <span className={p.isOut ? "line-through opacity-45" : ""}>
+                          {idx + 1}.{p.name}
+                        </span>
+                        {idx < orderedPlayers.length - 1 && (
+                          <span className="text-[#2B2D42]/45">➔</span>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
               )}
 
               {/* コンパクトなタイマー・BPM行 */}
@@ -1353,32 +1515,45 @@ export default function StepByStepGameFlow({
               </div>
 
               <div className="space-y-3 flex-1 overflow-y-auto pr-0.5">
-                {orderedPlayers.map((player, idx) => (
-                  <div
-                    key={player.id}
-                    className={`flex items-center justify-between p-3.5 sm:p-4 rounded-2xl border-[2.5px] border-[#2B2D42] transition-all ${
-                      player.isOut
-                        ? "bg-[#2B2D42]/10 opacity-55"
-                        : "bg-[#FAF6EB] shadow-[3px_4px_0_#2B2D42]"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className="w-5 text-center font-black text-sm sm:text-base text-[#2B2D42] shrink-0">
-                        {idx + 1}
-                      </span>
-                      <PlayerStampAvatar
-                        index={idx}
-                        size="md"
-                        isOut={player.isOut}
-                      />
-                      <span
-                        className={`text-base sm:text-lg font-black text-[#2B2D42] truncate ${
-                          player.isOut ? "line-through" : ""
+                {(isStarterOnlyGame ? players : orderedPlayers).map(
+                  (player, idx) => {
+                    const isStarter =
+                      isStarterOnlyGame && starterPlayer?.id === player.id;
+                    return (
+                      <div
+                        key={player.id}
+                        className={`flex items-center justify-between p-3.5 sm:p-4 rounded-2xl border-[2.5px] border-[#2B2D42] transition-all ${
+                          player.isOut
+                            ? "bg-[#2B2D42]/10 opacity-55"
+                            : "bg-[#FAF6EB] shadow-[3px_4px_0_#2B2D42]"
                         }`}
                       >
-                        {player.name}
-                      </span>
-                    </div>
+                        <div className="flex items-center gap-3 min-w-0">
+                          {!isStarterOnlyGame && (
+                            <span className="px-2 py-0.5 rounded-lg bg-[#FFE066] border border-[#2B2D42] text-center font-black text-xs text-[#2B2D42] shrink-0">
+                              {idx + 1}番目
+                            </span>
+                          )}
+                          <PlayerStampAvatar
+                            index={idx}
+                            size="md"
+                            isOut={player.isOut}
+                          />
+                          <div className="min-w-0">
+                            <span
+                              className={`block text-base sm:text-lg font-black text-[#2B2D42] truncate ${
+                                player.isOut ? "line-through" : ""
+                              }`}
+                            >
+                              {player.name}
+                            </span>
+                            {isStarter && (
+                              <span className="inline-block text-[10px] font-black px-2 py-0.2 rounded-full bg-[#FFE066] border border-[#2B2D42] text-[#2B2D42]">
+                                ★ 最初に始める人
+                              </span>
+                            )}
+                          </div>
+                        </div>
 
                     <div className="flex items-center gap-2 shrink-0">
                       {/* ミス・脱落ボタン */}
@@ -1411,7 +1586,8 @@ export default function StepByStepGameFlow({
                       </button>
                     </div>
                   </div>
-                ))}
+                );
+              })}
               </div>
             </div>
           </div>
