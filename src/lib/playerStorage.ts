@@ -2,7 +2,7 @@ import { Player } from "@/types/game";
 
 export const PLAYER_STORAGE_KEY = "waiting_game_players";
 
-// サンプルで使えるランダムニックネーム（友人同士・合コン・飲み会・待ち時間で盛り上がる）
+// サンプルで使えるランダムニックネーム
 export const PRESET_NICKNAMES = [
   "たろう",
   "はなこ",
@@ -16,11 +16,11 @@ export const PRESET_NICKNAMES = [
   "こうき",
 ];
 
-// デフォルトプレイヤー生成関数
+// デフォルトプレイヤー生成関数（IDを p-1, p-2... に統一）
 export function generateDefaultPlayers(count: number = 3): Player[] {
   const safeCount = Math.max(2, Math.min(8, count));
   return Array.from({ length: safeCount }, (_, i) => ({
-    id: `player-${i + 1}`,
+    id: `p-${i + 1}`,
     name: `プレイヤー ${i + 1}`,
     score: 0,
     isOut: false,
@@ -42,10 +42,13 @@ export function loadStoredPlayers(fallbackCount: number = 3): Player[] {
       return generateDefaultPlayers(fallbackCount);
     }
 
-    // データのバリデーションとサニタイズ
+    // IDを p-1, p-2... に正規化してセッション統計と常に一致させる
     return parsed.map((p, idx) => ({
-      id: typeof p.id === "string" ? p.id : `p-${Date.now()}-${idx}`,
-      name: typeof p.name === "string" && p.name.trim() !== "" ? p.name.trim() : `プレイヤー ${idx + 1}`,
+      id: `p-${idx + 1}`,
+      name:
+        typeof p.name === "string" && p.name.trim() !== ""
+          ? p.name.trim()
+          : `プレイヤー ${idx + 1}`,
       score: typeof p.score === "number" ? p.score : 0,
       isOut: Boolean(p.isOut),
     }));
@@ -59,13 +62,17 @@ export function loadStoredPlayers(fallbackCount: number = 3): Player[] {
 export function saveStoredPlayers(players: Player[]): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify(players));
+    const normalized = players.map((p, idx) => ({
+      ...p,
+      id: `p-${idx + 1}`,
+    }));
+    localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify(normalized));
   } catch (e) {
     console.error("Failed to save players to localStorage:", e);
   }
 }
 
-// 指定した目標人数に合わせてプレイヤーリストを調整（既存の名前を活かしつつ過不足を調整）
+// 指定した目標人数に合わせてプレイヤーリストを調整
 export function syncPlayersWithCount(
   existing: Player[],
   targetCount: number,
@@ -82,12 +89,18 @@ export function syncPlayersWithCount(
   let result: Player[] = [];
 
   if (existing.length >= safeCount) {
-    result = existing.slice(0, safeCount);
+    result = existing.slice(0, safeCount).map((p, idx) => ({
+      ...p,
+      id: `p-${idx + 1}`,
+    }));
   } else {
-    result = [...existing];
+    result = existing.map((p, idx) => ({
+      ...p,
+      id: `p-${idx + 1}`,
+    }));
     for (let i = existing.length; i < safeCount; i++) {
       result.push({
-        id: `player-${Date.now()}-${i + 1}`,
+        id: `p-${i + 1}`,
         name: `プレイヤー ${i + 1}`,
         score: 0,
         isOut: false,
@@ -105,4 +118,3 @@ export function syncPlayersWithCount(
 
   return result;
 }
-

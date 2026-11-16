@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Game, Player, PromptItem } from "@/types/game";
 import { sound } from "@/lib/sound";
+import { useGameSession } from "@/hooks/useGameSession";
 import {
   CARD_THEMES,
   resolveDoodleType,
@@ -328,6 +329,7 @@ export default function StepByStepGameFlow({
   arenaContext,
 }: StepByStepGameFlowProps) {
   const isRhythmNameGame = game.id === "rhythm-shiritori";
+  const { players: sessionPlayers, resetSessionWins } = useGameSession();
   const [step, setStep] = useState<FlowStep>("standby");
   const [isMuted, setIsMuted] = useState<boolean>(() => sound.isMuted());
   const [compactPlayerView, setCompactPlayerView] = useState<boolean>(false);
@@ -672,8 +674,8 @@ export default function StepByStepGameFlow({
 
           {/* 中段：「参加メンバー」ノート付箋グリッド（左の3ボタンを廃止し、2列の名札タグ構成に） */}
           <div className="bg-white border-[2.5px] border-[#2B2D42] rounded-3xl p-4 sm:p-5 shadow-[4px_5px_0_#2B2D42] relative flex-1 flex flex-col justify-between">
-            {/* カード上部：左に「参加メンバー X人」、右に「人数・名前変更 ⚙️」ボタン */}
-            <div className="flex items-center justify-between pb-3 border-b-2 border-dashed border-[#2B2D42]/20 mb-3">
+            {/* カード上部：左に「参加メンバー X人」、右に「★リセット」「人数・名前変更 ⚙️」ボタン */}
+            <div className="flex items-center justify-between gap-2 pb-3 border-b-2 border-dashed border-[#2B2D42]/20 mb-3 flex-wrap">
               <div className="flex items-center gap-2">
                 <span className="inline-block w-2.5 h-5 rounded-xs bg-[#FFE066] border border-[#2B2D42]" />
                 <h3 className="text-base sm:text-lg font-black text-[#2B2D42]">
@@ -681,41 +683,71 @@ export default function StepByStepGameFlow({
                 </h3>
               </div>
 
-              <button
-                type="button"
-                onClick={onOpenPlayerModal}
-                className="px-3 py-1.5 rounded-xl bg-[#FAF6EB] hover:bg-[#FFE066] border-2 border-[#2B2D42] shadow-[2px_2px_0_#2B2D42] flex items-center gap-1.5 text-[#2B2D42] text-xs font-black active:translate-y-0.5 transition-all cursor-pointer"
-                title="プレイヤー人数・名前を変更"
-              >
-                <Settings className="w-3.5 h-3.5 stroke-[2.5]" />
-                <span>人数・名前変更</span>
-              </button>
-            </div>
-
-            {/* 2列のノート付箋風名札カードグリッド */}
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-3 my-auto py-1">
-              {orderedPlayers.map((player, idx) => (
+              <div className="flex items-center gap-1.5">
                 <button
-                  key={player.id}
+                  type="button"
+                  onClick={() => {
+                    if (confirm("全員の通算★数を 0 にリセットしますか？")) {
+                      sound.playTick();
+                      resetSessionWins();
+                    }
+                  }}
+                  className="px-2.5 py-1.5 rounded-xl bg-[#FAF6EB] hover:bg-[#FFADAD] border-2 border-[#2B2D42] shadow-[2px_2px_0_#2B2D42] flex items-center gap-1 text-[#2B2D42] text-[11px] font-black active:translate-y-0.5 transition-all cursor-pointer"
+                  title="通算の星(★)をリセット"
+                >
+                  <RotateCcw className="w-3 h-3 stroke-[2.5]" />
+                  <span>★リセット</span>
+                </button>
+
+                <button
                   type="button"
                   onClick={onOpenPlayerModal}
-                  className="flex items-center gap-2.5 p-2.5 sm:p-3 rounded-2xl bg-[#FAF6EB] hover:bg-[#FFF275]/45 border-2 border-[#2B2D42] shadow-[2px_3px_0_#2B2D42] text-left transition-all active:translate-y-0.5 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-[#FAF6EB] hover:bg-[#FFE066] border-2 border-[#2B2D42] shadow-[2px_2px_0_#2B2D42] flex items-center gap-1.5 text-[#2B2D42] text-xs font-black active:translate-y-0.5 transition-all cursor-pointer"
+                  title="プレイヤー人数・名前を変更"
                 >
-                  <PlayerStampAvatar
-                    index={idx}
-                    size="md"
-                    isOut={player.isOut}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <span className="block text-[10px] font-black text-[#2B2D42]/60">
-                      メンバー {idx + 1}
-                    </span>
-                    <span className="block text-xs sm:text-sm font-black text-[#2B2D42] truncate">
-                      {player.name}
-                    </span>
-                  </div>
+                  <Settings className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>人数・名前</span>
                 </button>
-              ))}
+              </div>
+            </div>
+
+            {/* 2列のノート付箋風名札カードグリッド（現在の通算★数も表示） */}
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3 my-auto py-1">
+              {orderedPlayers.map((player, idx) => {
+                const sessionStat =
+                  sessionPlayers.find((sp) => sp.id === player.id) ||
+                  sessionPlayers.find((sp) => sp.name === player.name) ||
+                  sessionPlayers[idx];
+                const wins = sessionStat?.totalWins || 0;
+
+                return (
+                  <button
+                    key={player.id}
+                    type="button"
+                    onClick={onOpenPlayerModal}
+                    className="flex items-center gap-2.5 p-2.5 sm:p-3 rounded-2xl bg-[#FAF6EB] hover:bg-[#FFF275]/45 border-2 border-[#2B2D42] shadow-[2px_3px_0_#2B2D42] text-left transition-all active:translate-y-0.5 cursor-pointer"
+                  >
+                    <PlayerStampAvatar
+                      index={idx}
+                      size="md"
+                      isOut={player.isOut}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="text-[10px] font-black text-[#2B2D42]/60">
+                          メンバー {idx + 1}
+                        </span>
+                        <span className="px-1.5 py-0.2 rounded-full bg-[#FFE066] border border-[#2B2D42] text-[10px] font-black text-[#2B2D42] shrink-0">
+                          ★{wins}
+                        </span>
+                      </div>
+                      <span className="block text-xs sm:text-sm font-black text-[#2B2D42] truncate mt-0.5">
+                        {player.name}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
 
             <p className="text-[11px] font-bold text-[#2B2D42]/60 text-center pt-2">

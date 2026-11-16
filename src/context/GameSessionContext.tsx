@@ -15,9 +15,10 @@ interface WinResult {
 
 interface GameSessionContextType {
   players: PlayerStats[];
-  recordWin: (winnerId: string) => WinResult;
+  recordWin: (winnerId: string, winnerName?: string) => WinResult;
   recordTeamWin: () => void;
   updatePlayerNames: (updated: { id: string; name: string }[]) => void;
+  syncSessionPlayers: (roster: { id: string; name: string }[]) => void;
   setPlayerCount: (count: number) => void;
   resetSessionWins: () => void;
   isInitialized: boolean;
@@ -50,24 +51,29 @@ export function GameSessionProvider({ children }: { children: React.ReactNode })
       if (saved) {
         const parsed = JSON.parse(saved) as SessionData;
         if (parsed.players && Array.isArray(parsed.players) && parsed.players.length >= 2) {
-          setPlayers(parsed.players.map((p, i) => ({
-            ...p,
-            consecutiveWins: p.consecutiveWins || 0,
-            underdogWins: p.underdogWins || 0,
-          })));
+          setPlayers(
+            parsed.players.map((p, i) => ({
+              ...p,
+              id: `p-${i + 1}`,
+              consecutiveWins: p.consecutiveWins || 0,
+              underdogWins: p.underdogWins || 0,
+            }))
+          );
           setIsInitialized(true);
           return;
         }
       }
 
-      // レガシーストレージからの移行チェック
       const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
       if (legacy) {
         const legacyParsed = JSON.parse(legacy);
         if (Array.isArray(legacyParsed) && legacyParsed.length >= 2) {
           const migrated: PlayerStats[] = legacyParsed.map((p, idx) => ({
-            id: typeof p.id === "string" ? p.id : `p-${idx + 1}`,
-            name: typeof p.name === "string" && p.name.trim() !== "" ? p.name.trim() : `プレイヤー ${idx + 1}`,
+            id: `p-${idx + 1}`,
+            name:
+              typeof p.name === "string" && p.name.trim() !== ""
+                ? p.name.trim()
+                : `プレイヤー ${idx + 1}`,
             totalWins: 0,
             matchCount: 0,
             consecutiveWins: 0,
@@ -101,31 +107,46 @@ export function GameSessionProvider({ children }: { children: React.ReactNode })
     }
   }, [players, isInitialized]);
 
-  // 勝者を記録 (★+1、下克上時は★+2、連勝カウント)
-  const recordWin = useCallback((winnerId: string): WinResult => {
-    let result: WinResult = { winnerId, isUnderdog: false, bonusStars: 1, streak: 1 };
+  // 勝者を記録（全プレイヤー1〜8人すべて確実に ★+1 を記録）
+  const recordWin = useCallback((winnerId: string, winnerName?: string): WinResult => {
+    const result: WinResult = {
+      winnerId,
+      isUnderdog: false,
+      bonusStars: 1,
+      streak: 1,
+    };
 
     setPlayers((prev) => {
-      const winnerPlayer = prev.find((p) => p.id === winnerId);
-      const isUnderdog = winnerPlayer ? winnerPlayer.totalWins === 0 : false;
-      const starsToAdd = isUnderdog ? 2 : 1;
-      const newStreak = (winnerPlayer?.consecutiveWins || 0) + 1;
+      const hasMatch = prev.some(
+        (p) => p.id === winnerId || (winnerName && p.name === winnerName)
+      );
 
-      result = {
-        winnerId,
-        isUnderdog,
-        bonusStars: starsToAdd,
-        streak: newStreak,
-      };
+      const baseList = hasMatch
+        ? prev
+        : [
+            ...prev,
+            {
+              id: winnerId,
+              name: winnerName || `プレイヤー ${prev.length + 1}`,
+              totalWins: 0,
+              matchCount: 0,
+              consecutiveWins: 0,
+              underdogWins: 0,
+            },
+          ];
 
-      return prev.map((p) => {
-        const isWinner = p.id === winnerId;
+      let matchedOnce = false;
+      return baseList.map((p) => {
+        const isWinner =
+          !matchedOnce &&
+          (p.id === winnerId || (Boolean(winnerName) && p.name === winnerName));
+        if (isWinner) matchedOnce = true;
+
         return {
           ...p,
-          totalWins: isWinner ? p.totalWins + starsToAdd : p.totalWins,
+          totalWins: isWinner ? p.totalWins + 1 : p.totalWins,
           matchCount: p.matchCount + 1,
           consecutiveWins: isWinner ? (p.consecutiveWins || 0) + 1 : 0,
-          underdogWins: isWinner && isUnderdog ? (p.underdogWins || 0) + 1 : (p.underdogWins || 0),
         };
       });
     });
@@ -133,7 +154,7 @@ export function GameSessionProvider({ children }: { children: React.ReactNode })
     return result;
   }, []);
 
-  // チーム全員勝利 (解答一致など協力ゲーム用: 全員★+1)
+  // チーム全員勝利
   const recordTeamWin = useCallback(() => {
     setPlayers((prev) =>
       prev.map((p) => ({
@@ -144,28 +165,63 @@ export function GameSessionProvider({ children }: { children: React.ReactNode })
     );
   }, []);
 
-  // プレイヤー名のみ更新 (★成績は維持)
+  // プレイヤー名のみ更新
   const updatePlayerNames = useCallback((updated: { id: string; name: string }[]) => {
     setPlayers((prev) =>
-      prev.map((p) => {
-        const found = updated.find((u) => u.id === p.id);
-        return found ? { ...p, name: found.name.trim() !== "" ? found.name.trim() : p.name } : p;
+      prev.map((p, idx) => {
+        const found =
+          updated.find((u) => u.id === p.id) || updated[idx];
+        return found
+          ? {
+              ...p,
+              name: found.name.trim() !== "" ? found.name.trim() : p.name,
+            }
+          : p;
       })
     );
   }, []);
 
-  // 人数変更時の安全な同期 (名前・★を維持しつつ過不足を調整)
+  // ゲーム画面のプレイヤー配列(2〜8人)とセッション統計を完全同期（既存の★は維持）
+  const syncSessionPlayers = useCallback((roster: { id: string; name: string }[]) => {
+    if (!roster || roster.length < 2) return;
+    setPlayers((prev) => {
+      const next: PlayerStats[] = roster.map((r, idx) => {
+        const normalizedId = `p-${idx + 1}`;
+        const existing =
+          prev.find((p) => p.id === r.id) ||
+          prev.find((p) => p.id === normalizedId) ||
+          prev[idx];
+        return {
+          id: normalizedId,
+          name: r.name.trim() !== "" ? r.name.trim() : `プレイヤー ${idx + 1}`,
+          totalWins: existing ? existing.totalWins : 0,
+          matchCount: existing ? existing.matchCount : 0,
+          consecutiveWins: existing ? existing.consecutiveWins || 0 : 0,
+          underdogWins: existing ? existing.underdogWins || 0 : 0,
+        };
+      });
+      return next;
+    });
+  }, []);
+
+  // 人数変更時の安全な同期
   const setPlayerCount = useCallback((count: number) => {
     const safeCount = Math.max(2, Math.min(8, count));
     setPlayers((prev) => {
       if (prev.length === safeCount) return prev;
       if (prev.length > safeCount) {
-        return prev.slice(0, safeCount);
+        return prev.slice(0, safeCount).map((p, idx) => ({
+          ...p,
+          id: `p-${idx + 1}`,
+        }));
       }
-      const next = [...prev];
+      const next = prev.map((p, idx) => ({
+        ...p,
+        id: `p-${idx + 1}`,
+      }));
       for (let i = prev.length; i < safeCount; i++) {
         next.push({
-          id: `p-${Date.now()}-${i + 1}`,
+          id: `p-${i + 1}`,
           name: `プレイヤー ${i + 1}`,
           totalWins: 0,
           matchCount: 0,
@@ -197,6 +253,7 @@ export function GameSessionProvider({ children }: { children: React.ReactNode })
         recordWin,
         recordTeamWin,
         updatePlayerNames,
+        syncSessionPlayers,
         setPlayerCount,
         resetSessionWins,
         isInitialized,

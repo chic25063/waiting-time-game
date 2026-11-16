@@ -93,7 +93,7 @@ export default function PlayerRegistrationModal({
     setLocalPlayers((prev) => [
       ...prev,
       {
-        id: `p-${Date.now()}`,
+        id: `p-${nextNum}`,
         name: `プレイヤー ${nextNum}`,
         score: 0,
         isOut: false,
@@ -103,13 +103,18 @@ export default function PlayerRegistrationModal({
 
   const handleRemovePlayer = (id: string) => {
     if (localPlayers.length <= minPlayers) return;
-    setLocalPlayers((prev) => prev.filter((p) => p.id !== id));
+    setLocalPlayers((prev) =>
+      prev
+        .filter((p) => p.id !== id)
+        .map((p, idx) => ({ ...p, id: `p-${idx + 1}` }))
+    );
   };
 
   const handleApplyPresetNames = () => {
     setLocalPlayers((prev) =>
       prev.map((p, idx) => ({
         ...p,
+        id: `p-${idx + 1}`,
         name:
           PRESET_NICKNAMES[idx % PRESET_NICKNAMES.length] ||
           `プレイヤー ${idx + 1}`,
@@ -121,6 +126,7 @@ export default function PlayerRegistrationModal({
     setLocalPlayers((prev) =>
       prev.map((p, idx) => ({
         ...p,
+        id: `p-${idx + 1}`,
         name: `プレイヤー ${idx + 1}`,
       }))
     );
@@ -129,6 +135,7 @@ export default function PlayerRegistrationModal({
   const handleSave = () => {
     const sanitized = localPlayers.map((p, idx) => ({
       ...p,
+      id: `p-${idx + 1}`,
       name: p.name.trim() !== "" ? p.name.trim() : `プレイヤー ${idx + 1}`,
     }));
     onSave(sanitized);
@@ -138,6 +145,7 @@ export default function PlayerRegistrationModal({
   const handleSkip = () => {
     const sanitized = localPlayers.map((p, idx) => ({
       ...p,
+      id: `p-${idx + 1}`,
       name: p.name.trim() !== "" ? p.name.trim() : `プレイヤー ${idx + 1}`,
       score: 0,
       isOut: false,

@@ -26,7 +26,7 @@ function GamePlayContent() {
   const countParam = searchParams?.get("count");
   const targetCount = countParam ? parseInt(countParam, 10) : null;
 
-  const { players: sessionPlayers, setPlayerCount } = useGameSession();
+  const { syncSessionPlayers } = useGameSession();
 
   const initialGame = ALL_GAMES.find((g) => g.id === id) || null;
   const [game, setGame] = useState<Game | null>(initialGame);
@@ -51,19 +51,12 @@ function GamePlayContent() {
     );
   });
 
+  // プレイヤー配列が変化したら通算★セッション統計にも人数・名前を完全同期
   useEffect(() => {
-    if (sessionPlayers.length > 0 && players.length === sessionPlayers.length) {
-      setPlayers((prev) =>
-        prev.map((p, idx) => {
-          const sessionP = sessionPlayers[idx];
-          if (sessionP && sessionP.name !== p.name) {
-            return { ...p, name: sessionP.name };
-          }
-          return p;
-        })
-      );
+    if (players.length >= 2) {
+      syncSessionPlayers(players);
     }
-  }, [sessionPlayers, players.length]);
+  }, [players, syncSessionPlayers]);
 
   useEffect(() => {
     if (!id) return;
@@ -99,6 +92,7 @@ function GamePlayContent() {
 
           setPlayers(adjusted);
           saveStoredPlayers(adjusted);
+          syncSessionPlayers(adjusted);
         }
       } catch {
         if (isMounted) setLoading(false);
@@ -109,7 +103,7 @@ function GamePlayContent() {
     return () => {
       isMounted = false;
     };
-  }, [id, targetCount]);
+  }, [id, targetCount, syncSessionPlayers]);
 
   const handleToggleEliminate = (playerId: string) => {
     sound.playClick();
@@ -150,8 +144,8 @@ function GamePlayContent() {
   const handleSavePlayers = (newPlayers: Player[]) => {
     setPlayers(newPlayers);
     saveStoredPlayers(newPlayers);
+    syncSessionPlayers(newPlayers);
     setShowPlayerModal(false);
-    setPlayerCount(newPlayers.length);
   };
 
   const handleRenamePlayer = (playerId: string, newName: string) => {
@@ -160,6 +154,7 @@ function GamePlayContent() {
         p.id === playerId ? { ...p, name: newName } : p
       );
       saveStoredPlayers(updated);
+      syncSessionPlayers(updated);
       return updated;
     });
   };
@@ -221,7 +216,7 @@ function GamePlayContent() {
           onBackToHome={() => router.push("/")}
         />
 
-        {/* プレイヤー人数・名前設定モーダル（⚙️ボタンから開く） */}
+        {/* プレイヤー人数・名前設定モーダル */}
         <PlayerRegistrationModal
           isOpen={showPlayerModal}
           onClose={() => setShowPlayerModal(false)}
