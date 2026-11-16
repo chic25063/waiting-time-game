@@ -374,7 +374,7 @@ export default function Home() {
 
             {/* 上部サブラベル */}
             <span className="relative z-10 inline-flex items-center self-start px-2.5 py-0.5 rounded-md bg-[#2B2D42] text-white text-xs font-black tracking-wide">
-              全{allGameList.length || 10}タイトル
+              全{allGameList.length || 7}タイトル
             </span>
 
             {/* メインタイトル */}
