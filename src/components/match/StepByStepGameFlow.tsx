@@ -303,7 +303,6 @@ export default function StepByStepGameFlow({
     sound.playWin();
     onResetElimination();
     setTurnIndex(0);
-    setPromptIndex((prev) => prev + 1);
     setTimeLeft(timerSeconds);
     setIsTimerRunning(false);
     setElapsedMs(0);
