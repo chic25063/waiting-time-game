@@ -193,7 +193,7 @@ export default function MatchWinnerModal({
           </button>
 
           <Link
-            href="/"
+            href="/?catalog=1"
             className="w-full py-3.5 px-6 bg-white hover:bg-[#FAF6EB] text-[#2B2D42] font-black text-sm rounded-2xl border-[2.5px] border-[#2B2D42] shadow-[3px_4px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[1px_2px_0_#2B2D42] transition-all flex items-center justify-center gap-2"
           >
             <LayoutGrid className="w-4 h-4 stroke-[2.5] text-[#2B2D42]" />

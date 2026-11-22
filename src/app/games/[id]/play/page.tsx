@@ -213,7 +213,7 @@ function GamePlayContent() {
           onToggleEliminate={handleToggleEliminate}
           onResetElimination={handleResetElimination}
           onSelectWinner={handleSelectWinner}
-          onBackToHome={() => router.push("/")}
+          onBackToHome={() => router.push("/?catalog=1")}
         />
 
         {/* プレイヤー人数・名前設定モーダル */}

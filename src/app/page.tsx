@@ -8,6 +8,7 @@ import DuelSetupModal from "@/components/home/DuelSetupModal";
 import PartySetupModal from "@/components/home/PartySetupModal";
 import CustomGameModal from "@/components/home/CustomGameModal";
 import GameCatalogModal from "@/components/home/GameCatalogModal";
+import SessionResultBoard from "@/components/home/SessionResultBoard";
 
 type HomeDoodleType = "duel_swords" | "party_cracker" | "create_pencil" | "catalog_book";
 
@@ -177,6 +178,13 @@ export default function Home() {
 
   useEffect(() => {
     refreshGames();
+    // ゲーム画面から戻ってきたとき（/?catalog=1）は自動的に「ゲーム一覧」を開く
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("catalog") === "1") {
+        setIsCatalogModalOpen(true);
+      }
+    }
     const handleCustomUpdate = () => {
       refreshGames();
     };
@@ -248,85 +256,116 @@ export default function Home() {
           </header>
         </div>
 
-        {/* 中央 ノートカードボタン */}
-        <div
-          className={
-            SHOW_EXTRA_MODES
-              ? "grid grid-cols-2 gap-x-3.5 gap-y-4 sm:gap-x-4 sm:gap-y-5 my-auto px-1"
-              : "flex justify-center my-auto px-3"
-          }
-        >
-          {/* ① 左上: 「1on1」（一時非表示・データ保持） */}
-          {SHOW_EXTRA_MODES && (
-            <button
-              type="button"
-              onClick={() => setIsDuelModalOpen(true)}
-              className="group relative h-34 sm:h-38 w-full rounded-2xl bg-white border-2 border-[#2B2D42] overflow-hidden text-left flex flex-col justify-between p-3.5 sm:p-4 shadow-[4px_5px_0_#2B2D42] hover:-translate-y-0.5 hover:shadow-[5px_6px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[2px_2px_0_#2B2D42] transition-all cursor-pointer"
-              title="2人対戦 (1on1)"
-            >
-              <div
-                className="absolute inset-y-0 right-0 w-[56%] pointer-events-none transition-transform duration-200 group-hover:scale-105"
-                style={{
-                  backgroundColor: "#7CE8DC",
-                  clipPath: "polygon(42% 0, 100% 0, 100% 100%, 0% 100%)",
-                }}
-              />
-              <span className="relative z-10 inline-flex items-center self-start px-2 py-0.5 rounded-md bg-[#2B2D42] text-white text-[10px] font-black tracking-wide">
-                2人でガチ勝負
-              </span>
-              <div className="relative z-10 mt-auto pr-10">
-                <span className="block text-3xl sm:text-4xl font-black text-[#2B2D42] tracking-tight leading-none">
-                  1on1
+        {/* 中央 ノートカードボタン（ゲーム一覧 ＋ ゲームを追加）＆ 空きスペースのリザルト */}
+        <div className="my-auto space-y-4 px-1 py-2 overflow-y-auto">
+          <div className="grid grid-cols-2 gap-x-3.5 gap-y-4 sm:gap-x-4 sm:gap-y-5">
+            {/* ① 左上: 「1on1」（一時非表示・データ保持） */}
+            {SHOW_EXTRA_MODES && (
+              <button
+                type="button"
+                onClick={() => setIsDuelModalOpen(true)}
+                className="group relative h-34 sm:h-38 w-full rounded-2xl bg-white border-2 border-[#2B2D42] overflow-hidden text-left flex flex-col justify-between p-3.5 sm:p-4 shadow-[4px_5px_0_#2B2D42] hover:-translate-y-0.5 hover:shadow-[5px_6px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[2px_2px_0_#2B2D42] transition-all cursor-pointer"
+                title="2人対戦 (1on1)"
+              >
+                <div
+                  className="absolute inset-y-0 right-0 w-[56%] pointer-events-none transition-transform duration-200 group-hover:scale-105"
+                  style={{
+                    backgroundColor: "#7CE8DC",
+                    clipPath: "polygon(42% 0, 100% 0, 100% 100%, 0% 100%)",
+                  }}
+                />
+                <span className="relative z-10 inline-flex items-center self-start px-2 py-0.5 rounded-md bg-[#2B2D42] text-white text-[10px] font-black tracking-wide">
+                  2人でガチ勝負
                 </span>
-                <span className="block text-[10px] font-extrabold text-[#2B2D42]/75 mt-1">
-                  3本 / 5本先取バトル
-                </span>
-              </div>
-              <div className="absolute bottom-1 right-1 z-10 pointer-events-none transition-transform duration-200 group-hover:rotate-6 group-hover:scale-105">
-                <HomeCardDoodle type="duel_swords" inkColor="#1D4E56" />
-              </div>
-            </button>
-          )}
+                <div className="relative z-10 mt-auto pr-10">
+                  <span className="block text-3xl sm:text-4xl font-black text-[#2B2D42] tracking-tight leading-none">
+                    1on1
+                  </span>
+                  <span className="block text-[10px] font-extrabold text-[#2B2D42]/75 mt-1">
+                    3本 / 5本先取バトル
+                  </span>
+                </div>
+                <div className="absolute bottom-1 right-1 z-10 pointer-events-none transition-transform duration-200 group-hover:rotate-6 group-hover:scale-105">
+                  <HomeCardDoodle type="duel_swords" inkColor="#1D4E56" />
+                </div>
+              </button>
+            )}
 
-          {/* ② 右上: 「みんなで遊ぶ」（一時非表示・データ保持） */}
-          {SHOW_EXTRA_MODES && (
+            {/* ② 右上: 「みんなで遊ぶ」（一時非表示・データ保持） */}
+            {SHOW_EXTRA_MODES && (
+              <button
+                type="button"
+                onClick={() => setIsPartyModalOpen(true)}
+                className="group relative h-34 sm:h-38 w-full rounded-2xl bg-white border-2 border-[#2B2D42] overflow-hidden text-left flex flex-col justify-between p-3.5 sm:p-4 shadow-[4px_5px_0_#2B2D42] hover:-translate-y-0.5 hover:shadow-[5px_6px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[2px_2px_0_#2B2D42] transition-all cursor-pointer"
+                title="多人数対戦 (3〜8人)"
+              >
+                <div
+                  className="absolute inset-y-0 right-0 w-[56%] pointer-events-none transition-transform duration-200 group-hover:scale-105"
+                  style={{
+                    backgroundColor: "#E8F655",
+                    clipPath: "polygon(42% 0, 100% 0, 100% 100%, 0% 100%)",
+                  }}
+                />
+                <span className="relative z-10 inline-flex items-center self-start px-2 py-0.5 rounded-md bg-[#2B2D42] text-white text-[10px] font-black tracking-wide">
+                  3〜8人パーティ
+                </span>
+                <div className="relative z-10 mt-auto pr-10">
+                  <span className="block text-xl sm:text-2xl font-black text-[#2B2D42] tracking-tight leading-tight">
+                    みんなで遊ぶ
+                  </span>
+                  <span className="block text-[10px] font-extrabold text-[#2B2D42]/75 mt-1">
+                    点数 / 生存 / 最弱王
+                  </span>
+                </div>
+                <div className="absolute bottom-1 right-1 z-10 pointer-events-none transition-transform duration-200 group-hover:rotate-6 group-hover:scale-105">
+                  <HomeCardDoodle type="party_cracker" inkColor="#425214" />
+                </div>
+              </button>
+            )}
+
+            {/* ③ メイン左: 「ゲーム一覧」 */}
             <button
               type="button"
-              onClick={() => setIsPartyModalOpen(true)}
-              className="group relative h-34 sm:h-38 w-full rounded-2xl bg-white border-2 border-[#2B2D42] overflow-hidden text-left flex flex-col justify-between p-3.5 sm:p-4 shadow-[4px_5px_0_#2B2D42] hover:-translate-y-0.5 hover:shadow-[5px_6px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[2px_2px_0_#2B2D42] transition-all cursor-pointer"
-              title="多人数対戦 (3〜8人)"
+              onClick={() => setIsCatalogModalOpen(true)}
+              className="group relative h-34 sm:h-38 w-full rounded-2xl bg-white border-[2.5px] border-[#2B2D42] overflow-hidden text-left flex flex-col justify-between p-3.5 sm:p-4 shadow-[4px_5px_0_#2B2D42] hover:-translate-y-0.5 hover:shadow-[5px_6px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[2px_2px_0_#2B2D42] transition-all cursor-pointer"
+              title="収録タイトル一覧"
             >
+              {/* 右側の斜め蛍光マーカー（ラベンダー） */}
               <div
                 className="absolute inset-y-0 right-0 w-[56%] pointer-events-none transition-transform duration-200 group-hover:scale-105"
                 style={{
-                  backgroundColor: "#E8F655",
+                  backgroundColor: "#CBC8FA",
                   clipPath: "polygon(42% 0, 100% 0, 100% 100%, 0% 100%)",
                 }}
               />
+
+              {/* 上部サブラベル */}
               <span className="relative z-10 inline-flex items-center self-start px-2 py-0.5 rounded-md bg-[#2B2D42] text-white text-[10px] font-black tracking-wide">
-                3〜8人パーティ
+                全{allGameList.length || 7}タイトル
               </span>
+
+              {/* メインタイトル */}
               <div className="relative z-10 mt-auto pr-10">
                 <span className="block text-xl sm:text-2xl font-black text-[#2B2D42] tracking-tight leading-tight">
-                  みんなで遊ぶ
+                  ゲーム一覧
                 </span>
                 <span className="block text-[10px] font-extrabold text-[#2B2D42]/75 mt-1">
-                  点数 / 生存 / 最弱王
+                  あそぶゲームをえらぶ
                 </span>
               </div>
+
+              {/* 右下：ノートの落書きスタンプ */}
               <div className="absolute bottom-1 right-1 z-10 pointer-events-none transition-transform duration-200 group-hover:rotate-6 group-hover:scale-105">
-                <HomeCardDoodle type="party_cracker" inkColor="#425214" />
+                <HomeCardDoodle type="catalog_book" inkColor="#3B356E" />
               </div>
             </button>
-          )}
 
-          {/* ③ 左下: 「ゲームを作る」（一時非表示・データ保持） */}
-          {SHOW_EXTRA_MODES && (
+            {/* ④ メイン右: 「ゲームを追加」（復活！） */}
             <button
               type="button"
               onClick={handleOpenCustomCreate}
-              className="group relative h-34 sm:h-38 w-full rounded-2xl bg-white border-2 border-[#2B2D42] overflow-hidden text-left flex flex-col justify-between p-3.5 sm:p-4 shadow-[4px_5px_0_#2B2D42] hover:-translate-y-0.5 hover:shadow-[5px_6px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[2px_2px_0_#2B2D42] transition-all cursor-pointer"
-              title="自作ゲームを作成"
+              className="group relative h-34 sm:h-38 w-full rounded-2xl bg-white border-[2.5px] border-[#2B2D42] overflow-hidden text-left flex flex-col justify-between p-3.5 sm:p-4 shadow-[4px_5px_0_#2B2D42] hover:-translate-y-0.5 hover:shadow-[5px_6px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[2px_2px_0_#2B2D42] transition-all cursor-pointer"
+              title="ゲーム名だけで新しいゲームを追加"
             >
               <div
                 className="absolute inset-y-0 right-0 w-[56%] pointer-events-none transition-transform duration-200 group-hover:scale-105"
@@ -336,62 +375,26 @@ export default function Home() {
                 }}
               />
               <span className="relative z-10 inline-flex items-center self-start px-2 py-0.5 rounded-md bg-[#2B2D42] text-white text-[10px] font-black tracking-wide">
-                オリジナル作成
+                名前だけで追加
               </span>
               <div className="relative z-10 mt-auto pr-10">
                 <span className="block text-xl sm:text-2xl font-black text-[#2B2D42] tracking-tight leading-tight">
-                  ゲームを作る
+                  ゲームを追加
                 </span>
                 <span className="block text-[10px] font-extrabold text-[#2B2D42]/75 mt-1">
                   {customCount > 0
-                    ? `自作 ${customCount}件 登録中`
-                    : "お題・タイマー自由自在"}
+                    ? `追加済 ${customCount}件 ・ 勝ち星判定`
+                    : "勝ち星判定でサクッと遊ぶ"}
                 </span>
               </div>
               <div className="absolute bottom-1 right-1 z-10 pointer-events-none transition-transform duration-200 group-hover:rotate-6 group-hover:scale-105">
                 <HomeCardDoodle type="create_pencil" inkColor="#6E2323" />
               </div>
             </button>
-          )}
+          </div>
 
-          {/* ④ メイン表示: 「ゲーム一覧」 */}
-          <button
-            type="button"
-            onClick={() => setIsCatalogModalOpen(true)}
-            className={`group relative w-full rounded-3xl bg-white border-[2.5px] border-[#2B2D42] overflow-hidden text-left flex flex-col justify-between p-5 sm:p-6 shadow-[5px_6px_0_#2B2D42] hover:-translate-y-0.5 hover:shadow-[6px_7px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[2px_3px_0_#2B2D42] transition-all cursor-pointer ${
-              SHOW_EXTRA_MODES ? "h-34 sm:h-38" : "max-w-xs h-42 sm:h-46"
-            }`}
-            title="収録タイトル一覧"
-          >
-            {/* 右側の斜め蛍光マーカー（ラベンダー） */}
-            <div
-              className="absolute inset-y-0 right-0 w-[54%] pointer-events-none transition-transform duration-200 group-hover:scale-105"
-              style={{
-                backgroundColor: "#CBC8FA",
-                clipPath: "polygon(38% 0, 100% 0, 100% 100%, 0% 100%)",
-              }}
-            />
-
-            {/* 上部サブラベル */}
-            <span className="relative z-10 inline-flex items-center self-start px-2.5 py-0.5 rounded-md bg-[#2B2D42] text-white text-xs font-black tracking-wide">
-              全{allGameList.length || 7}タイトル
-            </span>
-
-            {/* メインタイトル */}
-            <div className="relative z-10 mt-auto pr-12">
-              <span className="block text-2xl sm:text-3xl font-black text-[#2B2D42] tracking-tight leading-tight">
-                ゲーム一覧
-              </span>
-              <span className="block text-xs font-extrabold text-[#2B2D42]/75 mt-1">
-                あそぶゲームをえらぶ
-              </span>
-            </div>
-
-            {/* 右下：ノートの落書きスタンプ */}
-            <div className="absolute bottom-2 right-2.5 z-10 pointer-events-none transition-transform duration-200 group-hover:rotate-6 group-hover:scale-110">
-              <HomeCardDoodle type="catalog_book" inkColor="#3B356E" />
-            </div>
-          </button>
+          {/* 空きスペース：現在の通算★リザルトボード */}
+          <SessionResultBoard compact />
         </div>
 
         {/* 下部：文房具あしらい（消しゴム＆蛍光マーカー） */}
@@ -417,10 +420,16 @@ export default function Home() {
       />
       <GameCatalogModal
         isOpen={isCatalogModalOpen}
-        onClose={() => setIsCatalogModalOpen(false)}
+        onClose={() => {
+          setIsCatalogModalOpen(false);
+          if (typeof window !== "undefined" && window.location.search) {
+            window.history.replaceState({}, "", "/");
+          }
+        }}
         allGameList={allGameList}
         onRefresh={refreshGames}
         onEditCustomGame={handleEditCustomGame}
+        onCreateCustomGame={handleOpenCustomCreate}
       />
     </main>
   );

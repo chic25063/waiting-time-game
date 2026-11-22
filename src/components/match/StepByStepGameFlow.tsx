@@ -671,15 +671,17 @@ export default function StepByStepGameFlow({
                 )}
               </div>
 
-              <button
-                type="button"
-                onClick={() => setShowRulePopup(true)}
-                className="px-2.5 py-1 rounded-xl bg-white hover:bg-[#FFE066] border-2 border-[#2B2D42] shadow-[1px_2px_0_#2B2D42] flex items-center gap-1 text-[#2B2D42] font-black text-xs cursor-pointer shrink-0"
-                title="ルールを見る"
-              >
-                <HelpCircle className="w-3.5 h-3.5" />
-                <span>ルール</span>
-              </button>
+              {!game.isCustom && (
+                <button
+                  type="button"
+                  onClick={() => setShowRulePopup(true)}
+                  className="px-2.5 py-1 rounded-xl bg-white hover:bg-[#FFE066] border-2 border-[#2B2D42] shadow-[1px_2px_0_#2B2D42] flex items-center gap-1 text-[#2B2D42] font-black text-xs cursor-pointer shrink-0"
+                  title="ルールを見る"
+                >
+                  <HelpCircle className="w-3.5 h-3.5" />
+                  <span>ルール</span>
+                </button>
+              )}
             </div>
 
             <div className="relative z-10 pr-14">
@@ -788,8 +790,12 @@ export default function StepByStepGameFlow({
             <button
               type="button"
               onClick={() => {
-                sound.playTick();
-                setStep("settings");
+                if (game.isCustom) {
+                  handleStartMatch();
+                } else {
+                  sound.playTick();
+                  setStep("settings");
+                }
               }}
               className="w-full py-4 px-6 rounded-2xl bg-[#9AF0A8] hover:bg-[#82e893] border-[2.5px] border-[#2B2D42] shadow-[4px_5px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[2px_3px_0_#2B2D42] text-[#2B2D42] font-black text-lg sm:text-xl tracking-wide transition-all cursor-pointer"
             >
@@ -1313,10 +1319,10 @@ export default function StepByStepGameFlow({
                 sound.playTick();
                 setIsTimerRunning(false);
                 setIsBpmPlaying(false);
-                setStep("rules");
+                setStep(game.isCustom ? "standby" : "rules");
               }}
               className="w-10 h-10 rounded-xl bg-white hover:bg-[#FAF6EB] border-2 border-[#2B2D42] shadow-[2px_3px_0_#2B2D42] flex items-center justify-center text-[#2B2D42] cursor-pointer"
-              aria-label="ルール確認へ戻る"
+              aria-label="戻る"
             >
               <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
             </button>
@@ -1326,18 +1332,22 @@ export default function StepByStepGameFlow({
                 {game.title}
               </h1>
               <p className="text-xs font-black text-[#2B2D42]/70 mt-0.5">
-                プレイ中
+                {game.isCustom ? "勝ち星判定" : "プレイ中"}
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setShowRulePopup(true)}
-              className="w-10 h-10 rounded-full bg-white hover:bg-[#FFE066] border-2 border-[#2B2D42] shadow-[2px_3px_0_#2B2D42] flex items-center justify-center text-[#2B2D42] cursor-pointer"
-              aria-label="ルール"
-            >
-              <HelpCircle className="w-5 h-5 stroke-[2.5]" />
-            </button>
+            {game.isCustom ? (
+              <div className="w-10 h-10" aria-hidden="true" />
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowRulePopup(true)}
+                className="w-10 h-10 rounded-full bg-white hover:bg-[#FFE066] border-2 border-[#2B2D42] shadow-[2px_3px_0_#2B2D42] flex items-center justify-center text-[#2B2D42] cursor-pointer"
+                aria-label="ルール"
+              >
+                <HelpCircle className="w-5 h-5 stroke-[2.5]" />
+              </button>
+            )}
           </header>
 
           {/* メイン1枚白カード（プレイヤー勝敗・ミス判定をメインに大きく配置） */}
@@ -1397,7 +1407,7 @@ export default function StepByStepGameFlow({
               )}
 
               {/* 順番制ゲーム（あぶりカルビ等）のプレイ順番バー */}
-              {!isStarterOnlyGame && orderedPlayers.length >= 2 && (
+              {!isStarterOnlyGame && !game.isCustom && orderedPlayers.length >= 2 && (
                 <div className="px-3 py-2 rounded-2xl bg-[#FAF6EB] border-2 border-[#2B2D42] flex items-center gap-1.5 overflow-x-auto text-xs font-black text-[#2B2D42]">
                   <span className="px-2 py-0.5 rounded bg-[#FFE066] border border-[#2B2D42] shrink-0 text-[10px]">
                     順番
@@ -1515,7 +1525,7 @@ export default function StepByStepGameFlow({
               </div>
 
               <div className="space-y-3 flex-1 overflow-y-auto pr-0.5">
-                {(isStarterOnlyGame ? players : orderedPlayers).map(
+                {(isStarterOnlyGame || game.isCustom ? players : orderedPlayers).map(
                   (player, idx) => {
                     const isStarter =
                       isStarterOnlyGame && starterPlayer?.id === player.id;
@@ -1529,7 +1539,7 @@ export default function StepByStepGameFlow({
                         }`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          {!isStarterOnlyGame && (
+                          {!isStarterOnlyGame && !game.isCustom && (
                             <span className="px-2 py-0.5 rounded-lg bg-[#FFE066] border border-[#2B2D42] text-center font-black text-xs text-[#2B2D42] shrink-0">
                               {idx + 1}番目
                             </span>

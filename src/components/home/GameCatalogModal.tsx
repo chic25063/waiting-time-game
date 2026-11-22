@@ -7,9 +7,11 @@ import {
   Search,
   Edit2,
   Trash2,
+  Plus,
 } from "lucide-react";
 import { Game } from "@/types/game";
 import { deleteCustomGame } from "@/lib/customGames";
+import SessionResultBoard from "@/components/home/SessionResultBoard";
 
 interface GameCatalogModalProps {
   isOpen: boolean;
@@ -17,6 +19,7 @@ interface GameCatalogModalProps {
   allGameList: Game[];
   onRefresh: () => void;
   onEditCustomGame: (game: Game) => void;
+  onCreateCustomGame?: () => void;
 }
 
 const PLAYER_OPTIONS = [2, 3, 4, 5, 6, 7, 8] as const;
@@ -293,6 +296,7 @@ export default function GameCatalogModal({
   allGameList,
   onRefresh,
   onEditCustomGame,
+  onCreateCustomGame,
 }: GameCatalogModalProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -563,10 +567,32 @@ export default function GameCatalogModal({
                 </div>
               );
             })}
+
+            {/* カードグリッド末尾：「＋ ゲームを追加」カードボタン */}
+            {onCreateCustomGame && (
+              <button
+                type="button"
+                onClick={onCreateCustomGame}
+                className="group relative h-[80px] sm:h-[86px] w-full rounded-2xl bg-[#FAF6EB] hover:bg-[#FFADAD]/35 border-2 border-dashed border-[#2B2D42] overflow-hidden text-left flex items-center justify-center gap-2 px-3 shadow-[2px_3px_0_#2B2D42] hover:-translate-y-0.5 active:translate-y-0.5 transition-all cursor-pointer"
+                title="新しいゲームを追加"
+              >
+                <span className="w-8 h-8 rounded-xl bg-[#FFADAD] border-2 border-[#2B2D42] flex items-center justify-center shadow-[1px_2px_0_#2B2D42] shrink-0 group-hover:scale-105 transition-transform">
+                  <Plus className="w-4 h-4 text-[#2B2D42] stroke-[3]" />
+                </span>
+                <div className="min-w-0">
+                  <span className="block font-black text-[#2B2D42] text-xs sm:text-sm leading-tight">
+                    ゲームを追加
+                  </span>
+                  <span className="block text-[10px] font-bold text-[#2B2D42]/70 mt-0.5">
+                    名前だけで即追加
+                  </span>
+                </div>
+              </button>
+            )}
           </div>
 
           {filteredGames.length === 0 && (
-            <div className="mt-12 p-8 rounded-2xl bg-white border-2 border-[#2B2D42] text-center text-[#2B2D42] font-bold shadow-[4px_5px_0_#2B2D42]">
+            <div className="mt-8 p-6 rounded-2xl bg-white border-2 border-[#2B2D42] text-center text-[#2B2D42] font-bold shadow-[4px_5px_0_#2B2D42]">
               <p className="text-sm">該当するゲームが見つかりませんでした。</p>
               <button
                 type="button"
@@ -580,6 +606,11 @@ export default function GameCatalogModal({
               </button>
             </div>
           )}
+
+          {/* ゲーム一覧の下の空きスペース：現在の通算★リザルト表示 */}
+          <div className="mt-6">
+            <SessionResultBoard />
+          </div>
         </div>
       </div>
     </div>

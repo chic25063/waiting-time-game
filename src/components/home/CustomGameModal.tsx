@@ -2,21 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { Game } from "@/types/game";
-import {
-  saveCustomGame,
-  CUSTOM_GAME_TEMPLATES,
-  CustomGameTemplate,
-} from "@/lib/customGames";
-import {
-  X,
-  Sparkles,
-  Clock,
-  Activity,
-  MessageSquare,
-  Save,
-  HelpCircle,
-  FileText,
-} from "lucide-react";
+import { saveCustomGame } from "@/lib/customGames";
+import { X, PlusCircle, Save } from "lucide-react";
 
 interface CustomGameModalProps {
   isOpen: boolean;
@@ -32,100 +19,40 @@ export default function CustomGameModal({
   onSaved,
 }: CustomGameModalProps) {
   const [title, setTitle] = useState("");
-  const [shortDesc, setShortDesc] = useState("");
-  const [ruleText, setRuleText] = useState("");
-  const [minPlayers, setMinPlayers] = useState(2);
-  const [maxPlayers, setMaxPlayers] = useState(8);
-  const [selectedTool, setSelectedTool] = useState<
-    "prompt" | "bpm" | "timer" | "none"
-  >("prompt");
-  const [promptListText, setPromptListText] = useState("");
-  const [defaultBpm, setDefaultBpm] = useState(120);
-  const [timerDuration, setTimerDuration] = useState(10);
-  const [isBlindTimer, setIsBlindTimer] = useState(false);
 
-  // 編集モード時の初期化
+  // モーダルが開いたときの初期化
   useEffect(() => {
     if (gameToEdit) {
       setTitle(gameToEdit.title);
-      setShortDesc(gameToEdit.short_description || gameToEdit.description);
-      setRuleText(gameToEdit.description || "");
-      setMinPlayers(gameToEdit.min_players);
-      setMaxPlayers(gameToEdit.max_players);
-
-      const meta = gameToEdit.metadata;
-      if (meta?.tools?.includes("prompt") || meta?.promptList) {
-        setSelectedTool("prompt");
-        const list = meta.promptList || gameToEdit.prompt_list || [];
-        setPromptListText(
-          list
-            .map((p) =>
-              typeof p === "string" ? p : `${p.question} (答: ${p.answer})`
-            )
-            .join("\n")
-        );
-      } else if (meta?.tools?.includes("bpm") || meta?.defaultBpm) {
-        setSelectedTool("bpm");
-        setDefaultBpm(meta.defaultBpm || 120);
-      } else if (meta?.tools?.includes("timer") || meta?.timerDuration) {
-        setSelectedTool("timer");
-        setTimerDuration(meta.timerDuration || 10);
-        setIsBlindTimer(meta.blindTimer || false);
-      } else {
-        setSelectedTool("none");
-      }
     } else {
-      // 新規作成時の初期化（古今東西テンプレートを初期適用）
-      applyTemplate(CUSTOM_GAME_TEMPLATES[0]);
+      setTitle("");
     }
   }, [gameToEdit, isOpen]);
 
-  // テンプレート適用
-  const applyTemplate = (tpl: CustomGameTemplate) => {
-    setTitle(tpl.title);
-    setShortDesc(tpl.short_description);
-    setRuleText(tpl.description);
-    setMinPlayers(tpl.min_players);
-    setMaxPlayers(tpl.max_players);
-    setSelectedTool(tpl.selectedTool);
-    if (tpl.promptListText) setPromptListText(tpl.promptListText);
-    if (tpl.defaultBpm) setDefaultBpm(tpl.defaultBpm);
-    if (tpl.timerDuration) setTimerDuration(tpl.timerDuration);
-  };
-
   if (!isOpen) return null;
 
-  const handleSave = () => {
+  const handleSave = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!title.trim()) {
-      alert("ゲームタイトルを入力してください");
+      alert("ゲーム名を入力してください");
       return;
     }
 
     const id = gameToEdit?.id || `custom-${Date.now()}`;
-    const prompts =
-      selectedTool === "prompt"
-        ? promptListText
-            .split("\n")
-            .map((s) => s.trim())
-            .filter((s) => s.length > 0)
-        : undefined;
+    const trimmedTitle = title.trim();
 
     const newGame: Game = {
       id,
-      title: title.trim(),
-      short_description: shortDesc.trim() || title.trim(),
-      description: ruleText.trim() || shortDesc.trim() || title.trim(),
-      min_players: Math.min(minPlayers, maxPlayers),
-      max_players: Math.max(minPlayers, maxPlayers),
+      title: trimmedTitle,
+      short_description: "勝った・負けた（勝ち星★）を判定するシンプルモード",
+      description: "自由に遊んで、勝った人・ミスした人をタップして勝ち星（★）を記録します。",
+      min_players: 2,
+      max_players: 8,
       created_at: gameToEdit?.created_at || new Date().toISOString(),
       isCustom: true,
       metadata: {
-        tools: selectedTool !== "none" ? [selectedTool] : [],
-        promptList: prompts,
-        defaultBpm: selectedTool === "bpm" ? defaultBpm : undefined,
-        timerDuration: selectedTool === "timer" ? timerDuration : undefined,
-        blindTimer: selectedTool === "timer" ? isBlindTimer : undefined,
-        tags: ["オリジナル", "自作"],
+        tools: [],
+        tags: ["追加ゲーム", "自作"],
       },
     };
 
@@ -136,24 +63,26 @@ export default function CustomGameModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-xs animate-in fade-in duration-200"
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/55 backdrop-blur-xs animate-in fade-in duration-200"
       onClick={onClose}
     >
-      <div
-        className="relative w-full max-w-lg bg-[#FAF6EB] border-2 border-[#2B2D42] rounded-3xl p-5 sm:p-6 text-[#2B2D42] shadow-[6px_7px_0_#2B2D42] max-h-[92vh] overflow-y-auto space-y-4"
+      <form
+        onSubmit={handleSave}
+        className="relative w-full max-w-sm bg-[#FAF6EB] border-[2.5px] border-[#2B2D42] rounded-3xl p-5 sm:p-6 text-[#2B2D42] shadow-[6px_7px_0_#2B2D42] space-y-5"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ヘッダー */}
         <div className="flex items-center justify-between pb-3 border-b-2 border-dashed border-[#2B2D42]/25">
           <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-xl bg-[#FFADAD] border-2 border-[#2B2D42] flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-[#2B2D42]" />
+            <span className="w-8 h-8 rounded-xl bg-[#FFADAD] border-2 border-[#2B2D42] flex items-center justify-center shadow-[1px_2px_0_#2B2D42]">
+              <PlusCircle className="w-4 h-4 text-[#2B2D42] stroke-[2.5]" />
             </span>
             <h3 className="text-lg font-black text-[#2B2D42]">
-              {gameToEdit ? "オリジナルゲームを編集" : "オリジナルゲームを作成"}
+              {gameToEdit ? "ゲーム名を変更" : "ゲームを追加"}
             </h3>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="p-1.5 rounded-xl bg-white border-2 border-[#2B2D42] text-[#2B2D42] hover:bg-amber-100 cursor-pointer"
             aria-label="閉じる"
@@ -162,280 +91,34 @@ export default function CustomGameModal({
           </button>
         </div>
 
-        {/* テンプレート選択（新規時のみ） */}
-        {!gameToEdit && (
-          <div className="space-y-2">
-            <div className="text-xs font-black text-[#2B2D42] flex items-center gap-1">
-              <FileText className="w-3.5 h-3.5 text-[#2B2D42]" />
-              <span>おすすめテンプレートから作る（ワンタップ入力）:</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {CUSTOM_GAME_TEMPLATES.map((tpl) => (
-                <button
-                  type="button"
-                  key={tpl.name}
-                  onClick={() => applyTemplate(tpl)}
-                  className="p-2.5 rounded-xl bg-white hover:bg-[#FFF275]/60 border-2 border-[#2B2D42] shadow-[2px_2px_0_#2B2D42] text-left transition-all cursor-pointer"
-                >
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="text-[11px] font-black text-[#2B2D42] truncate">
-                      {tpl.name}
-                    </span>
-                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#FAF6EB] border border-[#2B2D42]/30 shrink-0">
-                      {tpl.badge}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ゲームタイトル */}
-        <div className="space-y-1.5">
+        {/* ゲーム名入力（シンプルにこれだけ！） */}
+        <div className="space-y-2">
           <label className="text-xs font-black text-[#2B2D42] block">
-            ゲームタイトル <span className="text-rose-600">*</span>
+            追加するゲーム名
           </label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-white border-2 border-[#2B2D42] p-2.5 rounded-xl text-sm font-black text-[#2B2D42] shadow-[2px_2px_0_#2B2D42] focus:outline-none"
-            placeholder="例: オリジナル古今東西、一言大喜利など"
+            autoFocus
+            className="w-full bg-white border-2 border-[#2B2D42] p-3.5 rounded-2xl text-base font-black text-[#2B2D42] shadow-[2px_3px_0_#2B2D42] focus:outline-none focus:bg-[#FFFDF7]"
+            placeholder="例: 指スマ、山手線ゲーム など"
             maxLength={30}
           />
-        </div>
-
-        {/* 簡単な説明 */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-black text-[#2B2D42] block">
-            簡単な説明（スロット・一覧に表示）
-          </label>
-          <input
-            type="text"
-            value={shortDesc}
-            onChange={(e) => setShortDesc(e.target.value)}
-            className="w-full bg-white border-2 border-[#2B2D42] p-2.5 rounded-xl text-sm font-bold text-[#2B2D42] shadow-[2px_2px_0_#2B2D42] focus:outline-none"
-            placeholder="例: リズムに合わせてお題を答えていくゲーム！"
-            maxLength={60}
-          />
-        </div>
-
-        {/* プレイ可能人数 */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-black text-[#2B2D42] block">
-            プレイ可能人数
-          </label>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white border-2 border-[#2B2D42] p-2.5 rounded-xl shadow-[2px_2px_0_#2B2D42] flex items-center justify-between">
-              <span className="text-xs font-bold text-[#2B2D42]/75">
-                最小人数:
-              </span>
-              <select
-                value={minPlayers}
-                onChange={(e) => setMinPlayers(Number(e.target.value))}
-                className="bg-transparent text-sm font-black text-[#2B2D42] focus:outline-none cursor-pointer"
-              >
-                {[2, 3, 4, 5, 6, 7, 8].map((n) => (
-                  <option key={n} value={n}>
-                    {n}人
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="bg-white border-2 border-[#2B2D42] p-2.5 rounded-xl shadow-[2px_2px_0_#2B2D42] flex items-center justify-between">
-              <span className="text-xs font-bold text-[#2B2D42]/75">
-                最大人数:
-              </span>
-              <select
-                value={maxPlayers}
-                onChange={(e) => setMaxPlayers(Number(e.target.value))}
-                className="bg-transparent text-sm font-black text-[#2B2D42] focus:outline-none cursor-pointer"
-              >
-                {[2, 3, 4, 5, 6, 7, 8].map((n) => (
-                  <option key={n} value={n}>
-                    {n}人
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* 連動GMツール選択 */}
-        <div className="space-y-2">
-          <label className="text-xs font-black text-[#2B2D42] block">
-            連動させるゲームマスター（GM）ツール:
-          </label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <button
-              type="button"
-              onClick={() => setSelectedTool("prompt")}
-              className={`p-2.5 rounded-xl border-2 border-[#2B2D42] text-center transition-all cursor-pointer ${
-                selectedTool === "prompt"
-                  ? "bg-[#FFE066] text-[#2B2D42] font-black shadow-[2px_2px_0_#2B2D42]"
-                  : "bg-white text-[#2B2D42]/70"
-              }`}
-            >
-              <MessageSquare className="w-4 h-4 mx-auto mb-1 text-[#2B2D42]" />
-              <div className="text-xs">お題ガチャ</div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setSelectedTool("bpm")}
-              className={`p-2.5 rounded-xl border-2 border-[#2B2D42] text-center transition-all cursor-pointer ${
-                selectedTool === "bpm"
-                  ? "bg-[#CBC8FA] text-[#2B2D42] font-black shadow-[2px_2px_0_#2B2D42]"
-                  : "bg-white text-[#2B2D42]/70"
-              }`}
-            >
-              <Activity className="w-4 h-4 mx-auto mb-1 text-[#2B2D42]" />
-              <div className="text-xs">BPMリズム</div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setSelectedTool("timer")}
-              className={`p-2.5 rounded-xl border-2 border-[#2B2D42] text-center transition-all cursor-pointer ${
-                selectedTool === "timer"
-                  ? "bg-[#7CE8DC] text-[#2B2D42] font-black shadow-[2px_2px_0_#2B2D42]"
-                  : "bg-white text-[#2B2D42]/70"
-              }`}
-            >
-              <Clock className="w-4 h-4 mx-auto mb-1 text-[#2B2D42]" />
-              <div className="text-xs">タイマー</div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setSelectedTool("none")}
-              className={`p-2.5 rounded-xl border-2 border-[#2B2D42] text-center transition-all cursor-pointer ${
-                selectedTool === "none"
-                  ? "bg-[#FFADAD] text-[#2B2D42] font-black shadow-[2px_2px_0_#2B2D42]"
-                  : "bg-white text-[#2B2D42]/70"
-              }`}
-            >
-              <HelpCircle className="w-4 h-4 mx-auto mb-1 text-[#2B2D42]" />
-              <div className="text-xs">ツールなし</div>
-            </button>
-          </div>
-        </div>
-
-        {/* ツール別設定エリア */}
-        {selectedTool === "prompt" && (
-          <div className="p-3 bg-white border-2 border-[#2B2D42] rounded-2xl space-y-2 shadow-[2px_2px_0_#2B2D42]">
-            <div className="text-xs font-black text-[#2B2D42] flex items-center justify-between">
-              <span>お題リスト（1行に1つ入力）:</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#FFE066] border border-[#2B2D42]">
-                {
-                  promptListText
-                    .split("\n")
-                    .filter((s) => s.trim().length > 0).length
-                }
-                個
-              </span>
-            </div>
-            <textarea
-              rows={4}
-              value={promptListText}
-              onChange={(e) => setPromptListText(e.target.value)}
-              className="w-full bg-[#FAF6EB] border-2 border-[#2B2D42]/30 rounded-xl p-2.5 text-xs font-bold text-[#2B2D42] focus:outline-none focus:border-[#2B2D42]"
-              placeholder="お題1&#10;お題2&#10;お題3..."
-            />
-          </div>
-        )}
-
-        {selectedTool === "bpm" && (
-          <div className="p-3 bg-white border-2 border-[#2B2D42] rounded-2xl space-y-2 shadow-[2px_2px_0_#2B2D42]">
-            <div className="text-xs font-black text-[#2B2D42]">
-              デフォルトテンポ（BPM）:{" "}
-              <span className="px-1.5 py-0.2 rounded bg-[#CBC8FA]">
-                {defaultBpm}
-              </span>
-            </div>
-            <input
-              type="range"
-              min={60}
-              max={180}
-              step={5}
-              value={defaultBpm}
-              onChange={(e) => setDefaultBpm(Number(e.target.value))}
-              className="w-full accent-[#2B2D42] cursor-pointer"
-            />
-            <div className="flex justify-between text-[10px] font-bold text-[#2B2D42]/70">
-              <span>ゆったり (60)</span>
-              <span>普通 (120)</span>
-              <span>超高速 (180)</span>
-            </div>
-          </div>
-        )}
-
-        {selectedTool === "timer" && (
-          <div className="p-3 bg-white border-2 border-[#2B2D42] rounded-2xl space-y-3 shadow-[2px_2px_0_#2B2D42]">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-[#2B2D42]">
-                タイマー秒数:
-              </span>
-              <div className="flex items-center gap-1.5">
-                {[5, 10, 15, 30, 60].map((sec) => (
-                  <button
-                    type="button"
-                    key={sec}
-                    onClick={() => setTimerDuration(sec)}
-                    className={`px-2.5 py-1 rounded-lg border border-[#2B2D42] text-xs font-black transition-all cursor-pointer ${
-                      timerDuration === sec
-                        ? "bg-[#7CE8DC] text-[#2B2D42]"
-                        : "bg-[#FAF6EB] text-[#2B2D42]/70"
-                    }`}
-                  >
-                    {sec}秒
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <label className="flex items-center gap-2 text-xs font-bold text-[#2B2D42] cursor-pointer pt-2 border-t border-[#2B2D42]/20">
-              <input
-                type="checkbox"
-                checked={isBlindTimer}
-                onChange={(e) => setIsBlindTimer(e.target.checked)}
-                className="accent-[#2B2D42] rounded"
-              />
-              <span>
-                ブラインドタイマー（カウント開始後に秒数を非表示にする）
-              </span>
-            </label>
-          </div>
-        )}
-
-        {/* 詳しいルール */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-black text-[#2B2D42] block">
-            詳しいルール・遊び方（任意）
-          </label>
-          <textarea
-            rows={2}
-            value={ruleText}
-            onChange={(e) => setRuleText(e.target.value)}
-            className="w-full bg-white border-2 border-[#2B2D42] p-2.5 rounded-xl text-xs font-bold text-[#2B2D42] shadow-[2px_2px_0_#2B2D42] focus:outline-none"
-            placeholder="例: 手拍子2回で答える。被り・詰まりは即アウト！"
-          />
+          <p className="text-[11px] font-bold text-[#2B2D42]/70 leading-relaxed">
+            ※ 追加したゲームは、ゲーム名と「勝った・負けた（勝ち星★）」の判定だけでシンプルに遊べます！
+          </p>
         </div>
 
         {/* 保存ボタン */}
         <button
-          type="button"
-          onClick={handleSave}
-          className="w-full py-4 px-6 bg-[#FFE066] hover:bg-[#ffd633] text-[#2B2D42] border-2 border-[#2B2D42] font-black text-base rounded-2xl shadow-[4px_5px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[2px_2px_0_#2B2D42] flex items-center justify-center gap-2 transition-all cursor-pointer"
+          type="submit"
+          className="w-full py-3.5 px-6 bg-[#FFE066] hover:bg-[#ffd633] text-[#2B2D42] border-2 border-[#2B2D42] font-black text-base rounded-2xl shadow-[4px_5px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[2px_2px_0_#2B2D42] flex items-center justify-center gap-2 transition-all cursor-pointer"
         >
-          <Save className="w-5 h-5" />
-          <span>
-            {gameToEdit ? "変更を保存する" : "オリジナルゲームを登録する！"}
-          </span>
+          <Save className="w-5 h-5 stroke-[2.5]" />
+          <span>{gameToEdit ? "ゲーム名を保存" : "このゲームを追加する！"}</span>
         </button>
-      </div>
+      </form>
     </div>
   );
 }
