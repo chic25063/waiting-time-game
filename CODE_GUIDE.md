@@ -14,26 +14,32 @@
    ▼
 ① トップ画面 (src/app/page.tsx)
    ・「マチジカン！」の大学ノート表紙
-   ・「ゲーム一覧」ボタンを押す
+   ・「ゲーム一覧」カード と 「ゲームを追加」カード の2つが並ぶ
+   ・下の空きスペースには「現在のリザルト（通算★）」(src/components/home/SessionResultBoard.tsx) を常時表示
+   │
+   ├─► 「ゲームを追加」を押すと (src/components/home/CustomGameModal.tsx) が開く
+   │     ・ゲーム名だけを入力してワンタップで追加！（src/lib/customGames.ts で保存）
    │
    ▼
 ② ゲーム一覧モーダル (src/components/home/GameCatalogModal.tsx)
-   ・厳選7タイトル（src/data/games.ts）が2列の白カードで並ぶ
+   ・厳選7タイトル（src/data/games.ts）＋追加したゲームが2列の白カードで並ぶ
+   ・カード末尾には「＋ ゲームを追加」ボタン、下の空きスペースには「現在のリザルト（通算★）」を表示
    ・遊びたいゲームカードをタップする
    │
    ▼
 ③ ゲームプレイ画面 (src/app/games/[id]/play/page.tsx)
-   └─ 中身は「4ステップ進行コンポーネント」(src/components/match/StepByStepGameFlow.tsx)
-        ├─ 【ステップ1：スタンバイ】 ゲーム見出し＋参加メンバー名札（手書き8キャラ・★数表示）
+   └─ 中身は「進行コンポーネント」(src/components/match/StepByStepGameFlow.tsx)
+        ├─ 【ステップ1：スタンバイ】 ゲーム見出し＋参加メンバー名札（手書き8キャラ・★数表示・★リセット）
         │     └─ 「人数・名前」を押すと (src/components/players/PlayerRegistrationModal.tsx) が開く
+        │     └─ ★追加した自作ゲーム（game.isCustom）の場合は「始める」を押すと設定・ルールを飛ばして直接【ステップ4：勝ち星判定】へ！
         ├─ 【ステップ2：設定】 誰から始めるか（またはプレイの順番）・お題モードを決める
-        ├─ 【ステップ3：ルール】 始める人・順番とルール説明を確認して「スタート」
-        └─ 【ステップ4：プレイ中】 勝った人・ミスした人をタップして勝敗判定！
+        ├─ 【ステップ3：ルール】 始める人・順番と、1・2・3…番号バッジ付きで改行された見やすいルールを確認して「スタート」
+        └─ 【ステップ4：プレイ中 / 勝ち星判定】 勝った人・ミスした人をタップして勝敗判定！
                │
                ▼
 ④ 勝者発表モーダル (src/components/match/MatchWinnerModal.tsx)
    ・勝者に通算「★+1」を記録（src/context/GameSessionContext.tsx で保存）
-   ・「もう1戦！」または「次の対戦ゲームを選ぶ」へ
+   ・「もう1戦！」または「次の対戦ゲームを選ぶ（/?catalog=1 で直接ゲーム一覧へ戻る）」へ
 ```
 
 ---
@@ -165,118 +171,115 @@ export type MatchEngineType =
 ## 🎮 第2章：厳選7タイトルのゲームデータ (`src/data/games.ts`)
 
 **【このファイルの役割】**
-アプリに収録されている7つのゲーム（①ちんちん侍、②めちゃギントン、③数取団、④○○から始まるリズムに合わせて、⑤カレーライス、⑥CCレモン、⑦あぶりカルビ）のタイトル・人数・ルール説明・かけ声早見表・お題リストをすべて格納しているデータベースファイルです。
+アプリに収録されている7つのゲーム（①ちんちん侍、②めちゃギントン、③数取団、④○○から始まるリズムに合わせて、⑤カレーライス、⑥CCレモン、⑦あぶりカルビ）のタイトル・人数・番号付きルール説明・かけ声早見表・お題リストをすべて格納しているデータベースファイルです。
+各ルール項目（`rules` / `ruleSummary`）は、先頭に `【見出し】` と改行（`\n`）を入れることで、ルール画面で **`1`・`2`・`3`… の番号バッジ付き左揃えカード** として見やすく表示されるようになっています。
 
 ```tsx
 // src/data/games.ts
 import { Game } from "@/types/game";
 
-// 厳選7タイトルの対戦型ゲームデータ配列
-// export を付けることで、他のファイルから import して使えるようになります
+// 厳選7タイトルの対戦型ゲームデータ
 export const ALL_GAMES: Game[] = [
-  // ① ちんちん侍（2〜8人・お題なし・誰から始めるか選択）
   {
     id: "chin-chin-samurai",
     title: "ちんちん侍",
     min_players: 2,
     max_players: 8,
     description:
-      "4つのワード（ちんちん／おちんちん／侍／ちんちん侍）とともに次の人を指差し、言われたワードに応じたポーズ＆リアクションを瞬時に決めるゲーム！\n・【ちんちん】ポーズなし（そのままリズムよく次のワードを言って別の人を指差す）\n・【おちんちん】両手で伸ばすジェスチャーをしながら「びろ〜ん！」と発声し、次の人を指差す\n・【侍（サムライ）】腰から刀を抜いて宙を切る抜刀ポーズで「シャキーン！」と叫び、次の人を指差す\n・【ちんちん侍】参加者全員で一斉に刀を構える侍ポーズを決め、声を揃えて「ちんちん侍！」と叫ぶ\n一番出遅れた人や、ポーズ・発声を間違えた人がアウト（負け）となります！",
+      "4つのワードとともに次の人を指差し、言われたワードに応じたポーズ＆リアクションを瞬時に決めるゲーム！",
     short_description:
-      "4つのワードに合わせて瞬時に抜刀・びろ〜ん・全員ポーズを決める指差しアクションゲーム！",
+      "4つのワードに合わせて瞬時にポーズを決める指差しアクションゲーム！",
     created_at: new Date().toISOString(),
     matchEngineType: "quick_elimination",
     master_tools: ["elimination_tracker"],
     rules: [
-      "【「ちんちん」】特定のポーズはありません（繋ぎのパス）。指名された人はリズムを崩さず、すぐに次のワード（ちんちん／おちんちん／侍／ちんちん侍）を言って別の人を指差します。",
-      "【「おちんちん」】両手で何かを横や上下に伸ばすようなジェスチャー（または両手を広げて伸び上がる動き）をしながら「びろ〜ん！」と発声し、続けて次の人を指差します。",
-      "【「侍（サムライ）」】腰から刀を抜いて片手で宙をスパッと切る（抜刀・居合斬り）ポーズで「シャキーン！」と叫び、続けて次の人を指差します。",
-      "【「ちんちん侍」】コールされた人だけでなく参加者全員で、刀を構える侍のポーズ（または両手を構えるポーズ）を一斉に決め、全員で声を揃えて「ちんちん侍！」と叫びます。",
-      "【勝敗（アウト基準）】一番出遅れた人や、ポーズ・発声を間違えた人、リズムを乱した人がアウト（負け）となります。",
+      "【ちんちん（ポーズなし）】\n指名された人はポーズを取らず、リズムよく次のワードを言って別の人を指差します。",
+      "【おちんちん（びろ〜ん！）】\n両手で伸ばすジェスチャーをしながら「びろ〜ん！」と発声し、次の人を指差します。",
+      "【侍（シャキーン！）】\n腰から刀を抜いて宙を切る抜刀ポーズで「シャキーン！」と叫び、次の人を指差します。",
+      "【ちんちん侍（全員ポーズ！）】\n参加者全員で一斉に刀を構える侍ポーズを決め、声を揃えて「ちんちん侍！」と叫びます。",
+      "【アウトの基準】\n一番出遅れた人や、ポーズ・発声を間違えた人、リズムを乱した人が負けとなります。",
     ],
     call_examples: [
-      "【ちんちん】➔ ポーズなし（すぐ次の人を指差してコール）",
-      "【おちんちん】➔ 両手を伸ばすジェスチャーで「びろ〜ん！」",
-      "【侍（サムライ）】➔ 抜刀・居合斬りポーズで「シャキーン！」",
-      "【ちんちん侍】➔ 全員一斉に侍ポーズで「ちんちん侍！」（出遅れ・間違いがアウト）",
+      "・ちんちん ➔ ポーズなし（すぐ次の人を指差す）",
+      "・おちんちん ➔ 両手を伸ばして「びろ〜ん！」",
+      "・侍 ➔ 抜刀ポーズで「シャキーン！」",
+      "・ちんちん侍 ➔ 全員一斉に侍ポーズで「ちんちん侍！」",
     ],
     metadata: {
       matchEngineType: "quick_elimination",
       tools: ["elimination"],
       callExample:
-        "【ちんちん】➔ ポーズなし（すぐ次の人へパス）\n【おちんちん】➔ 両手を伸ばして「びろ〜ん！」\n【侍（サムライ）】➔ 抜刀ポーズで「シャキーン！」\n【ちんちん侍】➔ 全員一斉に侍ポーズで「ちんちん侍！」",
+        "・ちんちん ➔ ポーズなし（すぐ次の人へパス）\n・おちんちん ➔ 両手を伸ばして「びろ〜ん！」\n・侍 ➔ 抜刀ポーズで「シャキーン！」\n・ちんちん侍 ➔ 全員一斉に侍ポーズで「ちんちん侍！」",
       ruleSummary: [
-        "【ちんちん】ポーズなし。すぐに次のワードを言って別の人を指差す",
-        "【おちんちん】両手で伸ばすジェスチャーをしながら「びろ〜ん！」",
-        "【侍】腰から刀を抜いて宙を切る抜刀ポーズで「シャキーン！」",
-        "【ちんちん侍】参加者全員で侍ポーズを一斉に決め「ちんちん侍！」と叫ぶ（出遅れ・ミスがアウト！）",
+        "【ちんちん】\nポーズなし。すぐ次のワードを言って別の人を指差す",
+        "【おちんちん】\n両手で伸ばす動きをしながら「びろ〜ん！」と言い、次の人を指差す",
+        "【侍（サムライ）】\n刀を抜いて切るポーズで「シャキーン！」と叫び、次の人を指差す",
+        "【ちんちん侍】\n全員一斉に侍ポーズを決めて「ちんちん侍！」と叫ぶ",
+        "【勝敗】\n出遅れた人・ポーズや発声を間違えた人がアウト（負け）！",
       ],
       tags: ["アクション", "反射神経", "抜刀ポーズ", "指差し"],
     },
   },
-
-  // ② めちゃギントン（2〜8人・3連打×2回の擬音回答）
   {
     id: "mecha-ginton",
     title: "めちゃギントン",
     min_players: 2,
     max_players: 8,
     description:
-      "リズムに乗ってお題に合った擬音を答えていくゲーム！\n①全員でリズムに合わせて「め〜ちゃギントン♪」と歌い、出題者が「お題（名詞や動作など）」をコールします。\n②次の回答者は、そのお題に最も適した「擬音・効果音・鳴き声」をリズムに合わせて【3連打×2回（合計6回）】答えます（例：包丁→「トントントン トントントン」）。\n③正しく答えられたら再び「め〜ちゃギントン♪」とともに次のお題を出題し、順番に回していきます。\nお題に合わない擬音・謎の造語・言葉詰まり・リズム遅れはアウト（負け）！",
+      "「め〜ちゃギントン♪」のリズムに乗って、お題に合った擬音を【3連打×2回】で答えていくゲーム！",
     short_description:
       "「め〜ちゃギントン♪」のリズムでお題に合った擬音を3連打×2回で答えるゲーム！",
     created_at: new Date().toISOString(),
     matchEngineType: "quick_elimination",
     rules: [
-      "【全員でコール】全員でリズムに合わせて「め〜ちゃギントン♪」と歌います。",
-      "【お題の出題】出題者がリズムに合わせて「お題（名詞や動作など）」をコールします。",
-      "【擬音で回答（3連打×2回）】次の回答者は、お題に最も適した「擬音・効果音・鳴き声」をリズムに合わせて3連打×2回（合計6回）答えます（例：包丁→「トントントン トントントン」、ねこ→「ニャーニャーニャー ニャーニャーニャー」、とり→「バサバサバサ バサバサバサ」）。",
-      "【次の人へ継続】正しく答えられたら、再び「め〜ちゃギントン♪」の掛け声とともに次のお題を出題し、順番に回していきます。",
-      "【アウトの基準】①お題に合わない不適切な擬音（魚で「シャカシャカシャカ」等）、②言葉に詰まる・リズムに乗れなかった場合、③擬音ではなく謎の造語や適当な言葉（テーブルで「テーブルブル」等）を言った場合はミス（アウト）となります。",
+      "【全員でコール】\n全員でリズムに合わせて「め〜ちゃギントン♪」と歌います。",
+      "【お題を出題】\n前の人（出題者）がリズムに合わせて「お題（名詞や動作など）」をコールします。",
+      "【擬音で回答（3連打×2回）】\n次の人は、お題に合った擬音・鳴き声を【3連打×2回（計6回）】で答えます。\n（例：包丁 ➔「トントントン トントントン」）",
+      "【次の人へ回す】\n正しく答えられたら、再び「め〜ちゃギントン♪」と歌い、答えた人が次のお題を出して順番に回します。",
+      "【アウトの基準】\nお題に合わない擬音・謎の造語・言葉詰まり・リズム遅れはアウト（負け）です！",
     ],
     call_examples: [
-      "全員「め〜ちゃギントン♪」➔ 出題「包丁！」➔ 回答「トントントン トントントン！」",
+      "全員「め〜ちゃギントン♪」➔ 出題「包丁！」",
+      "回答「トントントン トントントン！」（3連打×2回）",
       "お題「ねこ」➔「ニャーニャーニャー ニャーニャーニャー！」",
-      "お題「とり」➔「バサバサバサ バサバサバサ！」（3連打×2回）",
     ],
     metadata: {
       matchEngineType: "quick_elimination",
       tools: ["score"],
       callExample:
-        "全員「め〜ちゃギントン♪」\nお題「包丁」→「トントントン トントントン」\nお題「ねこ」→「ニャーニャーニャー ニャーニャーニャー」\nお題「とり」→「バサバサバサ バサバサバサ」（3連打×2回！）",
+        "全員「め〜ちゃギントン♪」➔ 出題「包丁！」\n回答「トントントン トントントン！」（3連打×2回）\nお題「ねこ」➔「ニャーニャーニャー ニャーニャーニャー！」",
       ruleSummary: [
-        "全員で「め〜ちゃギントン♪」と歌い、出題者が「お題」をコール",
-        "次の人はお題に合った擬音・鳴き声を【3連打×2回（計6回）】リズムに合わせて答える",
-        "正しく答えられたら再び「め〜ちゃギントン♪」で次のお題を出して順番に回す",
-        "不適切な擬音・謎の造語・言葉詰まり・リズム遅れはアウト！",
+        "【全員でコール】\n全員で「め〜ちゃギントン♪」と歌い、出題者が「お題」をコール",
+        "【擬音で回答】\n次の人はお題に合った擬音・鳴き声を【3連打×2回（計6回）】で答える",
+        "【順番に回す】\n答えられたら再び「め〜ちゃギントン♪」で次のお題を出して回す",
+        "【勝敗】\nお題に合わない擬音・謎の造語・言葉詰まり・リズム遅れはアウト！",
       ],
       tags: ["リズム", "擬音", "3連打×2回", "瞬発力"],
     },
   },
-
-  // ③ 数取団（2〜8人・1から順に数字を増やして単位回答）
   {
     id: "kazutoridan",
     title: "数取団",
     min_players: 2,
     max_players: 8,
     description:
-      "前の人が出したお題（名詞）に対して、次の人が「1から1つずつ増える数字＋正しい単位（助数詞）」をリズムに合わせて答え、さらに次のお題を出して回していくゲーム！\n①「せーの、ブンブンブブブン！」でスタートし、最初の人がお題（例：「車」）を言います。\n②全員で「ブンブン！」と合いの手を入れた後、次の人が「1台！」と答え、再び「ブンブン！」の後に次のお題（例：「犬」）を出します。\n③さらに次の人が「2匹！」➔「ブンブン！」➔次のお題…と1ずつ増やしながらラリーを続けます（同じお題を繰り返してもOK）。\n数字や単位の間違い、リズム遅れ、噛み、「美しい固有の単位（タンス＝棹、イカ＝杯など）」を言えなかった場合はアウト！",
+      "「ブンブン！」のリズムに合わせて、1から1つずつ増える数字と「正しい単位（助数詞）」を答えていくゲーム！",
     short_description:
-      "「ブンブン！」のリズムで1から順に数を増やしながら正しい単位（助数詞）を答えるゲーム！",
+      "「ブンブン！」のリズムで1から順に数を増やしながら正しい単位を答えるゲーム！",
     created_at: new Date().toISOString(),
     matchEngineType: "quick_elimination",
     rules: [
-      "【①スタートコール】最初の人が「せーの」と合図し、全員で「ブンブンブブブン！」とコールして始まります（直後にフライングで「ブンブン！」と言う『ぶんぶんオーバー』に注意）。",
-      "【②お題の提示＆合いの手】最初の人がお題（例：「車」）を言い、全員で「ブンブン！」と声を揃えて合間を取ります。",
-      "【③解答＋次のお題出し】次の人が「数字＋単位」（例：「1台」）を答え、全員で「ブンブン！」と合間を取った後、同じ人が次のお題（例：「犬」）を出します。",
-      "【④ループ】次の人が「2匹」➔「ブンブン！」➔次のお題…と、数字を1から1つずつ増やしながら順番にラリーを続けます（前に出たお題を繰り返してもOK）。",
-      "【アウトの基準】①数字や単位の間違い（車に「1個」等）、②リズム遅れ・沈黙・噛み、③より適した美しい単位の不採用（タンス＝「○棹」、イカ＝「○杯」、ワイン＝「○年物」等）で即アウト（負け）！",
+      "【スタート掛け声】\n最初の人が「せーの」と合図し、全員で「ブンブンブブブン！」とコールして始まります。",
+      "【お題出し＆合いの手】\n最初の人がお題（例：「車」）を言い、全員で「ブンブン！」と合いの手を入れます。",
+      "【数字＋単位で回答】\n次の人が「1＋単位」（例：「1台！」）を答え、再び全員で「ブンブン！」と合いの手を入れます。",
+      "【次のお題を出してループ】\n答えた人がそのまま次のお題（例：「犬」）を出し、次の人が「2匹！」➔「ブンブン！」と数字を1ずつ増やして続けます。",
+      "【アウトの基準】\n数字や単位の間違い（タンス＝棹、イカ＝杯など）、リズム遅れ、噛みは即アウト（負け）！",
     ],
     call_examples: [
-      "全員「せーの、ブンブンブブブン！」➔ 1人目「車！」➔ 全員「ブンブン！」",
-      "2人目「1台！」➔ 全員「ブンブン！」➔ 2人目「犬！」➔ 全員「ブンブン！」",
-      "3人目「2匹！」➔ 全員「ブンブン！」➔ 3人目「イカ！」（次は「3杯！」）",
+      "全員「せーの、ブンブンブブブン！」",
+      "1人目「車！」➔ 全員「ブンブン！」",
+      "2人目「1台！」➔ 全員「ブンブン！」➔ 2人目「犬！」",
+      "3人目「2匹！」➔ 全員「ブンブン！」➔ 3人目「イカ！」（次は3杯！）",
     ],
     metadata: {
       matchEngineType: "quick_elimination",
@@ -284,38 +287,38 @@ export const ALL_GAMES: Game[] = [
       callExample:
         "全員「せーの、ブンブンブブブン！」\n1人目「車！」➔ 全員「ブンブン！」\n2人目「1台！」➔ 全員「ブンブン！」➔ 2人目「犬！」\n3人目「2匹！」➔ 全員「ブンブン！」➔ 3人目「イカ！」",
       ruleSummary: [
-        "①「せーの、ブンブンブブブン！」で開始し、最初の人がお題（例：車）を言う",
-        "②全員で「ブンブン！」と合いの手を入れたら、次の人が「1台！」と答える",
-        "③再び全員で「ブンブン！」の後、答えた人が次のお題（例：犬）を出す",
-        "④数字を1・2・3…と1つずつ増やしてラリー継続！単位ミス・リズム遅れ・噛みはアウト！",
+        "【スタート】\n「せーの、ブンブンブブブン！」で開始し、最初の人がお題（例：車）を言う",
+        "【合いの手＆回答】\n全員で「ブンブン！」の後、次の人が「1台！」と正しい単位で答える",
+        "【次のお題出し】\n再び全員で「ブンブン！」の後、答えた人が次のお題（例：犬）を出す",
+        "【数を増やして継続】\n数字を1・2・3…と1つずつ増やして回す（同じお題の繰り返しもOK）",
+        "【勝敗】\n単位や数字の間違い・リズム遅れ・噛んだ人はアウト！",
       ],
       tags: ["リズム", "単位・助数詞", "ブンブン", "頭脳"],
     },
   },
-
-  // ④ ○○から始まるリズムに合わせて（2〜8人・2文字ネーム＋1〜4/ちぇけ）
   {
     id: "rhythm-shiritori",
     title: "○○から始まるリズムに合わせて",
     min_players: 2,
     max_players: 8,
     description:
-      "机を叩いて手拍子をする4拍子のリズムに乗って進行する指名リズムゲーム！\n通常の名前から2文字取った呼び名（例：「えび」「まる」「ガリ」）を使い、「〇〇から始まるリズムに合わせて！」の掛け声でスタート！\n相手の名前と1〜4の数字（または「ちぇけ」）を指定してパスを回し、リズムや回数・ワードを間違えてミスした人が負けとなります。",
+      "4拍子の手拍子に乗って、2文字の呼び名と「1〜4の数字（または『ちぇけ』）」でパスを回す指名リズムゲーム！",
     short_description:
       "2文字の呼び名と1〜4の数字・『ちぇけ』でパスを回す4拍子リズムゲーム！",
     created_at: new Date().toISOString(),
     matchEngineType: "quick_elimination",
     rules: [
-      "【準備】通常の名前から2文字取り、「えび」「まる」「ガリ」といった2文字のプレイヤー名を決めます。",
-      "【開始】机を叩いて手拍子をする4拍子のリズムに乗り、「〇〇（最初の人の名前）から始まるリズムに合わせて！」の掛け声でスタートします。",
-      "【コール＆レスポンス】相手の名前と1〜4の数字を指定してパスします（例：「ガリ 3」「まる 1」）。指名された人は指定回数分だけ自分の名前を4拍子に合わせてコールし、最後に次の相手の名前と数字を言ってパスを返します。",
-      "【追加ルール：ちぇけ】「ちぇけ」と指定された際は、通常の名前コールの代わりに『よう・チェケ・ラッ・チョ』と言ってから次の人へパスします。",
-      "【勝敗条件】リズムを崩したり、言う回数やワードを間違えたりしてミスしたプレイヤーが負け（脱落）となります。",
+      "【準備（2文字ネーム）】\n各自の名前から2文字取った呼び名（例：「えび」「まる」「ガリ」）を決めます。",
+      "【スタート掛け声】\n机を叩いて手拍子をする4拍子のリズムに乗り、「〇〇（最初の人の名前）から始まるリズムに合わせて！」でスタートします。",
+      "【名前＋数字（1〜4）でパス】\n相手の名前と1〜4の数字を言って指名します（例：「ガリ 3」「まる 1」）。",
+      "【自分の名前を連呼して次へ】\n指名された人は、言われた回数だけ自分の名前をリズムよく言い、残りの拍で次の人の「名前＋数字」を指名します。",
+      "【特殊コール：ちぇけ】\n数字の代わりに「ちぇけ」と指名された人は、『よう・チェケ・ラッ・チョ！』と言ってから次の人を指名します。",
+      "【アウトの基準】\nリズム遅れや、言う回数・ワードを間違えた人が負けとなります。",
     ],
     call_examples: [
-      "全員「『えび』から始まるリズムに合わせて！」（4拍子スタート）",
-      "えび「ガリ 3！」➔ ガリ「ガリ・ガリ・ガリ！（＋次の指名：まる 1！）」",
-      "まる「まる！（＋次の指名：えび ちぇけ！）」",
+      "全員「『えび』から始まるリズムに合わせて！」",
+      "えび「ガリ 3！」➔ ガリ「ガリ・ガリ・ガリ！（＋まる 1！）」",
+      "まる「まる！（＋えび ちぇけ！）」",
       "えび「よう・チェケ・ラッ・チョ！（＋次の人を指名！）」",
     ],
     metadata: {
@@ -323,131 +326,126 @@ export const ALL_GAMES: Game[] = [
       tools: ["bpm", "score"],
       defaultBpm: 110,
       callExample:
-        "全員「『えび』から始まるリズムに合わせて！」\nえび「ガリ 3！」\nガリ「ガリ・ガリ・ガリ！ まる 1！」\nまる「まる！ えび ちぇけ！」\nえび「よう・チェケ・ラッ・チョ！」",
+        "全員「『えび』から始まるリズムに合わせて！」\nえび「ガリ 3！」➔ ガリ「ガリ・ガリ・ガリ！ まる 1！」\nまる「まる！ えび ちぇけ！」\nえび「よう・チェケ・ラッ・チョ！」",
       ruleSummary: [
-        "通常の名前から2文字取った呼び名（例：えび、まる、ガリ）を使います",
-        "机を叩いて手拍子をする4拍子のリズムに乗り、「〇〇から始まるリズムに合わせて！」でスタート",
-        "相手の名前と「1〜4の数字」を指定してパス（例：「ガリ 3」「まる 1」）",
-        "指名された人は指定回数だけ自分の名前をコールし、最後に次の相手の名前と数字を言ってパス",
-        "【追加ルール】「ちぇけ」と指定されたら名前コールの代わりに「よう・チェケ・ラッ・チョ」と言う",
-        "リズムを崩したり、回数やワードを間違えてミスしたプレイヤーが負け！",
+        "【準備】\n名前から2文字取った呼び名（例：えび、まる、ガリ）を使う",
+        "【開始】\n4拍子のリズムに乗り「〇〇から始まるリズムに合わせて！」でスタート",
+        "【指名パス】\n相手の名前と「1〜4の数字」を指定してパス（例：「ガリ 3」）",
+        "【応答】\n指定回数だけ自分の名前をコールし、続けて次の相手と数字を指名する",
+        "【ちぇけ】\n「ちぇけ」と指名されたら「よう・チェケ・ラッ・チョ！」と言って次へパス",
+        "【勝敗】\nリズムを崩したり、回数やワードを間違えた人が負け！",
       ],
       tags: ["4拍子リズム", "2文字ネーム", "ちぇけ", "コール＆レスポンス"],
     },
   },
-
-  // ⑤ カレーライス（2人専用・グーカラ/チョーカラ/パーカラ ➔ 水！）
   {
     id: "curry-rice",
     title: "カレーライス",
     min_players: 2,
     max_players: 2,
     description:
-      "2人専用の進化系リズムじゃんけん！\n呼び方はグーが「グーカラ」、チョキが「チョーカラ」、パーが「パーカラ」。\n①2人が向き合い「カレーライス」の掛け声（1・2・3のリズム）でじゃんけんをします。\n②勝った方が次の掛け声を担当し、勝った手を2回＋次の新しい手を1回コールして出します（例：チョキで勝ったら「チョーカラ、チョーカラ、グーカラ！」）。\n③じゃんけんを繰り返し、あいこになった瞬間にお互いが「水！」と叫び、早かった方の勝ち！",
+      "「グーカラ・チョーカラ・パーカラ」でリズムよくじゃんけんを繰り返し、あいこで先に「水！」と叫んだ方が勝ちの2人専用ゲーム！",
     short_description:
       "「グーカラ・チョーカラ・パーカラ」でじゃんけんし、あいこで先に「水！」と言った方が勝ちの2人専用ゲーム！",
     created_at: new Date().toISOString(),
     matchEngineType: "tournament_duel",
     rules: [
-      "【手の呼び方】じゃんけんと同じ3つの手を使います。グー＝「グーカラ」、チョキ＝「チョーカラ」、パー＝「パーカラ」。",
-      "【①開始】2人が向き合い、グーで1・2・3のリズムをとりながら「カレーライス」の掛け声の「ス」でじゃんけんをします。",
-      "【②勝った人の掛け声】勝った方が次の掛け声をします。1・2・3のリズムで「勝った手を2回＋次の新しい手を1回」出します（例：グーで勝ったら「グーカラ、グーカラ、次の手！」、同じ手を続けるなら「グーカラ、グーカラ、グーカラ！」）。",
-      "【③あいこで「水！」】じゃんけんを繰り返し、あいこになった瞬間にお互いが「水！」と叫びます（例：「チョーカラ、チョーカラ、グーカラ（グーであいこ）➔ 水！」）。",
-      "【④勝敗】「水！」を言うタイミングが早かった方の勝ちになります。",
+      "【手の呼び方（2人専用）】\nグー＝「グーカラ」、チョキ＝「チョーカラ」、パー＝「パーカラ」と呼びます。",
+      "【最初のじゃんけん】\n2人が向き合い、1・2・3のリズムで「カレーライス！」の「ス」に合わせてじゃんけんをします。",
+      "【勝った人が次の掛け声】\n勝った人が1・2・3のリズムで「勝った手を2回＋次に出す新しい手を1回」コールしてじゃんけんします。\n（例：チョキで勝ったら「チョーカラ、チョーカラ、グーカラ！」）",
+      "【あいこになったら「水！」】\nじゃんけんを繰り返し、あいこになった瞬間にお互いが「水！」と叫びます。",
+      "【勝敗】\nあいこの瞬間に、より早く「水！」と言えた方の勝ちです！",
     ],
     call_examples: [
       "グー＝「グーカラ」／ チョキ＝「チョーカラ」／ パー＝「パーカラ」",
       "勝った人「チョーカラ、チョーカラ、グーカラ！」",
-      "あいこになった瞬間 ➔ 先に「水！」と言った方の勝ち！",
+      "あいこになった瞬間 ➔ 先に「水！」と叫んだ方の勝ち！",
     ],
     metadata: {
       matchEngineType: "tournament_duel",
       tools: ["score"],
       callExample:
-        "グー＝「グーカラ」／ チョキ＝「チョーカラ」／ パー＝「パーカラ」\n勝った人「チョーカラ、チョーカラ、グーカラ！」\n（グーであいこ！）➔ 先に「水！」と叫んだ方の勝ち！",
+        "グー＝「グーカラ」／ チョキ＝「チョーカラ」／ パー＝「パーカラ」\n勝った人「チョーカラ、チョーカラ、グーカラ！」\n（あいこになった瞬間）➔ 先に「水！」と叫んだ方の勝ち！",
       ruleSummary: [
-        "2人専用！グー＝「グーカラ」、チョキ＝「チョーカラ」、パー＝「パーカラ」",
-        "①「カレーライス」の掛け声（1・2・3のリズム）の「ス」でじゃんけん",
-        "②勝った方が「勝った手を2回＋次の新しい手を1回」コールしてじゃんけん（例：グーカラ、グーカラ、パーカラ！）",
-        "③あいこになった瞬間にお互いが「水！」と叫び、早かった方の勝ち！",
+        "【呼び方】\nグー＝「グーカラ」、チョキ＝「チョーカラ」、パー＝「パーカラ」",
+        "【開始】\n「カレーライス！」の「ス」のタイミングで最初のじゃんけんをする",
+        "【勝った人の掛け声】\n勝った方が「勝った手を2回＋次の新しい手を1回」言ってじゃんけんする\n（例：グーカラ、グーカラ、パーカラ！）",
+        "【勝敗】\nあいこになった瞬間に、先に「水！」と叫んだ方の勝ち！",
       ],
       tags: ["2人専用", "じゃんけん", "瞬発力", "水！"],
     },
   },
-
-  // ⑥ CCレモン（2人専用・溜め/攻撃/防御の同時出しバトル）
   {
     id: "cc-lemon",
     title: "CCレモン",
     min_players: 2,
     max_players: 2,
     description:
-      "2人専用の心理戦コマンドバトル！\n「シー・シー（または手拍子パン・パン）」の2拍に続き、3拍目の「レモン！」で双方が同時にポーズを出し合います。\n【溜め（レモン）】胸の前で両手を重ねてパワー+1（この瞬間に攻撃されると敗北）\n【攻撃（ビーム）】パワーを1消費して両手を前へ突き出す（相手が「溜め」なら勝利！）\n【防御（バリア）】両腕を胸の前でX字クロス（コスト0で攻撃を防ぐ ※連続使用は2〜3回まで）\n【勝敗判定】攻撃 vs 溜め＝攻撃側の勝ち ／ 攻撃 vs 防御・攻撃 vs 攻撃・溜め同士・防御同士＝あいこ（勝負続行）！",
+      "「シー・シー・レモン！」の3拍目で【溜め・攻撃・防御】の3つのポーズを同時に出し合う2人専用コマンド心理戦！",
     short_description:
       "「シー・シー・レモン！」の3拍目で溜め・攻撃・防御を同時に出し合う2人専用コマンド心理戦！",
     created_at: new Date().toISOString(),
     matchEngineType: "tournament_duel",
     rules: [
-      "【基本進行（2人専用）】「シー・シー（または手拍子パン・パン）」の2拍でリズムをとり、3拍目の「レモン！」の瞬間に双方が同時にアクション（ポーズ）を出します。",
-      "【溜め（チャージ / レモン）】両手でボールを包むように胸の前で重ねる。パワーが1つストックされる（0〜5個まで蓄積可能）が、無防備なため攻撃を受けると敗北。",
-      "【攻撃（ビーム / かめはめ波）】パワーを1消費して両手を前方に突き出す（パワー0の時は出せない）。相手が「溜め」を出していれば勝利！",
-      "【防御（バリア / ガード）】両腕を胸の前で「X」の字にクロスする（コスト0）。相手の攻撃を防ぐ（※2〜3回連続使用は禁止）。",
-      "【勝敗判定】攻撃 vs 溜め＝攻撃側の勝ち（溜め側が敗北） ／ 攻撃 vs 防御＝防御成功で続行 ／ 攻撃 vs 攻撃＝相殺（両者パワー1消費して続行） ／ 溜め同士・防御同士＝続行。",
+      "【基本リズム（2人専用）】\n「シー・シー（手拍子パン・パン）」の2拍に続き、3拍目の「レモン！」で2人が同時にポーズを出します。",
+      "【溜め（レモン）】\n胸の前で両手を重ねてパワーを「＋1」貯めます。\n無防備なため、この瞬間に相手から「攻撃」されると負けになります。",
+      "【攻撃（ビーム）】\n貯めたパワーを「1」消費して両手を前へ突き出します（パワー0では出せません）。\n相手が「溜め」を出していればあなたの勝ち！",
+      "【防御（バリア）】\n両腕を胸の前でX字にクロスして相手の攻撃を防ぎます（パワー消費0・連続使用は2〜3回まで）。",
+      "【勝敗判定】\n「攻撃 vs 溜め」になった瞬間に攻撃側の勝ち！\nそれ以外（攻撃vs防御、攻撃同士の相殺、溜め同士など）は勝負続行です。",
     ],
     call_examples: [
       "掛け声「シー・シー・レモン！」（3拍目で同時にポーズ！）",
-      "【溜め】パワー+1（無防備） ／ 【攻撃】パワー1消費 ／ 【防御】コスト0",
+      "・溜め：パワー+1 ／ ・攻撃：パワー1消費 ／ ・防御：コスト0",
       "「攻撃 vs 溜め」になった瞬間に攻撃側の勝ち！",
     ],
     metadata: {
       matchEngineType: "tournament_duel",
       tools: ["score"],
       callExample:
-        "掛け声「シー・シー・レモン！」（3拍目で同時ポーズ）\n・溜め（レモン）：パワー+1（攻撃されると負け）\n・攻撃（ビーム）：パワー1消費（溜めを倒す！）\n・防御（バリア）：コスト0（攻撃を防ぐ・連続禁止）",
+        "掛け声「シー・シー・レモン！」（3拍目で同時ポーズ）\n・溜め（レモン）：パワー+1（攻撃されると負け）\n・攻撃（ビーム）：パワー1消費（相手が溜めなら勝ち！）\n・防御（バリア）：コスト0（攻撃を防ぐ・連続禁止）",
       ruleSummary: [
-        "2人専用！「シー・シー・レモン！」の3拍目で同時にポーズを出す",
-        "【溜め】胸の前で手を重ねてパワー+1（攻撃されると負け）",
-        "【攻撃】パワー1消費で前方に突き出す（相手が溜めなら勝ち！）",
-        "【防御】腕をX字クロス（コスト0で攻撃を防ぐ・連続使用禁止）",
-        "攻撃 vs 溜めで決着！攻撃同士は相殺（両者-1）して続行",
+        "【リズム】\n「シー・シー・レモン！」の3拍目で2人が同時にポーズを出す",
+        "【溜め】\n胸の前で手を重ねてパワー+1（この時に攻撃されると負け）",
+        "【攻撃】\nパワー1消費で両手を前へ突き出す（相手が溜めなら勝ち！）",
+        "【防御】\n腕をX字クロスして攻撃を防ぐ（コスト0・連続使用は禁止）",
+        "【勝敗】\n「攻撃 vs 溜め」で決着！攻撃同士は相殺（両者-1）して続行",
       ],
       tags: ["2人専用", "心理戦", "コマンドバトル", "手拍子"],
     },
   },
-
-  // ⑦ あぶりカルビ（2〜8人・お題あり・プレイの順番で1回ずつ増やす）
   {
     id: "aburi-karubi",
     title: "あぶりカルビ",
     min_players: 2,
     max_players: 8,
     description:
-      "「炙りカルビ」のような噛みやすそうな言葉をお題にして、1回・2回・3回…と回数を1回ずつ増やしながら順番に言っていく滑舌ゲーム！\n噛んでしまったり、つっかえて正しく言えなくなった時点で失敗（負け）となります。",
+      "「炙りカルビ」などの噛みやすい言葉を、1回・2回・3回…と回数を1回ずつ増やしながら順番に言っていく早口滑舌ゲーム！",
     short_description:
-      "噛みやすい言葉を1回・2回・3回…と増やして交互に言う滑舌ゲーム！",
+      "噛みやすい言葉を1回・2回・3回…と増やして順番に言う滑舌ゲーム！",
     created_at: new Date().toISOString(),
     matchEngineType: "quick_elimination",
     rules: [
-      "【お題の決定】「炙りカルビ」「静岡塩漬け」「暖かく」「肩たたき」「僕ボブ」など、噛みやすそうな言葉をお題として決めます。",
-      "【1人目（1回）】最初の人からお題を1回言います（例：「炙りカルビ」）。",
-      "【2人目以降（＋1回ずつ増加）】前の人が言えたら回数を1回増やし、2回（例：「炙りカルビ、炙りカルビ」）、次は3回…と交互に繰り返します。",
-      "【勝敗（アウトの基準）】噛んでしまったり、つっかえて正しく言えなくなったりした時点で失敗（負け）となります。",
+      "【お題を決める】\n「炙りカルビ」「静岡塩漬け」「暖かく」など、噛みやすいお題ワードを決めます。",
+      "【1番目（1回言う）】\n最初の人がお題を「1回」言います（例：「炙りカルビ」）。",
+      "【2番目以降（1回ずつ増やす）】\n次の人は「2回」、その次の人は「3回」…と、順番が回るごとに言う回数を1回ずつ増やしていきます。",
+      "【アウトの基準】\n途中で噛んでしまったり、つっかえて言えなくなったり、回数を間違えた時点でアウト（負け）です！",
     ],
     call_examples: [
-      "1巡目「炙りカルビ」",
-      "2巡目「炙りカルビ、炙りカルビ」",
-      "3巡目「炙りカルビ、炙りカルビ、炙りカルビ」",
-      "4巡目「炙りカルビ、あぶりばる…（噛んだら負け！）」",
+      "1巡目「炙りカルビ」（1回）",
+      "2巡目「炙りカルビ、炙りカルビ」（2回）",
+      "3巡目「炙りカルビ、炙りカルビ、炙りカルビ」（3回）",
+      "※ 噛んだりつっかえたら即アウト！",
     ],
     metadata: {
       matchEngineType: "quick_elimination",
       tools: ["prompt", "score"],
       callExample:
-        "1巡目「炙りカルビ」\n2巡目「炙りカルビ、炙りカルビ」\n3巡目「炙りカルビ、炙りカルビ、炙りカルビ」\n（噛んだりつっかえたら即アウト！）",
+        "1巡目「炙りカルビ」（1回）\n2巡目「炙りカルビ、炙りカルビ」（2回）\n3巡目「炙りカルビ、炙りカルビ、炙りカルビ」（3回）\n（噛んだりつっかえたら即アウト！）",
       ruleSummary: [
-        "「炙りカルビ」「静岡塩漬け」「暖かく」「肩たたき」「僕ボブ」など噛みやすい言葉をお題にします",
-        "1巡目は1回、2巡目は2回、3巡目は3回…と1回ずつ回数を増やして順番に言います",
-        "噛んでしまったり、つっかえて正しく言えなくなった時点で失敗（負け）！",
+        "【お題】\n「炙りカルビ」「静岡塩漬け」など噛みやすい言葉をお題にする",
+        "【1巡目】\n1番目の人がお題を「1回」言う",
+        "【2巡目以降】\n2番目は「2回」、3番目は「3回」…と1回ずつ回数を増やして順番に言う",
+        "【勝敗】\n噛んでしまったり、つっかえて正しく言えなくなった人が負け！",
       ],
       tags: ["早口言葉", "滑舌", "大爆笑", "お題ガチャ"],
       promptList: [
@@ -907,6 +905,84 @@ export const sound = new SoundController();
 
 ---
 
+### 3-4. `src/lib/customGames.ts`（追加したゲームの保存・削除・一覧合体）
+**【このファイルの役割】**
+「ゲームを追加」から登録したオリジナルゲームを、ブラウザの `localStorage` に保存・編集・削除するためのファイルです。
+保存や削除をした瞬間に `window.dispatchEvent(new Event("customGamesUpdated"))` という通知を発火し、ページをリロードしなくても即座に「ゲーム一覧」へ反映させます。
+
+```tsx
+// src/lib/customGames.ts
+import { Game } from "@/types/game";
+import { ALL_GAMES } from "@/data/games";
+
+// ブラウザのlocalStorageに保存するときのキー名
+export const CUSTOM_GAMES_STORAGE_KEY = "machajikan_custom_games_v1";
+
+// ローカルストレージから追加ゲーム一覧を取得する関数
+export function getCustomGames(): Game[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const data = localStorage.getItem(CUSTOM_GAMES_STORAGE_KEY);
+    if (!data) return [];
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    console.error("Failed to load custom games:", e);
+    return [];
+  }
+}
+
+// 追加ゲームを保存（新規追加または名前変更の上書き）する関数
+export function saveCustomGame(game: Game): Game[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const current = getCustomGames();
+    const existingIndex = current.findIndex((g) => g.id === game.id);
+    let updated: Game[];
+
+    if (existingIndex >= 0) {
+      // 既存の追加ゲームの名前を変更した場合は上書き
+      updated = [...current];
+      updated[existingIndex] = game;
+    } else {
+      // 新しく追加した場合はリストの先頭に追加
+      updated = [game, ...current];
+    }
+
+    localStorage.setItem(CUSTOM_GAMES_STORAGE_KEY, JSON.stringify(updated));
+    // 同一画面内の他のコンポーネントにも更新を通知する
+    window.dispatchEvent(new Event("customGamesUpdated"));
+    return updated;
+  } catch (e) {
+    console.error("Failed to save custom game:", e);
+    return [];
+  }
+}
+
+// 追加ゲームを削除する関数
+export function deleteCustomGame(id: string): Game[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const current = getCustomGames();
+    const filtered = current.filter((g) => g.id !== id);
+    localStorage.setItem(CUSTOM_GAMES_STORAGE_KEY, JSON.stringify(filtered));
+    window.dispatchEvent(new Event("customGamesUpdated"));
+    return filtered;
+  } catch (e) {
+    console.error("Failed to delete custom game:", e);
+    return [];
+  }
+}
+
+// 追加ゲーム＋公式7ゲームを合体した全ゲーム配列を返す関数
+export function getAllGamesWithCustom(): Game[] {
+  const custom = getCustomGames();
+  return [...custom, ...ALL_GAMES];
+}
+```
+
+---
+
 ## ⭐ 第4章：通算★（星）成績の管理システム (`src/context/GameSessionContext.tsx`)
 
 **【このファイルの役割】**
@@ -1304,16 +1380,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 
 ---
 
-## 🏠 第6章：最初の画面・トップページ (`src/app/page.tsx`)
+## 🏠 第6章：トップ画面・リザルトボード・ゲーム追加モーダル
 
+### 6-1. `src/app/page.tsx`（最初の画面・トップページ）
 **【このファイルの役割】**
 アプリを開いたときに一番最初に表示される画面です。
 - 大学ノートの背景（水色の横罫線・左端の赤い縦2本線・上部のスパイラルリング穴）
 - 黄色い蛍光マーカーが引かれた「**マチジカン！**」タイトル
-- 中央の「**ゲーム一覧**」カードボタン（押すと第7章の `GameCatalogModal` が開く）
-- 右下の文房具イラスト（プラスチック消しゴム＆蛍光ペン）
-
-（※現在一時非表示にしている「1on1」「みんなで遊ぶ」「ゲームを作る」のコードは省き、今実際に画面で動いているコードだけを分かりやすくまとめています）
+- 中央に並ぶ **「ゲーム一覧」** カードボタンと **「ゲームを追加」** カードボタン
+- 下の空きスペースに常時表示される **「現在のリザルト（通算★）」ボード（`SessionResultBoard`）**
+- ゲーム画面から戻ってきたとき（URLが `/?catalog=1` のとき）は、自動的に「ゲーム一覧モーダル」を開きます。
 
 ```tsx
 // src/app/page.tsx
@@ -1323,10 +1399,18 @@ import { useState, useEffect, useCallback } from "react";
 import { getAllGames } from "@/lib/supabase";
 import { Game } from "@/types/game";
 import { getAllGamesWithCustom } from "@/lib/customGames";
+import CustomGameModal from "@/components/home/CustomGameModal";
 import GameCatalogModal from "@/components/home/GameCatalogModal";
+import SessionResultBoard from "@/components/home/SessionResultBoard";
 
-// 「ゲーム一覧」カードの右下に描く「開いたノート＆しおり」のボールペン風SVGイラスト
-function CatalogBookDoodle({ inkColor = "#3B356E" }: { inkColor?: string }) {
+// トップ画面カードの右下に描くボールペン風SVGイラスト（「開いたノート」と「鉛筆＆ひらめき」）
+function HomeCardDoodle({
+  type,
+  inkColor = "#2B2D42",
+}: {
+  type: "create_pencil" | "catalog_book";
+  inkColor?: string;
+}) {
   return (
     <svg
       viewBox="0 0 64 64"
@@ -1338,25 +1422,44 @@ function CatalogBookDoodle({ inkColor = "#3B356E" }: { inkColor?: string }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <g transform="rotate(-5 32 32)">
-        {/* 見開きノートの左ページと右ページ */}
-        <path
-          d="M12 20 Q22 17 32 21 L32 46 Q22 42 12 45 Z"
-          fill="#FFFFFF"
-        />
-        <path
-          d="M52 20 Q42 17 32 21 L32 46 Q42 42 52 45 Z"
-          fill="#FFFFFF"
-        />
-        {/* ノートの中の文字線 */}
-        <line x1="17" y1="26" x2="27" y2="27" />
-        <line x1="17" y1="32" x2="27" y2="33" />
-        <line x1="17" y1="38" x2="25" y2="39" />
-        <line x1="37" y1="27" x2="47" y2="26" />
-        <line x1="37" y1="33" x2="47" y2="32" />
-        {/* 下から飛び出るしおりリボン */}
-        <polygon points="39,44 39,53 42.5,50 46,53 46,43" fill="#FFFFFF" />
-      </g>
+      {/* ゲームを追加：鉛筆＆ひらめき星 */}
+      {type === "create_pencil" && (
+        <g transform="rotate(-6 32 32)">
+          <g transform="rotate(28 32 36)">
+            <rect x="27" y="18" width="10" height="26" fill="#FFFFFF" />
+            <polygon points="27,44 37,44 32,53" fill="#FFFFFF" />
+            <polygon points="30.5,50 33.5,50 32,53" fill={inkColor} />
+            <rect x="27" y="13" width="10" height="5" rx="1.5" fill="#FFFFFF" />
+            <line x1="32" y1="18" x2="32" y2="44" />
+          </g>
+          <path
+            d="M18 14 L20 9 L22 14 L27 16 L22 18 L20 23 L18 18 L13 16 Z"
+            fill="#FFFFFF"
+          />
+          <line x1="46" y1="12" x2="50" y2="9" />
+          <line x1="49" y1="18" x2="54" y2="17" />
+        </g>
+      )}
+
+      {/* ゲーム一覧：開いたノート＆しおり */}
+      {type === "catalog_book" && (
+        <g transform="rotate(-5 32 32)">
+          <path
+            d="M12 20 Q22 17 32 21 L32 46 Q22 42 12 45 Z"
+            fill="#FFFFFF"
+          />
+          <path
+            d="M52 20 Q42 17 32 21 L32 46 Q42 42 52 45 Z"
+            fill="#FFFFFF"
+          />
+          <line x1="17" y1="26" x2="27" y2="27" />
+          <line x1="17" y1="32" x2="27" y2="33" />
+          <line x1="17" y1="38" x2="25" y2="39" />
+          <line x1="37" y1="27" x2="47" y2="26" />
+          <line x1="37" y1="33" x2="47" y2="32" />
+          <polygon points="39,44 39,53 42.5,50 46,53 46,43" fill="#FFFFFF" />
+        </g>
+      )}
     </svg>
   );
 }
@@ -1399,10 +1502,14 @@ function NotebookStationery() {
 }
 
 export default function Home() {
-  // 全ゲームリストを記憶するstate
+  // 全ゲームリスト（追加ゲーム＋公式7ゲーム）を記憶するstate
   const [allGameList, setAllGameList] = useState<Game[]>([]);
-  // 「ゲーム一覧モーダル」が開いているかどうかを記憶するstate（true = 開いている）
+  // 「ゲームを追加モーダル」が開いているか
+  const [isCustomModalOpen, setIsCustomModalOpen] = useState<boolean>(false);
+  // 「ゲーム一覧モーダル」が開いているか
   const [isCatalogModalOpen, setIsCatalogModalOpen] = useState<boolean>(false);
+  // 名前変更中の追加ゲーム（新規追加時は null）
+  const [gameToEdit, setGameToEdit] = useState<Game | null>(null);
 
   // ゲーム一覧データを読み込む関数
   const refreshGames = useCallback(async () => {
@@ -1411,10 +1518,36 @@ export default function Home() {
     setAllGameList([...custom, ...defaultGames]);
   }, []);
 
-  // 画面が最初に開いたときにゲーム一覧データを読み込む
   useEffect(() => {
     refreshGames();
+    // ゲーム画面から戻ってきたとき（/?catalog=1）は自動的に「ゲーム一覧」を開く
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("catalog") === "1") {
+        setIsCatalogModalOpen(true);
+      }
+    }
+    const handleCustomUpdate = () => {
+      refreshGames();
+    };
+    window.addEventListener("customGamesUpdated", handleCustomUpdate);
+    return () =>
+      window.removeEventListener("customGamesUpdated", handleCustomUpdate);
   }, [refreshGames]);
+
+  // 「ゲームを追加」ボタンが押されたとき
+  const handleOpenCustomCreate = () => {
+    setGameToEdit(null);
+    setIsCustomModalOpen(true);
+  };
+
+  // 追加したゲームの「編集（鉛筆）」ボタンが押されたとき
+  const handleEditCustomGame = (game: Game) => {
+    setGameToEdit(game);
+    setIsCustomModalOpen(true);
+  };
+
+  const customCount = allGameList.filter((g) => g.isCustom).length;
 
   return (
     <main
@@ -1436,7 +1569,6 @@ export default function Home() {
       <div className="relative z-10 w-full max-w-md h-[92vh] max-h-[820px] min-h-[600px] flex flex-col justify-between">
         {/* 上部：リングノートの金具＆「マチジカン！」見出し */}
         <div>
-          {/* 10個のスパイラルリングとパンチ穴 */}
           <div
             className="px-4 sm:px-6 pt-1 pb-2 flex items-center justify-between pointer-events-none"
             aria-hidden="true"
@@ -1449,7 +1581,6 @@ export default function Home() {
             ))}
           </div>
 
-          {/* 蛍光イエローマーカー付きの「マチジカン！」タイトル */}
           <header className="mt-1 px-3 py-3 border-t-2 border-b-2 border-[#2B2D42] bg-[#FAF6EB]/90 backdrop-blur-xs">
             <div className="text-center py-1">
               <div className="relative inline-block px-3">
@@ -1465,43 +1596,74 @@ export default function Home() {
           </header>
         </div>
 
-        {/* 中央：「ゲーム一覧」特大カードボタン */}
-        <div className="flex justify-center my-auto px-3">
-          <button
-            type="button"
-            onClick={() => setIsCatalogModalOpen(true)} // 押すとゲーム一覧モーダルを開く
-            className="group relative w-full max-w-xs h-42 sm:h-46 rounded-3xl bg-white border-[2.5px] border-[#2B2D42] overflow-hidden text-left flex flex-col justify-between p-5 sm:p-6 shadow-[5px_6px_0_#2B2D42] hover:-translate-y-0.5 hover:shadow-[6px_7px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[2px_3px_0_#2B2D42] transition-all cursor-pointer"
-            title="収録タイトル一覧"
-          >
-            {/* 右側の斜め蛍光ラベンダー帯 */}
-            <div
-              className="absolute inset-y-0 right-0 w-[54%] pointer-events-none transition-transform duration-200 group-hover:scale-105"
-              style={{
-                backgroundColor: "#CBC8FA",
-                clipPath: "polygon(38% 0, 100% 0, 100% 100%, 0% 100%)",
-              }}
-            />
-
-            {/* 左上の黒い「全7タイトル」バッジ */}
-            <span className="relative z-10 inline-flex items-center self-start px-2.5 py-0.5 rounded-md bg-[#2B2D42] text-white text-xs font-black tracking-wide">
-              全{allGameList.length || 7}タイトル
-            </span>
-
-            {/* メイン文字「ゲーム一覧」 */}
-            <div className="relative z-10 mt-auto pr-12">
-              <span className="block text-2xl sm:text-3xl font-black text-[#2B2D42] tracking-tight leading-tight">
-                ゲーム一覧
+        {/* 中央：2大ノートカード（「ゲーム一覧」＋「ゲームを追加」）＆ 空きスペースのリザルト */}
+        <div className="my-auto space-y-4 px-1 py-2 overflow-y-auto">
+          <div className="grid grid-cols-2 gap-x-3.5 gap-y-4 sm:gap-x-4 sm:gap-y-5">
+            {/* 左カード: 「ゲーム一覧」 */}
+            <button
+              type="button"
+              onClick={() => setIsCatalogModalOpen(true)}
+              className="group relative h-34 sm:h-38 w-full rounded-2xl bg-white border-[2.5px] border-[#2B2D42] overflow-hidden text-left flex flex-col justify-between p-3.5 sm:p-4 shadow-[4px_5px_0_#2B2D42] hover:-translate-y-0.5 hover:shadow-[5px_6px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[2px_2px_0_#2B2D42] transition-all cursor-pointer"
+              title="収録タイトル一覧"
+            >
+              <div
+                className="absolute inset-y-0 right-0 w-[56%] pointer-events-none transition-transform duration-200 group-hover:scale-105"
+                style={{
+                  backgroundColor: "#CBC8FA",
+                  clipPath: "polygon(42% 0, 100% 0, 100% 100%, 0% 100%)",
+                }}
+              />
+              <span className="relative z-10 inline-flex items-center self-start px-2 py-0.5 rounded-md bg-[#2B2D42] text-white text-[10px] font-black tracking-wide">
+                全{allGameList.length || 7}タイトル
               </span>
-              <span className="block text-xs font-extrabold text-[#2B2D42]/75 mt-1">
-                あそぶゲームをえらぶ
-              </span>
-            </div>
+              <div className="relative z-10 mt-auto pr-10">
+                <span className="block text-xl sm:text-2xl font-black text-[#2B2D42] tracking-tight leading-tight">
+                  ゲーム一覧
+                </span>
+                <span className="block text-[10px] font-extrabold text-[#2B2D42]/75 mt-1">
+                  あそぶゲームをえらぶ
+                </span>
+              </div>
+              <div className="absolute bottom-1 right-1 z-10 pointer-events-none transition-transform duration-200 group-hover:rotate-6 group-hover:scale-105">
+                <HomeCardDoodle type="catalog_book" inkColor="#3B356E" />
+              </div>
+            </button>
 
-            {/* 右下のノート落書きスタンプ */}
-            <div className="absolute bottom-2 right-2.5 z-10 pointer-events-none transition-transform duration-200 group-hover:rotate-6 group-hover:scale-110">
-              <CatalogBookDoodle inkColor="#3B356E" />
-            </div>
-          </button>
+            {/* 右カード: 「ゲームを追加」 */}
+            <button
+              type="button"
+              onClick={handleOpenCustomCreate}
+              className="group relative h-34 sm:h-38 w-full rounded-2xl bg-white border-[2.5px] border-[#2B2D42] overflow-hidden text-left flex flex-col justify-between p-3.5 sm:p-4 shadow-[4px_5px_0_#2B2D42] hover:-translate-y-0.5 hover:shadow-[5px_6px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[2px_2px_0_#2B2D42] transition-all cursor-pointer"
+              title="ゲーム名だけで新しいゲームを追加"
+            >
+              <div
+                className="absolute inset-y-0 right-0 w-[56%] pointer-events-none transition-transform duration-200 group-hover:scale-105"
+                style={{
+                  backgroundColor: "#FFADAD",
+                  clipPath: "polygon(42% 0, 100% 0, 100% 100%, 0% 100%)",
+                }}
+              />
+              <span className="relative z-10 inline-flex items-center self-start px-2 py-0.5 rounded-md bg-[#2B2D42] text-white text-[10px] font-black tracking-wide">
+                名前だけで追加
+              </span>
+              <div className="relative z-10 mt-auto pr-10">
+                <span className="block text-xl sm:text-2xl font-black text-[#2B2D42] tracking-tight leading-tight">
+                  ゲームを追加
+                </span>
+                <span className="block text-[10px] font-extrabold text-[#2B2D42]/75 mt-1">
+                  {customCount > 0
+                    ? `追加済 ${customCount}件 ・ 勝ち星判定`
+                    : "勝ち星判定でサクッと遊ぶ"}
+                </span>
+              </div>
+              <div className="absolute bottom-1 right-1 z-10 pointer-events-none transition-transform duration-200 group-hover:rotate-6 group-hover:scale-105">
+                <HomeCardDoodle type="create_pencil" inkColor="#6E2323" />
+              </div>
+            </button>
+          </div>
+
+          {/* 空きスペース：現在の通算★リザルトボード */}
+          <SessionResultBoard compact />
         </div>
 
         {/* 下部：消しゴム＆蛍光ペンの文房具あしらい */}
@@ -1510,15 +1672,313 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ゲーム一覧モーダル（isCatalogModalOpen が true のときだけ画面に表示される） */}
+      {/* ゲーム追加モーダル */}
+      <CustomGameModal
+        isOpen={isCustomModalOpen}
+        gameToEdit={gameToEdit}
+        onClose={() => setIsCustomModalOpen(false)}
+        onSaved={refreshGames}
+      />
+
+      {/* ゲーム一覧モーダル */}
       <GameCatalogModal
         isOpen={isCatalogModalOpen}
-        onClose={() => setIsCatalogModalOpen(false)}
+        onClose={() => {
+          setIsCatalogModalOpen(false);
+          if (typeof window !== "undefined" && window.location.search) {
+            window.history.replaceState({}, "", "/");
+          }
+        }}
         allGameList={allGameList}
         onRefresh={refreshGames}
-        onEditCustomGame={() => {}}
+        onEditCustomGame={handleEditCustomGame}
+        onCreateCustomGame={handleOpenCustomCreate}
       />
     </main>
+  );
+}
+```
+
+---
+
+### 6-2. `src/components/home/SessionResultBoard.tsx`（空きスペースの通算★リザルトボード）
+**【このファイルの役割】**
+「ゲーム一覧」の下の空きスペースや「トップ画面」の下の空きスペースに、現在の参加メンバーの **通算★ランキング（順位・マスコットアイコン・名前・★の数・★リセットボタン）** を常時表示するコンポーネントです。
+一度ゲーム一覧に戻っても、その場で誰が何勝しているかがひと目でわかります。
+
+```tsx
+// src/components/home/SessionResultBoard.tsx
+"use client";
+
+import React, { useEffect } from "react";
+import { Award, RotateCcw } from "lucide-react";
+import { useGameSession } from "@/hooks/useGameSession";
+import { loadStoredPlayers } from "@/lib/playerStorage";
+import { PlayerStampAvatar } from "@/components/match/StepByStepGameFlow";
+import { sound } from "@/lib/sound";
+
+interface SessionResultBoardProps {
+  compact?: boolean;
+}
+
+export default function SessionResultBoard({
+  compact = false,
+}: SessionResultBoardProps) {
+  const {
+    players: sessionPlayers,
+    resetSessionWins,
+    syncSessionPlayers,
+  } = useGameSession();
+
+  // 初回表示時、もしセッションが空なら保存済みの参加メンバーを読み込んで同期する
+  useEffect(() => {
+    if (sessionPlayers.length === 0) {
+      const stored = loadStoredPlayers(3);
+      if (stored.length > 0) {
+        syncSessionPlayers(stored);
+      }
+    }
+  }, [sessionPlayers.length, syncSessionPlayers]);
+
+  if (sessionPlayers.length === 0) return null;
+
+  const maxWins = Math.max(...sessionPlayers.map((p) => p.totalWins), 0);
+  const totalStars = sessionPlayers.reduce((sum, p) => sum + p.totalWins, 0);
+
+  // 勝ち星（totalWins）が多い順番に並び替える
+  const sortedPlayers = [...sessionPlayers].sort((a, b) => {
+    if (b.totalWins !== a.totalWins) {
+      return b.totalWins - a.totalWins;
+    }
+    return a.id.localeCompare(b.id);
+  });
+
+  // 「★リセット」ボタンが押されたときの処理
+  const handleReset = () => {
+    if (confirm("全員の通算★数を 0 にリセットしますか？")) {
+      sound.playTick();
+      resetSessionWins();
+    }
+  };
+
+  return (
+    <section
+      aria-label="現在のリザルト"
+      className={`w-full rounded-3xl bg-white border-[2.5px] border-[#2B2D42] shadow-[4px_5px_0_#2B2D42] ${
+        compact ? "p-3.5 sm:p-4" : "p-4 sm:p-5"
+      }`}
+    >
+      {/* 見出しバー */}
+      <div className="flex items-center justify-between gap-2 pb-2.5 mb-3 border-b-2 border-dashed border-[#2B2D42]/20">
+        <div className="flex items-center gap-2">
+          <span className="w-7 h-7 rounded-xl bg-[#FFE066] border-2 border-[#2B2D42] flex items-center justify-center shadow-[1px_2px_0_#2B2D42] shrink-0">
+            <Award className="w-4 h-4 text-[#2B2D42] stroke-[2.5]" />
+          </span>
+          <div>
+            <h3 className="text-sm sm:text-base font-black text-[#2B2D42] leading-tight">
+              現在のリザルト（通算★）
+            </h3>
+            <p className="text-[10px] font-bold text-[#2B2D42]/65">
+              合計 {totalStars} ゲーム決着
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleReset}
+          className="px-2.5 py-1.5 rounded-xl bg-[#FAF6EB] hover:bg-[#FFADAD] border-2 border-[#2B2D42] shadow-[1px_2px_0_#2B2D42] active:translate-y-0.5 flex items-center gap-1 text-[11px] font-black text-[#2B2D42] transition-all cursor-pointer shrink-0"
+          title="通算★数を0にリセット"
+        >
+          <RotateCcw className="w-3 h-3 stroke-[2.5]" />
+          <span>★リセット</span>
+        </button>
+      </div>
+
+      {/* プレイヤー2列グリッド（元のメンバー番号に応じた手書きキャラアイコンを表示） */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
+        {sortedPlayers.map((player, index) => {
+          const isTop = maxWins > 0 && player.totalWins === maxWins;
+          const matchNum = player.id.match(/^p-(\d+)$/);
+          const avatarIndex = matchNum
+            ? Math.max(0, parseInt(matchNum[1], 10) - 1)
+            : index;
+
+          return (
+            <div
+              key={player.id}
+              className={`flex items-center justify-between gap-2 px-2.5 py-2 rounded-2xl border-2 border-[#2B2D42] transition-all ${
+                isTop
+                  ? "bg-[#FFE066] shadow-[2px_3px_0_#2B2D42]"
+                  : "bg-[#FAF6EB]"
+              }`}
+            >
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <PlayerStampAvatar index={avatarIndex} size="sm" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1">
+                    <span
+                      className={`text-[10px] font-black px-1.5 py-0.2 rounded border border-[#2B2D42] ${
+                        isTop
+                          ? "bg-white text-[#2B2D42]"
+                          : "bg-white/80 text-[#2B2D42]/75"
+                      }`}
+                    >
+                      {index + 1}位
+                    </span>
+                  </div>
+                  <div className="text-xs sm:text-sm font-black text-[#2B2D42] truncate mt-0.5">
+                    {player.name}
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-2 py-1 rounded-xl bg-white border-2 border-[#2B2D42] text-xs sm:text-sm font-black text-[#2B2D42] shrink-0 shadow-[1px_1px_0_#2B2D42]">
+                ★{player.totalWins}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+```
+
+---
+
+### 6-3. `src/components/home/CustomGameModal.tsx`（ゲーム名だけで追加するモーダル）
+**【このファイルの役割】**
+「ゲームを追加」ボタンを押したときに開くモーダルです。
+複雑な設定を一切なくし、**「追加するゲーム名」だけを入力してボタンを押すだけ**で、2〜8人対応の勝ち星判定ゲーム（`isCustom: true`）として即座に登録できます。
+
+```tsx
+// src/components/home/CustomGameModal.tsx
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { Game } from "@/types/game";
+import { saveCustomGame } from "@/lib/customGames";
+import { X, PlusCircle, Save } from "lucide-react";
+
+interface CustomGameModalProps {
+  isOpen: boolean;
+  gameToEdit?: Game | null;
+  onClose: () => void;
+  onSaved: (savedGame: Game) => void;
+}
+
+export default function CustomGameModal({
+  isOpen,
+  gameToEdit,
+  onClose,
+  onSaved,
+}: CustomGameModalProps) {
+  const [title, setTitle] = useState("");
+
+  // モーダルが開いたときの初期化（編集なら既存タイトル、新規なら空欄）
+  useEffect(() => {
+    if (gameToEdit) {
+      setTitle(gameToEdit.title);
+    } else {
+      setTitle("");
+    }
+  }, [gameToEdit, isOpen]);
+
+  if (!isOpen) return null;
+
+  // 「このゲームを追加する！」ボタンを押したときの保存処理
+  const handleSave = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!title.trim()) {
+      alert("ゲーム名を入力してください");
+      return;
+    }
+
+    const id = gameToEdit?.id || `custom-${Date.now()}`;
+    const trimmedTitle = title.trim();
+
+    // 2〜8人対応のシンプルな勝ち星判定ゲームとしてGameオブジェクトを作成
+    const newGame: Game = {
+      id,
+      title: trimmedTitle,
+      short_description: "勝った・負けた（勝ち星★）を判定するシンプルモード",
+      description:
+        "自由に遊んで、勝った人・ミスした人をタップして勝ち星（★）を記録します。",
+      min_players: 2,
+      max_players: 8,
+      created_at: gameToEdit?.created_at || new Date().toISOString(),
+      isCustom: true,
+      metadata: {
+        tools: [],
+        tags: ["追加ゲーム", "自作"],
+      },
+    };
+
+    saveCustomGame(newGame);
+    onSaved(newGame);
+    onClose();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/55 backdrop-blur-xs animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <form
+        onSubmit={handleSave}
+        className="relative w-full max-w-sm bg-[#FAF6EB] border-[2.5px] border-[#2B2D42] rounded-3xl p-5 sm:p-6 text-[#2B2D42] shadow-[6px_7px_0_#2B2D42] space-y-5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* ヘッダー */}
+        <div className="flex items-center justify-between pb-3 border-b-2 border-dashed border-[#2B2D42]/25">
+          <div className="flex items-center gap-2">
+            <span className="w-8 h-8 rounded-xl bg-[#FFADAD] border-2 border-[#2B2D42] flex items-center justify-center shadow-[1px_2px_0_#2B2D42]">
+              <PlusCircle className="w-4 h-4 text-[#2B2D42] stroke-[2.5]" />
+            </span>
+            <h3 className="text-lg font-black text-[#2B2D42]">
+              {gameToEdit ? "ゲーム名を変更" : "ゲームを追加"}
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-xl bg-white border-2 border-[#2B2D42] text-[#2B2D42] hover:bg-amber-100 cursor-pointer"
+            aria-label="閉じる"
+          >
+            <X className="w-5 h-5 stroke-[2.5]" />
+          </button>
+        </div>
+
+        {/* ゲーム名入力欄 */}
+        <div className="space-y-2">
+          <label className="text-xs font-black text-[#2B2D42] block">
+            追加するゲーム名
+          </label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            autoFocus
+            className="w-full bg-white border-2 border-[#2B2D42] p-3.5 rounded-2xl text-base font-black text-[#2B2D42] shadow-[2px_3px_0_#2B2D42] focus:outline-none focus:bg-[#FFFDF7]"
+            placeholder="例: 指スマ、山手線ゲーム など"
+            maxLength={30}
+          />
+          <p className="text-[11px] font-bold text-[#2B2D42]/70 leading-relaxed">
+            ※ 追加したゲームは、ゲーム名と「勝った・負けた（勝ち星★）」の判定だけでシンプルに遊べます！
+          </p>
+        </div>
+
+        {/* 保存ボタン */}
+        <button
+          type="submit"
+          className="w-full py-3.5 px-6 bg-[#FFE066] hover:bg-[#ffd633] text-[#2B2D42] border-2 border-[#2B2D42] font-black text-base rounded-2xl shadow-[4px_5px_0_#2B2D42] active:translate-x-[1px] active:translate-y-[2px] active:shadow-[2px_2px_0_#2B2D42] flex items-center justify-center gap-2 transition-all cursor-pointer"
+        >
+          <Save className="w-5 h-5 stroke-[2.5]" />
+          <span>{gameToEdit ? "ゲーム名を保存" : "このゲームを追加する！"}</span>
+        </button>
+      </form>
+    </div>
   );
 }
 ```
@@ -1528,9 +1988,10 @@ export default function Home() {
 ## 📚 第7章：ゲーム一覧ノート画面 (`src/components/home/GameCatalogModal.tsx`)
 
 **【このファイルの役割】**
-トップ画面で「ゲーム一覧」を押したときに開く、大学ノート風のゲーム一覧画面です。
-- 7つのゲームを「白カード＋右斜め蛍光マーカー帯＋ボールペン落書きスタンプ（刀・電車・数字・炎・レモンなど）」で2列に表示します。
-- 右上の虫眼鏡ボタンを押すと、キーワード検索やプレイ人数（2人〜8人）での絞り込みができます。
+トップ画面で「ゲーム一覧」を押したとき、またはゲームから戻ってきたとき（`/?catalog=1`）に開く、大学ノート風のゲーム一覧画面です。
+- 厳選7タイトル＋追加した自作ゲームを「白カード＋右斜め蛍光マーカー帯＋ボールペン落書きスタンプ」で2列に表示します。
+- カード一覧の最後には **「＋ ゲームを追加」カード** があり、ゲーム一覧を見ながらその場で新しいゲームを追加できます。
+- カード一覧の下の空きスペースには **「現在のリザルト（通算★）」ボード（`<SessionResultBoard />`）** が常時表示されます。
 - カードをタップすると、すぐに `/games/[そのゲームのID]/play`（第8章・第9章のスタンバイ画面）へ移動します。
 
 ```tsx
@@ -1539,16 +2000,18 @@ export default function Home() {
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { X, Search, Edit2, Trash2 } from "lucide-react";
+import { X, Search, Edit2, Trash2, Plus } from "lucide-react";
 import { Game } from "@/types/game";
 import { deleteCustomGame } from "@/lib/customGames";
+import SessionResultBoard from "@/components/home/SessionResultBoard";
 
 interface GameCatalogModalProps {
   isOpen: boolean;                        // モーダルが開いているか
   onClose: () => void;                    // 閉じるボタンを押したときの関数
   allGameList: Game[];                    // 表示するゲーム配列
   onRefresh: () => void;                  // 再読み込み関数
-  onEditCustomGame: (game: Game) => void;
+  onEditCustomGame: (game: Game) => void; // 追加ゲームの名前編集を開く関数
+  onCreateCustomGame?: () => void;        // 新しくゲームを追加するモーダルを開く関数
 }
 
 const PLAYER_OPTIONS = [2, 3, 4, 5, 6, 7, 8] as const;
@@ -2017,6 +2480,33 @@ export default function GameCatalogModal({
                 </div>
               );
             })}
+
+            {/* カードグリッド末尾：「＋ ゲームを追加」カードボタン */}
+            {onCreateCustomGame && (
+              <button
+                type="button"
+                onClick={onCreateCustomGame}
+                className="group relative h-[80px] sm:h-[86px] w-full rounded-2xl bg-[#FAF6EB] hover:bg-[#FFADAD]/35 border-2 border-dashed border-[#2B2D42] overflow-hidden text-left flex items-center justify-center gap-2 px-3 shadow-[2px_3px_0_#2B2D42] hover:-translate-y-0.5 active:translate-y-0.5 transition-all cursor-pointer"
+                title="新しいゲームを追加"
+              >
+                <span className="w-8 h-8 rounded-xl bg-[#FFADAD] border-2 border-[#2B2D42] flex items-center justify-center shadow-[1px_2px_0_#2B2D42] shrink-0">
+                  <Plus className="w-4 h-4 text-[#2B2D42] stroke-[3]" />
+                </span>
+                <div className="min-w-0">
+                  <span className="block font-black text-[#2B2D42] text-xs sm:text-sm leading-tight">
+                    ゲームを追加
+                  </span>
+                  <span className="block text-[10px] font-bold text-[#2B2D42]/70 mt-0.5">
+                    名前だけで即追加
+                  </span>
+                </div>
+              </button>
+            )}
+          </div>
+
+          {/* ゲーム一覧の下の空きスペース：現在の通算★リザルト表示 */}
+          <div className="mt-6">
+            <SessionResultBoard />
           </div>
         </div>
       </div>
@@ -2228,7 +2718,7 @@ function GamePlayContent() {
       />
 
       <main className="relative z-10 flex-1 w-full">
-        {/* 第9章：4ステップ進行画面 */}
+        {/* 第9章：4ステップ進行画面（戻る時は /?catalog=1 で直接ゲーム一覧へ戻る） */}
         <StepByStepGameFlow
           game={game}
           players={players}
@@ -2237,7 +2727,7 @@ function GamePlayContent() {
           onToggleEliminate={handleToggleEliminate}
           onResetElimination={handleResetElimination}
           onSelectWinner={handleSelectWinner}
-          onBackToHome={() => router.push("/")}
+          onBackToHome={() => router.push("/?catalog=1")}
         />
 
         {/* 第10章：参加メンバーの人数・名前設定モーダル */}
@@ -2896,13 +3386,17 @@ export default function StepByStepGameFlow({
             </p>
           </div>
 
-          {/* 下段：「このメンバーで始める ➔」ボタン */}
+          {/* 下段：「このメンバーで始める ➔」ボタン（追加ゲームなら設定・ルールを飛ばして直接勝ち星判定へ！） */}
           <div className="pt-1 pb-2">
             <button
               type="button"
               onClick={() => {
-                sound.playTick();
-                setStep("settings");
+                if (game.isCustom) {
+                  handleStartMatch();
+                } else {
+                  sound.playTick();
+                  setStep("settings");
+                }
               }}
               className="w-full py-4 px-6 rounded-2xl bg-[#9AF0A8] hover:bg-[#82e893] border-[2.5px] border-[#2B2D42] shadow-[4px_5px_0_#2B2D42] text-[#2B2D42] font-black text-lg sm:text-xl cursor-pointer"
             >
@@ -3163,11 +3657,69 @@ export default function StepByStepGameFlow({
               </div>
             )}
 
-            {/* 下段：ルール本文と掛け声例 */}
-            <div className="py-4 px-2 text-center space-y-3">
-              <p className="text-xs sm:text-sm font-bold text-[#2B2D42] leading-relaxed whitespace-pre-wrap">
-                {game.description}
-              </p>
+            {/* 下段：1行概要 ＋ 1・2・3…番号バッジ付き左揃えルールリスト ＋ 掛け声例 */}
+            <div className="py-1 space-y-3 text-left">
+              {/* 1行でどんなゲームかを表示 */}
+              <div className="p-2.5 rounded-2xl bg-[#FAF6EB] border-2 border-[#2B2D42] text-xs sm:text-sm font-black text-[#2B2D42] leading-relaxed">
+                💡 {game.short_description || game.description}
+              </div>
+
+              {/* 1・2・3…番号バッジ付きの左揃えルールリスト */}
+              {(game.metadata?.ruleSummary || game.rules)?.length ? (
+                <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
+                  {(game.metadata?.ruleSummary || game.rules || []).map(
+                    (ruleItem, idx) => {
+                      const lines = ruleItem.split("\n");
+                      const hasHeading =
+                        lines.length > 1 && lines[0].startsWith("【");
+                      return (
+                        <div
+                          key={idx}
+                          className="flex items-start gap-2.5 p-2.5 sm:p-3 rounded-2xl bg-[#FAF6EB] border-2 border-[#2B2D42] shadow-[2px_2px_0_#2B2D42]"
+                        >
+                          <span className="w-6 h-6 rounded-lg bg-[#FFE066] border-2 border-[#2B2D42] flex items-center justify-center text-xs font-black text-[#2B2D42] shrink-0 mt-0.5">
+                            {idx + 1}
+                          </span>
+                          <div className="min-w-0 flex-1 text-xs sm:text-sm text-[#2B2D42] leading-relaxed">
+                            {hasHeading ? (
+                              <>
+                                <div className="font-black text-[#2B2D42]">
+                                  {lines[0]}
+                                </div>
+                                <div className="font-bold text-[#2B2D42]/90 whitespace-pre-line mt-0.5">
+                                  {lines.slice(1).join("\n")}
+                                </div>
+                              </>
+                            ) : (
+                              <div className="font-bold whitespace-pre-line">
+                                {ruleItem}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    }
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs sm:text-sm font-bold text-[#2B2D42] leading-relaxed whitespace-pre-line">
+                  {game.description}
+                </p>
+              )}
+
+              {/* 掛け声・やり方の例 */}
+              {(game.call_examples?.[0] || game.metadata?.callExample) && (
+                <div className="p-3 rounded-2xl bg-[#FFF275]/55 border-2 border-[#2B2D42] text-xs font-black text-[#2B2D42] text-left space-y-1">
+                  <div className="text-[11px] font-black text-[#2B2D42]/75">
+                    📢 掛け声・やり方の例
+                  </div>
+                  <div className="whitespace-pre-line leading-relaxed">
+                    {game.call_examples
+                      ? game.call_examples.join("\n")
+                      : game.metadata?.callExample}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -3613,7 +4165,7 @@ export default function MatchWinnerModal({
           </button>
 
           <Link
-            href="/"
+            href="/?catalog=1"
             className="w-full py-3.5 px-6 bg-white hover:bg-[#FAF6EB] text-[#2B2D42] font-black text-sm rounded-2xl border-[2.5px] border-[#2B2D42] shadow-[3px_4px_0_#2B2D42] flex items-center justify-center gap-2"
           >
             <LayoutGrid className="w-4 h-4 stroke-[2.5] text-[#2B2D42]" />
