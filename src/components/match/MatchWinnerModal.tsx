@@ -160,11 +160,11 @@ export default function MatchWinnerModal({
                       : "bg-[#FAF6EB] text-[#2B2D42] font-bold"
                   }`}
                 >
-                  <div className="flex items-center gap-2 min-w-0">
+                  <div className="flex items-center gap-2 min-w-0 flex-1 mr-2">
                     <span className="w-8 text-left text-xs font-black text-[#2B2D42] shrink-0">
                       {index + 1}位
                     </span>
-                    <span className="truncate max-w-[140px]">{player.name}</span>
+                    <span className="break-words leading-snug">{player.name}</span>
                     {isWinner && (
                       <span className="text-[10px] bg-white text-[#2B2D42] border border-[#2B2D42] px-2 py-0.5 rounded-full font-black shrink-0">
                         +1勝

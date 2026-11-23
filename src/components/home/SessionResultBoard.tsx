@@ -96,34 +96,31 @@ export default function SessionResultBoard({
           return (
             <div
               key={player.id}
-              className={`flex items-center justify-between gap-2 px-2.5 py-2 rounded-2xl border-2 border-[#2B2D42] transition-all ${
+              className={`flex items-center gap-2 p-2 sm:p-2.5 rounded-2xl border-2 border-[#2B2D42] transition-all ${
                 isTop
                   ? "bg-[#FFE066] shadow-[2px_3px_0_#2B2D42]"
                   : "bg-[#FAF6EB]"
               }`}
             >
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <PlayerStampAvatar index={avatarIndex} size="sm" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1">
-                    <span
-                      className={`text-[10px] font-black px-1.5 py-0.2 rounded border border-[#2B2D42] ${
-                        isTop
-                          ? "bg-white text-[#2B2D42]"
-                          : "bg-white/80 text-[#2B2D42]/75"
-                      }`}
-                    >
-                      {index + 1}位
-                    </span>
-                  </div>
-                  <div className="text-xs sm:text-sm font-black text-[#2B2D42] truncate mt-0.5">
-                    {player.name}
-                  </div>
+              <PlayerStampAvatar index={avatarIndex} size="sm" />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-1">
+                  <span
+                    className={`text-[10px] font-black px-1.5 py-0.2 rounded border border-[#2B2D42] shrink-0 ${
+                      isTop
+                        ? "bg-white text-[#2B2D42]"
+                        : "bg-white/80 text-[#2B2D42]/75"
+                    }`}
+                  >
+                    {index + 1}位
+                  </span>
+                  <span className="px-1.5 py-0.2 rounded-full bg-white border border-[#2B2D42] text-[10px] sm:text-xs font-black text-[#2B2D42] shrink-0">
+                    ★{player.totalWins}
+                  </span>
                 </div>
-              </div>
-
-              <div className="px-2 py-1 rounded-xl bg-white border-2 border-[#2B2D42] text-xs sm:text-sm font-black text-[#2B2D42] shrink-0 shadow-[1px_1px_0_#2B2D42]">
-                ★{player.totalWins}
+                <div className="text-xs sm:text-sm font-black text-[#2B2D42] break-words leading-snug mt-0.5">
+                  {player.name}
+                </div>
               </div>
             </div>
           );
