@@ -1261,22 +1261,72 @@ export default function StepByStepGameFlow({
               </div>
             )}
 
-            {/* 下段：ルール説明セクション */}
-            <div className="flex-1 flex flex-col justify-center">
+            {/* 下段：ルール説明セクション（1行概要 ＋ 番号付き左揃えリスト） */}
+            <div className="flex-1 flex flex-col justify-between space-y-3">
               <div className="text-center pb-2 border-b-2 border-[#2B2D42]">
                 <h2 className="text-sm font-black text-[#2B2D42]">ルール</h2>
               </div>
 
-              <div className="py-4 px-2 text-center space-y-3">
-                <p className="text-xs sm:text-sm font-bold text-[#2B2D42] leading-relaxed whitespace-pre-wrap">
-                  {game.description}
-                </p>
+              <div className="py-1 space-y-3 text-left">
+                {/* 1行でどんなゲームかを表示 */}
+                <div className="p-2.5 rounded-2xl bg-[#FAF6EB] border-2 border-[#2B2D42] text-xs sm:text-sm font-black text-[#2B2D42] leading-relaxed">
+                  💡 {game.short_description || game.description}
+                </div>
 
+                {/* 1・2・3…番号バッジ付きの左揃えルールリスト */}
+                {(game.metadata?.ruleSummary || game.rules)?.length ? (
+                  <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
+                    {(game.metadata?.ruleSummary || game.rules || []).map(
+                      (ruleItem, idx) => {
+                        const lines = ruleItem.split("\n");
+                        const hasHeading =
+                          lines.length > 1 && lines[0].startsWith("【");
+                        return (
+                          <div
+                            key={idx}
+                            className="flex items-start gap-2.5 p-2.5 sm:p-3 rounded-2xl bg-[#FAF6EB] border-2 border-[#2B2D42] shadow-[2px_2px_0_#2B2D42]"
+                          >
+                            <span className="w-6 h-6 rounded-lg bg-[#FFE066] border-2 border-[#2B2D42] flex items-center justify-center text-xs font-black text-[#2B2D42] shrink-0 mt-0.5">
+                              {idx + 1}
+                            </span>
+                            <div className="min-w-0 flex-1 text-xs sm:text-sm text-[#2B2D42] leading-relaxed">
+                              {hasHeading ? (
+                                <>
+                                  <div className="font-black text-[#2B2D42]">
+                                    {lines[0]}
+                                  </div>
+                                  <div className="font-bold text-[#2B2D42]/90 whitespace-pre-line mt-0.5">
+                                    {lines.slice(1).join("\n")}
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="font-bold whitespace-pre-line">
+                                  {ruleItem}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-xs sm:text-sm font-bold text-[#2B2D42] leading-relaxed whitespace-pre-line">
+                    {game.description}
+                  </p>
+                )}
+
+                {/* 掛け声・やり方の例 */}
                 {(game.call_examples?.[0] || game.metadata?.callExample) && (
-                  <div className="p-3 rounded-2xl bg-[#FFF275]/50 border-2 border-[#2B2D42] text-xs font-black text-[#2B2D42] text-left whitespace-pre-wrap">
-                    {game.call_examples
-                      ? game.call_examples.join("\n")
-                      : game.metadata?.callExample}
+                  <div className="p-3 rounded-2xl bg-[#FFF275]/55 border-2 border-[#2B2D42] text-xs font-black text-[#2B2D42] text-left space-y-1">
+                    <div className="text-[11px] font-black text-[#2B2D42]/75">
+                      📢 掛け声・やり方の例
+                    </div>
+                    <div className="whitespace-pre-line leading-relaxed">
+                      {game.call_examples
+                        ? game.call_examples.join("\n")
+                        : game.metadata?.callExample}
+                    </div>
                   </div>
                 )}
               </div>
@@ -1625,23 +1675,62 @@ export default function StepByStepGameFlow({
               </button>
             </div>
 
-            <p className="text-xs sm:text-sm font-bold leading-relaxed whitespace-pre-wrap">
-              {game.description}
-            </p>
+            {/* 1行でどんなゲームかを表示 */}
+            <div className="p-3 rounded-2xl bg-white border-2 border-[#2B2D42] text-xs sm:text-sm font-black text-[#2B2D42] leading-relaxed shadow-[2px_2px_0_#2B2D42]">
+              💡 {game.short_description || game.description}
+            </div>
 
             {(game.rules || game.metadata?.ruleSummary) && (
-              <div className="space-y-1.5">
-                <div className="text-xs font-black">手順:</div>
+              <div className="space-y-2">
+                <div className="text-xs font-black text-[#2B2D42]">
+                  遊び方・ルール手順:
+                </div>
                 {(game.rules || game.metadata?.ruleSummary || []).map(
-                  (r, idx) => (
-                    <div
-                      key={idx}
-                      className="p-2.5 rounded-xl bg-white border-2 border-[#2B2D42] text-xs font-bold"
-                    >
-                      {idx + 1}. {r}
-                    </div>
-                  )
+                  (r, idx) => {
+                    const lines = r.split("\n");
+                    const hasHeading =
+                      lines.length > 1 && lines[0].startsWith("【");
+                    return (
+                      <div
+                        key={idx}
+                        className="flex items-start gap-2.5 p-3 rounded-2xl bg-white border-2 border-[#2B2D42] shadow-[2px_2px_0_#2B2D42] text-left"
+                      >
+                        <span className="w-6 h-6 rounded-lg bg-[#FFE066] border-2 border-[#2B2D42] flex items-center justify-center text-xs font-black text-[#2B2D42] shrink-0 mt-0.5">
+                          {idx + 1}
+                        </span>
+                        <div className="min-w-0 flex-1 text-xs sm:text-sm leading-relaxed text-[#2B2D42]">
+                          {hasHeading ? (
+                            <>
+                              <div className="font-black text-[#2B2D42]">
+                                {lines[0]}
+                              </div>
+                              <div className="font-bold text-[#2B2D42]/90 whitespace-pre-line mt-0.5">
+                                {lines.slice(1).join("\n")}
+                              </div>
+                            </>
+                          ) : (
+                            <div className="font-bold whitespace-pre-line">
+                              {r}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
                 )}
+              </div>
+            )}
+
+            {(game.call_examples?.[0] || game.metadata?.callExample) && (
+              <div className="p-3 rounded-2xl bg-[#FFF275]/60 border-2 border-[#2B2D42] text-xs font-black text-[#2B2D42] text-left space-y-1">
+                <div className="text-[11px] font-black text-[#2B2D42]/75">
+                  📢 掛け声・やり方の例
+                </div>
+                <div className="whitespace-pre-line leading-relaxed">
+                  {game.call_examples
+                    ? game.call_examples.join("\n")
+                    : game.metadata?.callExample}
+                </div>
               </div>
             )}
 
